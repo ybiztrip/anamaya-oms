@@ -1,4 +1,4 @@
-package ai.anamaya.service.oms.model;
+package ai.anamaya.service.oms.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -6,20 +6,41 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "company")
+@Table(name = "user")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Company {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "company_id")
+    private Long companyId;
+
     @Column(nullable = false, length = 256)
-    private String name;
+    private String email;
+
+    @Column(nullable = false, length = 256)
+    private String password;
+
+    @Column(name = "first_name", length = 256)
+    private String firstName;
+
+    @Column(name = "last_name", length = 256)
+    private String lastName;
+
+    @Column(length = 20)
+    private String gender;
+
+    @Column(name = "position_id")
+    private Long positionId;
+
+    @Column(name = "phone_no", length = 256)
+    private String phoneNo;
 
     @Column(nullable = false)
     private Short status;

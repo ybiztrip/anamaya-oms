@@ -1,4 +1,4 @@
-package ai.anamaya.service.oms.dto;
+package ai.anamaya.service.oms.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;

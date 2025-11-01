@@ -1,8 +1,8 @@
 package ai.anamaya.service.oms.controller;
 
-import ai.anamaya.service.oms.dto.ApiResponse;
-import ai.anamaya.service.oms.dto.CompanyRequest;
-import ai.anamaya.service.oms.dto.CompanyResponse;
+import ai.anamaya.service.oms.dto.response.ApiResponse;
+import ai.anamaya.service.oms.dto.request.CompanyRequest;
+import ai.anamaya.service.oms.dto.response.CompanyResponse;
 import ai.anamaya.service.oms.service.CompanyService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +20,11 @@ public class CompanyController {
     }
 
     @GetMapping
-    public ApiResponse<List<CompanyResponse>> getAll() {
-        return service.findAll();
+    public ApiResponse<List<CompanyResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sort) {
+        return service.findAll(page, size, sort);
     }
 
     @GetMapping("/{id}")
