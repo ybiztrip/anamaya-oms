@@ -29,7 +29,4 @@ public class UserUpdateRequest {
 
     @NotNull
     private Short status;
-
-    @NotNull
-    private Long createdBy;
 }

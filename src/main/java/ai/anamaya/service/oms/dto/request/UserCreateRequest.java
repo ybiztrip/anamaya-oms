@@ -28,7 +28,4 @@ public class UserCreateRequest {
 
     @NotNull
     private Short status;
-
-    @NotNull
-    private Long createdBy;
 }

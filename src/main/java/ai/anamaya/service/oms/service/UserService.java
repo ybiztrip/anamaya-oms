@@ -66,7 +66,6 @@ public class UserService {
                 .positionId(request.getPositionId())
                 .phoneNo(request.getPhoneNo())
                 .status(request.getStatus())
-                .createdBy(request.getCreatedBy())
                 .build();
 
         repository.save(user);
@@ -84,7 +83,6 @@ public class UserService {
         user.setPositionId(request.getPositionId());
         user.setPhoneNo(request.getPhoneNo());
         user.setStatus(request.getStatus());
-        user.setUpdatedBy(request.getCreatedBy());
 
         repository.save(user);
         return ApiResponse.success(toResponse(user));
