@@ -1,7 +1,9 @@
 package ai.anamaya.service.oms.service;
 
+import ai.anamaya.service.oms.dto.request.UpdatePasswordRequest;
+import ai.anamaya.service.oms.dto.request.UserUpdateRequest;
 import ai.anamaya.service.oms.dto.response.ApiResponse;
-import ai.anamaya.service.oms.dto.request.UserRequest;
+import ai.anamaya.service.oms.dto.request.UserCreateRequest;
 import ai.anamaya.service.oms.dto.response.UserResponse;
 import ai.anamaya.service.oms.entity.User;
 import ai.anamaya.service.oms.exception.NotFoundException;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,12 +24,14 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public ApiResponse<UserResponse> create(UserRequest request) {
+    public ApiResponse<UserResponse> create(UserCreateRequest request) {
         if (repository.existsByEmail(request.getEmail())) {
             return ApiResponse.error("Email already exists");
         }
@@ -34,7 +39,7 @@ public class UserService {
         User user = User.builder()
                 .companyId(request.getCompanyId())
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .gender(request.getGender())
@@ -48,12 +53,11 @@ public class UserService {
         return ApiResponse.success(toResponse(user));
     }
 
-    public ApiResponse<UserResponse> update(Long id, UserRequest request) {
-        User user = repository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    public ApiResponse<UserResponse> update(Long id, UserUpdateRequest request) {
+        User user = repository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
 
         user.setCompanyId(request.getCompanyId());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setGender(request.getGender());
@@ -64,6 +68,24 @@ public class UserService {
 
         repository.save(user);
         return ApiResponse.success(toResponse(user));
+    }
+
+
+    @Transactional
+    public ApiResponse<String> updatePassword(UpdatePasswordRequest request) {
+        User user = repository.findById(request.getUserId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        // check if old password matches
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            return ApiResponse.error("Old password is incorrect");
+        }
+
+        // hash the new password and save
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        repository.save(user);
+
+        return ApiResponse.success("Password updated successfully");
     }
 
     public ApiResponse<UserResponse> getById(Long id) {

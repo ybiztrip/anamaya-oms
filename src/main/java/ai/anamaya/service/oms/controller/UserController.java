@@ -1,7 +1,9 @@
 package ai.anamaya.service.oms.controller;
 
+import ai.anamaya.service.oms.dto.request.UpdatePasswordRequest;
+import ai.anamaya.service.oms.dto.request.UserUpdateRequest;
 import ai.anamaya.service.oms.dto.response.ApiResponse;
-import ai.anamaya.service.oms.dto.request.UserRequest;
+import ai.anamaya.service.oms.dto.request.UserCreateRequest;
 import ai.anamaya.service.oms.dto.response.UserResponse;
 import ai.anamaya.service.oms.service.UserService;
 import jakarta.validation.Valid;
@@ -18,12 +20,17 @@ public class UserController {
     private final UserService service;
 
     @PostMapping
-    public ApiResponse<UserResponse> create(@Valid @RequestBody UserRequest request) {
+    public ApiResponse<UserResponse> create(@Valid @RequestBody UserCreateRequest request) {
         return service.create(request);
     }
 
+    @PutMapping("/update-password")
+    public ApiResponse<String> updatePassword(@Valid @RequestBody UpdatePasswordRequest request) {
+        return service.updatePassword(request);
+    }
+
     @PutMapping("/{id}")
-    public ApiResponse<UserResponse> update(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
+    public ApiResponse<UserResponse> update(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest request) {
         return service.update(id, request);
     }
 
@@ -45,4 +52,5 @@ public class UserController {
     public ApiResponse<String> delete(@PathVariable Long id) {
         return service.delete(id);
     }
+
 }
