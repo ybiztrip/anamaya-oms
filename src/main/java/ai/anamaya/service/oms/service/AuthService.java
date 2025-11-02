@@ -31,7 +31,6 @@ public class AuthService {
             throw new NotFoundException("Invalid email or password");
         }
 
-
         String token = jwtTokenProvider.generateToken(user.getId(), user.getCompanyId(), user.getEmail());
 
         LoginResponse loginResponse = LoginResponse.builder()
