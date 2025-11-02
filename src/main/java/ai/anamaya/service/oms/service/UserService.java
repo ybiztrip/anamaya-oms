@@ -8,14 +8,19 @@ import ai.anamaya.service.oms.dto.response.UserResponse;
 import ai.anamaya.service.oms.entity.User;
 import ai.anamaya.service.oms.exception.NotFoundException;
 import ai.anamaya.service.oms.repository.UserRepository;
+import ai.anamaya.service.oms.security.JwtUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,13 +30,28 @@ public class UserService {
 
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
-    public UserService(UserRepository repository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository repository, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtils = jwtUtils;
     }
 
     public ApiResponse<UserResponse> create(UserCreateRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
+
+        boolean isCompanyAdmin = authorities.stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_COMPANY_ADMIN"));
+
+        if (isCompanyAdmin) {
+            Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
+            request.setCompanyId(companyIdFromToken);
+        } else if (request.getCompanyId() == null) {
+            throw new IllegalArgumentException("companyId is required for SUPER_ADMIN");
+        }
+
         if (repository.existsByEmail(request.getEmail())) {
             return ApiResponse.error("Email already exists");
         }

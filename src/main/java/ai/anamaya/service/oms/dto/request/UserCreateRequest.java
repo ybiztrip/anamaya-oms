@@ -11,7 +11,6 @@ import lombok.*;
 @Builder
 public class UserCreateRequest {
 
-    @NotNull
     private Long companyId;
 
     @Email

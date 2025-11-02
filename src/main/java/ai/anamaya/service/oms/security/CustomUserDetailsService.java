@@ -2,10 +2,15 @@ package ai.anamaya.service.oms.security;
 
 import ai.anamaya.service.oms.entity.User;
 import ai.anamaya.service.oms.repository.UserRepository;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -21,10 +26,14 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
+        List<GrantedAuthority> authorities = user.getUserRoles().stream()
+                .map(userRole -> new SimpleGrantedAuthority("ROLE_" + userRole.getRole().getCode().toUpperCase()))
+                .collect(Collectors.toList());
+
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .roles("USER")
+                .authorities(authorities)
                 .build();
     }
 }

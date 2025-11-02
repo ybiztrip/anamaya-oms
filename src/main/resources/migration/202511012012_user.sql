@@ -17,3 +17,5 @@ CREATE TABLE user (
   UNIQUE KEY uq_users_email (email),
   KEY idx_users_company_id (company_id)
 );
+
+INSERT INTO `user` (`company_id`, `email`, `password`, `first_name`, `last_name`, `gender`, `position_id`, `phone_no`, `status`, `created_by`, `created_at`, `updated_by`, `updated_at`) VALUES ('1', '1', 'sysadmin@anamaya.ai', '$2a$10$BBbkiXR7WT9qN6of3OMkcOfFxroEZzmNyHgEDGncUjxjHHmGf8ps6', 'sysadmin', 'anamaya', 'MALE', '0', '+628123456789', '1', '0', '2025-11-01 13:29:34', '0', '2025-11-02 15:26:00');

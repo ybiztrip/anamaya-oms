@@ -5,6 +5,7 @@ import ai.anamaya.service.oms.dto.request.CompanyRequest;
 import ai.anamaya.service.oms.dto.response.CompanyResponse;
 import ai.anamaya.service.oms.service.CompanyService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class CompanyController {
         this.service = service;
     }
 
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @GetMapping
     public ApiResponse<List<CompanyResponse>> getAll(
             @RequestParam(defaultValue = "0") int page,
@@ -27,21 +29,26 @@ public class CompanyController {
         return service.findAll(page, size, sort);
     }
 
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @GetMapping("/{id}")
     public ApiResponse<CompanyResponse> getById(@PathVariable Long id) {
         return service.findById(id);
     }
 
+
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @PostMapping
     public ApiResponse<CompanyResponse> create(@Valid @RequestBody CompanyRequest request) {
         return service.create(request);
     }
 
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @PutMapping("/{id}")
     public ApiResponse<CompanyResponse> update(@PathVariable Long id, @Valid @RequestBody CompanyRequest request) {
         return service.update(id, request);
     }
 
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     @DeleteMapping("/{id}")
     public ApiResponse<String> delete(@PathVariable Long id) {
         return service.delete(id);

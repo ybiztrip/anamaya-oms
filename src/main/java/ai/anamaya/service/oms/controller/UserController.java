@@ -8,6 +8,7 @@ import ai.anamaya.service.oms.dto.response.UserResponse;
 import ai.anamaya.service.oms.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class UserController {
 
     private final UserService service;
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','COMPANY_ADMIN')")
     @PostMapping
     public ApiResponse<UserResponse> create(@Valid @RequestBody UserCreateRequest request) {
         return service.create(request);
