@@ -19,15 +19,15 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class FlightAirportService {
+public class BiztripFlightAirportService {
 
     private final WebClient webClient;
     private final BiztripAuthService authService;
     private final JwtUtils jwtUtils;
 
-    public FlightAirportService(@Qualifier("biztripWebClient") WebClient webClient,
-                                BiztripAuthService authService,
-                                JwtUtils jwtUtils) {
+    public BiztripFlightAirportService(@Qualifier("biztripWebClient") WebClient webClient,
+                                       BiztripAuthService authService,
+                                       JwtUtils jwtUtils) {
         this.webClient = webClient;
         this.authService = authService;
         this.jwtUtils = jwtUtils;
