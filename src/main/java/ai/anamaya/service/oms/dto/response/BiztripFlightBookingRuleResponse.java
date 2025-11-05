@@ -1,0 +1,18 @@
+package ai.anamaya.service.oms.dto.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class BiztripFlightBookingRuleResponse {
+    private Boolean requiresBirthDate;
+    private Boolean requiresDocumentNoForInternational;
+    private Boolean requiresNationality;
+    private Boolean requiresDocumentNoForDomestic;
+    private Boolean requiresId;
+}
