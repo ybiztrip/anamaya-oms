@@ -1,7 +1,7 @@
 package ai.anamaya.service.oms.service;
 
 import ai.anamaya.service.oms.dto.response.ApiResponse;
-import ai.anamaya.service.oms.dto.response.FlightAirportResponse;
+import ai.anamaya.service.oms.dto.response.BiztripFlightAirportResponse;
 import ai.anamaya.service.oms.security.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,7 +33,7 @@ public class BiztripFlightAirportService {
         this.jwtUtils = jwtUtils;
     }
 
-    public ApiResponse<List<FlightAirportResponse>> getAirports() {
+    public ApiResponse<List<BiztripFlightAirportResponse>> getAirports() {
         try {
             Long companyId = jwtUtils.getCompanyIdFromToken();
             String accessToken = authService.getAccessToken(companyId);
@@ -59,7 +59,7 @@ public class BiztripFlightAirportService {
                 return ApiResponse.error("No airport data found");
             }
 
-            List<FlightAirportResponse> airports = ((List<Map<String, Object>>) response.get("data"))
+            List<BiztripFlightAirportResponse> airports = ((List<Map<String, Object>>) response.get("data"))
                     .stream()
                     .map(this::mapToAirportResponse)
                     .toList();
@@ -75,8 +75,8 @@ public class BiztripFlightAirportService {
         }
     }
 
-    private FlightAirportResponse mapToAirportResponse(Map<String, Object> m) {
-        return FlightAirportResponse.builder()
+    private BiztripFlightAirportResponse mapToAirportResponse(Map<String, Object> m) {
+        return BiztripFlightAirportResponse.builder()
                 .airportCode((String) m.get("airportCode"))
                 .city((String) m.get("city"))
                 .countryId((String) m.get("countryId"))
