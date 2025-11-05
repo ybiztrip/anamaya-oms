@@ -1,0 +1,15 @@
+CREATE TABLE company_config (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    company_id BIGINT NOT NULL,
+    code VARCHAR(100) NOT NULL,
+    value_str VARCHAR(256) DEFAULT NULL,
+    value_int INT DEFAULT NULL,
+    value_bool TINYINT(1) DEFAULT NULL,
+    status SMALLINT NOT NULL DEFAULT 1,
+    is_visible SMALLINT NOT NULL DEFAULT 1,
+    created_by BIGINT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT uq_company_config UNIQUE (company_id, code)
+);

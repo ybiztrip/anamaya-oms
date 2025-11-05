@@ -1,8 +1,9 @@
 package ai.anamaya.service.oms.service;
 
 import ai.anamaya.service.oms.dto.response.BiztripTokenResponse;
+import ai.anamaya.service.oms.entity.CompanyConfig;
+import ai.anamaya.service.oms.repository.CompanyConfigRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
@@ -18,30 +19,35 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class BiztripAuthService {
 
-    private static final String REDIS_KEY = "biztrip:access_token";
+    private static final String REDIS_KEY = "biztrip:access_token:";
 
     private final WebClient webClient;
     private final RedisTemplate<String, Object> redisTemplate;
-
-    @Value("${external.biztrip-api.client-id}")
-    private String clientId;
-
-    @Value("${external.biztrip-api.client-secret}")
-    private String clientSecret;
+    private final CompanyConfigRepository companyConfigRepository;
 
     public BiztripAuthService(@Qualifier("biztripWebClient") WebClient webClient,
-                              RedisTemplate<String, Object> redisTemplate) {
+                              RedisTemplate<String, Object> redisTemplate,
+                              CompanyConfigRepository companyConfigRepository) {
         this.webClient = webClient;
         this.redisTemplate = redisTemplate;
+        this.companyConfigRepository = companyConfigRepository;
     }
 
-    public String getAccessToken() {
-        Object cachedToken = redisTemplate.opsForValue().get(REDIS_KEY);
+    public String getAccessToken(Long companyId) {
+        String redisKey = REDIS_KEY + companyId;
+        Object cachedToken = redisTemplate.opsForValue().get(redisKey);
         if (cachedToken != null) {
             log.info("Using cached BizTrip token");
             return cachedToken.toString();
         }
 
+        String clientId = companyConfigRepository.findByCompanyIdAndCode(companyId, "BIZTRIP_CLIENT_ID")
+                .map(CompanyConfig::getValueStr)
+                .orElseThrow(() -> new RuntimeException("Missing BIZTRIP_CLIENT_ID for company " + companyId));
+
+        String clientSecret = companyConfigRepository.findByCompanyIdAndCode(companyId, "BIZTRIP_CLIENT_SECRET")
+                .map(CompanyConfig::getValueStr)
+                .orElseThrow(() -> new RuntimeException("Missing BIZTRIP_CLIENT_SECRET for company " + companyId));
         try {
             BiztripTokenResponse tokenResponse = webClient.post()
                     .uri("/oauth/accesstoken") // ✅ trailing slash
@@ -61,7 +67,7 @@ public class BiztripAuthService {
             }
 
             redisTemplate.opsForValue().set(
-                    REDIS_KEY,
+                    redisKey,
                     tokenResponse.getAccessToken(),
                     tokenResponse.getExpiredIn() / 1000,
                     TimeUnit.SECONDS

@@ -2,6 +2,7 @@ package ai.anamaya.service.oms.service;
 
 import ai.anamaya.service.oms.dto.response.ApiResponse;
 import ai.anamaya.service.oms.dto.response.FlightAirportResponse;
+import ai.anamaya.service.oms.security.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
@@ -22,16 +23,20 @@ public class FlightAirportService {
 
     private final WebClient webClient;
     private final BiztripAuthService authService;
+    private final JwtUtils jwtUtils;
 
     public FlightAirportService(@Qualifier("biztripWebClient") WebClient webClient,
-                                BiztripAuthService authService) {
+                                BiztripAuthService authService,
+                                JwtUtils jwtUtils) {
         this.webClient = webClient;
         this.authService = authService;
+        this.jwtUtils = jwtUtils;
     }
 
     public ApiResponse<List<FlightAirportResponse>> getAirports() {
         try {
-            String accessToken = authService.getAccessToken();
+            Long companyId = jwtUtils.getCompanyIdFromToken();
+            String accessToken = authService.getAccessToken(companyId);
 
             Map<String, Object> response = webClient.get()
                 .uri("/flight/data/airports")
