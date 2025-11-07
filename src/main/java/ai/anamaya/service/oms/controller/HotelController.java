@@ -1,8 +1,10 @@
 package ai.anamaya.service.oms.controller;
 
+import ai.anamaya.service.oms.dto.request.HotelRateCheckRequest;
 import ai.anamaya.service.oms.dto.request.HotelRateRequest;
 import ai.anamaya.service.oms.dto.request.HotelSearchRequest;
 import ai.anamaya.service.oms.dto.response.ApiResponse;
+import ai.anamaya.service.oms.dto.response.HotelRateCheckResponse;
 import ai.anamaya.service.oms.dto.response.HotelRateResponse;
 import ai.anamaya.service.oms.dto.response.HotelResponse;
 import ai.anamaya.service.oms.service.HotelService;
@@ -35,6 +37,14 @@ public class HotelController {
             @Valid @RequestBody HotelRateRequest request
     ) {
         return hotelService.getHotelRates(source, request);
+    }
+
+    @PostMapping("/rate/check")
+    public ApiResponse<HotelRateCheckResponse> checkHotelRate(
+            @RequestParam(required = false) String source,
+            @Valid @RequestBody HotelRateCheckRequest request
+    ) {
+        return hotelService.checkHotelRate(source, request);
     }
 
 }

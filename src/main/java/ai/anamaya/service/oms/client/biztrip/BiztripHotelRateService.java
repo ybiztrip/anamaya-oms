@@ -1,10 +1,8 @@
 package ai.anamaya.service.oms.client.biztrip;
 
 import ai.anamaya.service.oms.dto.request.HotelRateRequest;
-import ai.anamaya.service.oms.dto.request.HotelSearchRequest;
 import ai.anamaya.service.oms.dto.response.ApiResponse;
 import ai.anamaya.service.oms.dto.response.HotelRateResponse;
-import ai.anamaya.service.oms.dto.response.HotelResponse;
 import ai.anamaya.service.oms.security.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,7 +17,6 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
