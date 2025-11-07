@@ -21,27 +21,33 @@ public class FlightController {
     }
 
     @GetMapping("/airports")
-    public ApiResponse<List<FlightAirportResponse>> getAllAirports() {
-        return flightService.getAirports();
+    public ApiResponse<List<FlightAirportResponse>> getAllAirports(
+            @RequestParam(defaultValue = "biztrip") String source
+    ) {
+        return flightService.getAirports(source);
     }
 
     @GetMapping("/airlines")
-    public ApiResponse<List<FlightAirlineResponse>> getAllAirlines() {
-        return flightService.getAirlines();
+    public ApiResponse<List<FlightAirlineResponse>> getAllAirlines(
+            @RequestParam(defaultValue = "biztrip") String source
+    ) {
+        return flightService.getAirlines(source);
     }
 
     @GetMapping("/booking/rules")
     public ApiResponse<FlightBookingRuleResponse> getBookingRules(
+            @RequestParam(defaultValue = "biztrip") String source,
             @RequestParam String airlineCode
     ) {
-        return flightService.getBookingRules(airlineCode);
+        return flightService.getBookingRules(source, airlineCode);
     }
 
     @PostMapping("/search/one-way")
     public ApiResponse<FlightOneWaySearchResponse> searchOneWay(
+            @RequestParam(defaultValue = "biztrip") String source,
             @Valid @RequestBody FlightOneWaySearchRequest request
     ) {
-        return flightService.searchOneWay(request);
+        return flightService.searchOneWay(source, request);
     }
 
 }

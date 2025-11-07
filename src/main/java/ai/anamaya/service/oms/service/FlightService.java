@@ -2,32 +2,47 @@ package ai.anamaya.service.oms.service;
 
 import ai.anamaya.service.oms.dto.request.FlightOneWaySearchRequest;
 import ai.anamaya.service.oms.dto.response.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
-@RequiredArgsConstructor
 public class FlightService {
 
-    @Qualifier("biztripFlightProvider")
-    private final FlightProvider flightProvider;
+    private final Map<String, FlightProvider> flightProviders;
 
-    public ApiResponse<List<FlightAirportResponse>> getAirports() {
-        return flightProvider.getAirports();
+    public FlightService(Map<String, FlightProvider> flightProviders) {
+        this.flightProviders = flightProviders;
     }
 
-    public ApiResponse<List<FlightAirlineResponse>> getAirlines() {
-        return flightProvider.getAirlines();
+    private FlightProvider getProvider(String source) {
+        String key = (source != null ? source.toLowerCase() : "biztrip") + "FlightProvider";
+        FlightProvider provider = flightProviders.get(key);
+
+        if (provider == null) {
+            log.warn("Provider '{}' not found, fallback to 'biztripFlightProvider'", key);
+            provider = flightProviders.get("biztripFlightProvider");
+        }
+
+        return provider;
     }
 
-    public ApiResponse<FlightBookingRuleResponse> getBookingRules(String airline) {
-        return flightProvider.getBookingRules(airline);
+    public ApiResponse<List<FlightAirportResponse>> getAirports(String source) {
+        return getProvider(source).getAirports();
     }
 
-    public ApiResponse<FlightOneWaySearchResponse> searchOneWay(FlightOneWaySearchRequest request) {
-        return flightProvider.searchOneWay(request);
+    public ApiResponse<List<FlightAirlineResponse>> getAirlines(String source) {
+        return getProvider(source).getAirlines();
+    }
+
+    public ApiResponse<FlightBookingRuleResponse> getBookingRules(String source, String airline) {
+        return getProvider(source).getBookingRules(airline);
+    }
+
+    public ApiResponse<FlightOneWaySearchResponse> searchOneWay(String source, FlightOneWaySearchRequest request) {
+        return getProvider(source).searchOneWay(request);
     }
 }
