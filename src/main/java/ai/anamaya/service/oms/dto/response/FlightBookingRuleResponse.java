@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BiztripFlightBookingRuleResponse {
+public class FlightBookingRuleResponse {
     private Boolean requiresBirthDate;
     private Boolean requiresDocumentNoForInternational;
     private Boolean requiresNationality;

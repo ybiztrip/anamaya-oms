@@ -1,7 +1,7 @@
-package ai.anamaya.service.oms.service;
+package ai.anamaya.service.oms.client.biztrip;
 
 import ai.anamaya.service.oms.dto.response.ApiResponse;
-import ai.anamaya.service.oms.dto.response.BiztripFlightBookingRuleResponse;
+import ai.anamaya.service.oms.dto.response.FlightBookingRuleResponse;
 import ai.anamaya.service.oms.security.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,7 +34,7 @@ public class BiztripFlightBookingRuleService {
         this.jwtUtils = jwtUtils;
     }
 
-    public ApiResponse<BiztripFlightBookingRuleResponse> getBookingRules(String airlineCode) {
+    public ApiResponse<FlightBookingRuleResponse> getBookingRules(String airlineCode) {
         try {
             Long companyId = jwtUtils.getCompanyIdFromToken();
             String accessToken = authService.getAccessToken(companyId);
@@ -64,7 +64,7 @@ public class BiztripFlightBookingRuleService {
 
             Map<String, Object> data = (Map<String, Object>) response.get("data");
 
-            BiztripFlightBookingRuleResponse bookingRuleResponse = BiztripFlightBookingRuleResponse.builder()
+            FlightBookingRuleResponse bookingRuleResponse = FlightBookingRuleResponse.builder()
                     .requiresBirthDate((Boolean) data.get("requiresBirthDate"))
                     .requiresDocumentNoForInternational((Boolean) data.get("requiresDocumentNoForInternational"))
                     .requiresNationality((Boolean) data.get("requiresNationality"))

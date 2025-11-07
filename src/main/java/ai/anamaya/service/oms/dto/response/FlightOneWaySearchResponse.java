@@ -12,7 +12,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BiztripFlightOneWaySearchResponse {
+public class FlightOneWaySearchResponse {
     private Boolean completed;
     private List<Map<String, Object>> oneWayFlightSearchResults;
 }

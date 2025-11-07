@@ -1,4 +1,4 @@
-package ai.anamaya.service.oms.service;
+package ai.anamaya.service.oms.client.biztrip;
 
 import ai.anamaya.service.oms.dto.response.BiztripTokenResponse;
 import ai.anamaya.service.oms.entity.CompanyConfig;

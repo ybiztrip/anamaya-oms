@@ -1,7 +1,8 @@
-package ai.anamaya.service.oms.service;
+package ai.anamaya.service.oms.client.biztrip;
 
+import ai.anamaya.service.oms.dto.request.FlightOneWaySearchRequest;
 import ai.anamaya.service.oms.dto.response.ApiResponse;
-import ai.anamaya.service.oms.dto.response.BiztripFlightAirlineResponse;
+import ai.anamaya.service.oms.dto.response.FlightOneWaySearchResponse;
 import ai.anamaya.service.oms.security.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,13 +20,13 @@ import java.util.Map;
 
 @Slf4j
 @Service
-public class BiztripFlightAirlineService {
+public class BiztripFlightSearchService {
 
     private final WebClient webClient;
     private final BiztripAuthService authService;
     private final JwtUtils jwtUtils;
 
-    public BiztripFlightAirlineService(
+    public BiztripFlightSearchService(
             @Qualifier("biztripWebClient") WebClient webClient,
             BiztripAuthService authService,
             JwtUtils jwtUtils
@@ -35,52 +36,47 @@ public class BiztripFlightAirlineService {
         this.jwtUtils = jwtUtils;
     }
 
-    public ApiResponse<List<BiztripFlightAirlineResponse>> getAirlines() {
+    public ApiResponse<FlightOneWaySearchResponse> searchOneWay(FlightOneWaySearchRequest request) {
         try {
             Long companyId = jwtUtils.getCompanyIdFromToken();
             String accessToken = authService.getAccessToken(companyId);
 
-            Map<String, Object> response = webClient.get()
-                    .uri("/flight/data/airlines")
+            Map<String, Object> response = webClient.post()
+                    .uri("/flight/search/one-way")
                     .header(HttpHeaders.AUTHORIZATION, accessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
+                    .bodyValue(request)
                     .retrieve()
                     .onStatus(status -> !status.is2xxSuccessful(),
                             clientResponse -> clientResponse.bodyToMono(String.class)
                                     .flatMap(body -> {
-                                        log.error("Failed to fetch airlines: {}", body);
-                                        return Mono.error(new RuntimeException("Failed to fetch airline data"));
+                                        log.error("Failed to search one-way flights: {}", body);
+                                        return Mono.error(new RuntimeException("Failed to search flight"));
                                     })
                     )
                     .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                    .timeout(Duration.ofSeconds(10))
+                    .timeout(Duration.ofSeconds(20))
                     .block();
 
             if (response == null || response.get("data") == null) {
-                return ApiResponse.error("No airline data found");
+                return ApiResponse.error("No flight data found");
             }
 
-            List<BiztripFlightAirlineResponse> airlines = ((List<Map<String, Object>>) response.get("data"))
-                    .stream()
-                    .map(this::mapToAirlineResponse)
-                    .toList();
+            Map<String, Object> data = (Map<String, Object>) response.get("data");
+            FlightOneWaySearchResponse searchResponse = FlightOneWaySearchResponse.builder()
+                    .completed((Boolean) data.get("completed"))
+                    .oneWayFlightSearchResults((List<Map<String, Object>>) data.get("oneWayFlightSearchResults"))
+                    .build();
 
-            return ApiResponse.success(airlines);
+            return ApiResponse.success(searchResponse);
 
         } catch (WebClientResponseException e) {
             log.error("BizTrip API error: {} - {}", e.getRawStatusCode(), e.getResponseBodyAsString());
             return ApiResponse.error("External API error: " + e.getMessage());
         } catch (Exception e) {
-            log.error("Unexpected error fetching airlines", e);
+            log.error("Unexpected error fetching flight search", e);
             return ApiResponse.error("Unexpected error: " + e.getMessage());
         }
-    }
-
-    private BiztripFlightAirlineResponse mapToAirlineResponse(Map<String, Object> m) {
-        return BiztripFlightAirlineResponse.builder()
-                .airlineCode((String) m.get("airlineCode"))
-                .airlineName((String) m.get("airlineName"))
-                .logoUrl((String) m.get("logoUrl"))
-                .build();
     }
 }

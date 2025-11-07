@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BiztripFlightAirlineResponse {
+public class FlightAirlineResponse {
     private String airlineCode;
     private String airlineName;
     private String logoUrl;

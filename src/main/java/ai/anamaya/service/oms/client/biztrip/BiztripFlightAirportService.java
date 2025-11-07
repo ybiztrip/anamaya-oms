@@ -1,7 +1,7 @@
-package ai.anamaya.service.oms.service;
+package ai.anamaya.service.oms.client.biztrip;
 
 import ai.anamaya.service.oms.dto.response.ApiResponse;
-import ai.anamaya.service.oms.dto.response.BiztripFlightAirportResponse;
+import ai.anamaya.service.oms.dto.response.FlightAirportResponse;
 import ai.anamaya.service.oms.security.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.List;
@@ -33,33 +32,25 @@ public class BiztripFlightAirportService {
         this.jwtUtils = jwtUtils;
     }
 
-    public ApiResponse<List<BiztripFlightAirportResponse>> getAirports() {
+    public ApiResponse<List<FlightAirportResponse>> getAirports() {
         try {
             Long companyId = jwtUtils.getCompanyIdFromToken();
             String accessToken = authService.getAccessToken(companyId);
 
             Map<String, Object> response = webClient.get()
-                .uri("/flight/data/airports")
-                .header(HttpHeaders.AUTHORIZATION, accessToken)
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .onStatus(status -> !status.is2xxSuccessful(),
-    clientResponse -> clientResponse.bodyToMono(String.class)
-                    .flatMap(body -> {
-                        log.error("Failed to fetch airports: {}", body);
-                        return Mono.error(new RuntimeException("Failed to fetch airport data"));
-                    })
-                )
-                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                .timeout(Duration.ofSeconds(10))
-                .block();
-
+                    .uri("/flight/data/airports")
+                    .header(HttpHeaders.AUTHORIZATION, accessToken)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                    .timeout(Duration.ofSeconds(10))
+                    .block();
 
             if (response == null || response.get("data") == null) {
                 return ApiResponse.error("No airport data found");
             }
 
-            List<BiztripFlightAirportResponse> airports = ((List<Map<String, Object>>) response.get("data"))
+            List<FlightAirportResponse> airports = ((List<Map<String, Object>>) response.get("data"))
                     .stream()
                     .map(this::mapToAirportResponse)
                     .toList();
@@ -75,8 +66,8 @@ public class BiztripFlightAirportService {
         }
     }
 
-    private BiztripFlightAirportResponse mapToAirportResponse(Map<String, Object> m) {
-        return BiztripFlightAirportResponse.builder()
+    private FlightAirportResponse mapToAirportResponse(Map<String, Object> m) {
+        return FlightAirportResponse.builder()
                 .airportCode((String) m.get("airportCode"))
                 .city((String) m.get("city"))
                 .countryId((String) m.get("countryId"))
