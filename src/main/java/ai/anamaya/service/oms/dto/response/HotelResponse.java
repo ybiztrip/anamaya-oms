@@ -12,7 +12,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BiztripHotelResponse {
+public class HotelResponse {
     private String id;
     private String status;
     private String name;

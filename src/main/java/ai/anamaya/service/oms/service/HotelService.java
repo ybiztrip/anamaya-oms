@@ -1,8 +1,10 @@
 package ai.anamaya.service.oms.service;
 
-import ai.anamaya.service.oms.dto.request.BiztripHotelSearchRequest;
+import ai.anamaya.service.oms.dto.request.HotelRateRequest;
+import ai.anamaya.service.oms.dto.request.HotelSearchRequest;
 import ai.anamaya.service.oms.dto.response.ApiResponse;
-import ai.anamaya.service.oms.dto.response.BiztripHotelResponse;
+import ai.anamaya.service.oms.dto.response.HotelRateResponse;
+import ai.anamaya.service.oms.dto.response.HotelResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +33,12 @@ public class HotelService {
         return provider;
     }
 
-    public ApiResponse<List<BiztripHotelResponse>> searchHotels(String source, BiztripHotelSearchRequest request) {
+    public ApiResponse<List<HotelResponse>> searchHotels(String source, HotelSearchRequest request) {
         return getProvider(source).searchHotels(request);
     }
+
+    public ApiResponse<List<HotelRateResponse>> getHotelRates(String source, HotelRateRequest request) {
+        return getProvider(source).getHotelRates(request);
+    }
+
 }

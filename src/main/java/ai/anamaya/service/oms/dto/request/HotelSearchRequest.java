@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BiztripHotelSearchRequest {
+public class HotelSearchRequest {
 
     @NotBlank(message = "Area is required")
     private String area;

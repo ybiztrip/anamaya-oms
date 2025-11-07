@@ -1,8 +1,8 @@
 package ai.anamaya.service.oms.client.biztrip;
 
-import ai.anamaya.service.oms.dto.request.BiztripHotelSearchRequest;
+import ai.anamaya.service.oms.dto.request.HotelSearchRequest;
 import ai.anamaya.service.oms.dto.response.ApiResponse;
-import ai.anamaya.service.oms.dto.response.BiztripHotelResponse;
+import ai.anamaya.service.oms.dto.response.HotelResponse;
 import ai.anamaya.service.oms.security.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,7 +35,7 @@ public class BiztripHotelService {
         this.jwtUtils = jwtUtils;
     }
 
-    public ApiResponse<List<BiztripHotelResponse>> searchHotels(BiztripHotelSearchRequest request) {
+    public ApiResponse<List<HotelResponse>> searchHotels(HotelSearchRequest request) {
         try {
             Long companyId = jwtUtils.getCompanyIdFromToken();
             String accessToken = authService.getAccessToken(companyId);
@@ -64,7 +64,7 @@ public class BiztripHotelService {
 
             List<Map<String, Object>> hotelData = (List<Map<String, Object>>) response.get("data");
 
-            List<BiztripHotelResponse> hotels = hotelData.stream()
+            List<HotelResponse> hotels = hotelData.stream()
                     .map(this::mapToHotelResponse)
                     .collect(Collectors.toList());
 
@@ -79,8 +79,8 @@ public class BiztripHotelService {
         }
     }
 
-    private BiztripHotelResponse mapToHotelResponse(Map<String, Object> m) {
-        return BiztripHotelResponse.builder()
+    private HotelResponse mapToHotelResponse(Map<String, Object> m) {
+        return HotelResponse.builder()
                 .id((String) m.get("id"))
                 .status((String) m.get("status"))
                 .name((String) m.get("name"))

@@ -1,8 +1,10 @@
 package ai.anamaya.service.oms.controller;
 
-import ai.anamaya.service.oms.dto.request.BiztripHotelSearchRequest;
+import ai.anamaya.service.oms.dto.request.HotelRateRequest;
+import ai.anamaya.service.oms.dto.request.HotelSearchRequest;
 import ai.anamaya.service.oms.dto.response.ApiResponse;
-import ai.anamaya.service.oms.dto.response.BiztripHotelResponse;
+import ai.anamaya.service.oms.dto.response.HotelRateResponse;
+import ai.anamaya.service.oms.dto.response.HotelResponse;
 import ai.anamaya.service.oms.service.HotelService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +22,19 @@ public class HotelController {
     }
 
     @PostMapping("/search")
-    public ApiResponse<List<BiztripHotelResponse>> searchHotels(
+    public ApiResponse<List<HotelResponse>> searchHotels(
             @RequestParam(defaultValue = "biztrip") String source,
-            @Valid @RequestBody BiztripHotelSearchRequest request
+            @Valid @RequestBody HotelSearchRequest request
     ) {
         return hotelService.searchHotels(source, request);
     }
+
+    @PostMapping("/rate")
+    public ApiResponse<List<HotelRateResponse>> getHotelRates(
+            @RequestParam(required = false) String source,
+            @Valid @RequestBody HotelRateRequest request
+    ) {
+        return hotelService.getHotelRates(source, request);
+    }
+
 }
