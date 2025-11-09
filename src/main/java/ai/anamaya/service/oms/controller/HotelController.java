@@ -2,11 +2,9 @@ package ai.anamaya.service.oms.controller;
 
 import ai.anamaya.service.oms.dto.request.HotelRateCheckRequest;
 import ai.anamaya.service.oms.dto.request.HotelRateRequest;
+import ai.anamaya.service.oms.dto.request.HotelRoomRequest;
 import ai.anamaya.service.oms.dto.request.HotelSearchRequest;
-import ai.anamaya.service.oms.dto.response.ApiResponse;
-import ai.anamaya.service.oms.dto.response.HotelRateCheckResponse;
-import ai.anamaya.service.oms.dto.response.HotelRateResponse;
-import ai.anamaya.service.oms.dto.response.HotelResponse;
+import ai.anamaya.service.oms.dto.response.*;
 import ai.anamaya.service.oms.service.HotelService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +28,15 @@ public class HotelController {
     ) {
         return hotelService.searchHotels(source, request);
     }
+
+    @PostMapping("/room")
+    public ApiResponse<List<HotelRoomResponse>> getHotelRooms(
+            @RequestParam(required = false) String source,
+            @Valid @RequestBody HotelRoomRequest request
+    ) {
+        return hotelService.getHotelRooms(source, request);
+    }
+
 
     @PostMapping("/rate")
     public ApiResponse<List<HotelRateResponse>> getHotelRates(

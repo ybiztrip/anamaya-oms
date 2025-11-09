@@ -2,11 +2,9 @@ package ai.anamaya.service.oms.client.biztrip;
 
 import ai.anamaya.service.oms.dto.request.HotelRateCheckRequest;
 import ai.anamaya.service.oms.dto.request.HotelRateRequest;
+import ai.anamaya.service.oms.dto.request.HotelRoomRequest;
 import ai.anamaya.service.oms.dto.request.HotelSearchRequest;
-import ai.anamaya.service.oms.dto.response.ApiResponse;
-import ai.anamaya.service.oms.dto.response.HotelRateCheckResponse;
-import ai.anamaya.service.oms.dto.response.HotelRateResponse;
-import ai.anamaya.service.oms.dto.response.HotelResponse;
+import ai.anamaya.service.oms.dto.response.*;
 import ai.anamaya.service.oms.service.HotelProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,13 +15,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BiztripHotelProvider implements HotelProvider {
 
-    private final BiztripHotelService biztripHotelService;
+    private final BiztripHotelSearchService biztripHotelService;
+    private final BiztripHotelRoomService biztripHotelRoomService;
     private final BiztripHotelCheckRateService biztripHotelCheckRateService;
     private final BiztripHotelRateService biztripHotelRateService;
 
     @Override
     public ApiResponse<List<HotelResponse>> searchHotels(HotelSearchRequest request) {
         return biztripHotelService.searchHotels(request);
+    }
+
+    @Override
+    public ApiResponse<List<HotelRoomResponse>> getHotelRooms(HotelRoomRequest request) {
+        return biztripHotelRoomService.getHotelRooms(request);
     }
 
     @Override

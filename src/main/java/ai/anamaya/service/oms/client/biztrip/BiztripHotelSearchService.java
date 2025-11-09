@@ -21,15 +21,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class BiztripHotelService {
+public class BiztripHotelSearchService {
 
     private final WebClient webClient;
     private final BiztripAuthService authService;
     private final JwtUtils jwtUtils;
 
-    public BiztripHotelService(@Qualifier("biztripWebClient") WebClient webClient,
-                               BiztripAuthService authService,
-                               JwtUtils jwtUtils) {
+    public BiztripHotelSearchService(@Qualifier("biztripWebClient") WebClient webClient,
+                                     BiztripAuthService authService,
+                                     JwtUtils jwtUtils) {
         this.webClient = webClient;
         this.authService = authService;
         this.jwtUtils = jwtUtils;
