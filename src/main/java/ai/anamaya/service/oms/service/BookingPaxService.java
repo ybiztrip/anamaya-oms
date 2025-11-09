@@ -2,7 +2,9 @@ package ai.anamaya.service.oms.service;
 
 import ai.anamaya.service.oms.dto.request.BookingPaxRequest;
 import ai.anamaya.service.oms.dto.response.*;
+import ai.anamaya.service.oms.entity.Booking;
 import ai.anamaya.service.oms.entity.BookingPax;
+import ai.anamaya.service.oms.exception.AccessDeniedException;
 import ai.anamaya.service.oms.repository.BookingPaxRepository;
 import ai.anamaya.service.oms.repository.BookingRepository;
 import ai.anamaya.service.oms.security.JwtUtils;
@@ -24,6 +26,14 @@ public class BookingPaxService {
     @Transactional
     public ApiResponse<BookingResponse> updateBookingPax(Long bookingId, List<BookingPaxRequest> paxRequests) {
         Long userId = jwtUtils.getUserIdFromToken();
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+        if (!booking.getCompanyId().equals(companyId)) {
+            throw new AccessDeniedException("You are not authorized to modify this booking");
+        }
 
         paxRequests.forEach(request -> {
             if (request.getId() != null) {
@@ -73,9 +83,6 @@ public class BookingPaxService {
                 bookingPaxRepository.save(newPax);
             }
         });
-
-        var booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         var paxList = bookingPaxRepository.findByBookingId(bookingId).stream()
                 .map(this::toPaxResponse)
