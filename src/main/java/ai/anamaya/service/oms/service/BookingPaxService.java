@@ -4,6 +4,7 @@ import ai.anamaya.service.oms.dto.request.BookingPaxRequest;
 import ai.anamaya.service.oms.dto.response.*;
 import ai.anamaya.service.oms.entity.Booking;
 import ai.anamaya.service.oms.entity.BookingPax;
+import ai.anamaya.service.oms.enums.BookingStatus;
 import ai.anamaya.service.oms.exception.AccessDeniedException;
 import ai.anamaya.service.oms.exception.NotFoundException;
 import ai.anamaya.service.oms.repository.BookingPaxRepository;
@@ -29,6 +30,10 @@ public class BookingPaxService {
         Long userId = jwtUtils.getUserIdFromToken();
 
         Booking booking = bookingService.getValidatedBooking(bookingId);
+
+        if (!booking.getStatus().equals(BookingStatus.CREATED)) {
+            throw new AccessDeniedException("This booking can no longer be updated.");
+        }
 
         paxRequests.forEach(request -> {
             if (request.getId() != null) {
