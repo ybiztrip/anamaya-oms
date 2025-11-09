@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
                 .message(ex.getMessage() != null ? ex.getMessage() : "Data not found")
                 .data(null)
                 .build();
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

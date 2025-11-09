@@ -5,6 +5,7 @@ import ai.anamaya.service.oms.dto.response.*;
 import ai.anamaya.service.oms.entity.Booking;
 import ai.anamaya.service.oms.entity.BookingPax;
 import ai.anamaya.service.oms.exception.AccessDeniedException;
+import ai.anamaya.service.oms.exception.NotFoundException;
 import ai.anamaya.service.oms.repository.BookingPaxRepository;
 import ai.anamaya.service.oms.repository.BookingRepository;
 import ai.anamaya.service.oms.security.JwtUtils;
@@ -13,12 +14,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BookingPaxService {
 
+    private final BookingService bookingService;
     private final BookingRepository bookingRepository;
     private final BookingPaxRepository bookingPaxRepository;
     private final JwtUtils jwtUtils;
@@ -26,14 +27,8 @@ public class BookingPaxService {
     @Transactional
     public ApiResponse<BookingResponse> updateBookingPax(Long bookingId, List<BookingPaxRequest> paxRequests) {
         Long userId = jwtUtils.getUserIdFromToken();
-        Long companyId = jwtUtils.getCompanyIdFromToken();
 
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
-
-        if (!booking.getCompanyId().equals(companyId)) {
-            throw new AccessDeniedException("You are not authorized to modify this booking");
-        }
+        Booking booking = bookingService.getValidatedBooking(bookingId);
 
         paxRequests.forEach(request -> {
             if (request.getId() != null) {
@@ -84,50 +79,7 @@ public class BookingPaxService {
             }
         });
 
-        var paxList = bookingPaxRepository.findByBookingId(bookingId).stream()
-                .map(this::toPaxResponse)
-                .collect(Collectors.toList());
-
-        var bookingResponse = BookingResponse.builder()
-                .id(booking.getId())
-                .companyId(booking.getCompanyId())
-                .code(booking.getCode())
-                .journeyCode(booking.getJourneyCode())
-                .contactEmail(booking.getContactEmail())
-                .contactFirstName(booking.getContactFirstName())
-                .contactLastName(booking.getContactLastName())
-                .contactTitle(booking.getContactTitle())
-                .contactNationality(booking.getContactNationality())
-                .contactPhoneCode(booking.getContactPhoneCode())
-                .contactPhoneNumber(booking.getContactPhoneNumber())
-                .contactDob(booking.getContactDob())
-                .additionalInfo(booking.getAdditionalInfo())
-                .clientAdditionalInfo(booking.getClientAdditionalInfo())
-                .status(booking.getStatus())
-                .passengers(paxList)
-                .build();
-
-        return ApiResponse.success(bookingResponse);
+        return ApiResponse.success(bookingService.toResponse(booking, true, false));
     }
 
-    private BookingPaxResponse toPaxResponse(BookingPax pax) {
-        return BookingPaxResponse.builder()
-                .id(pax.getId())
-                .bookingId(pax.getBookingId())
-                .email(pax.getEmail())
-                .firstName(pax.getFirstName())
-                .lastName(pax.getLastName())
-                .type(pax.getType())
-                .title(pax.getTitle())
-                .nationality(pax.getNationality())
-                .phoneCode(pax.getPhoneCode())
-                .phoneNumber(pax.getPhoneNumber())
-                .dob(pax.getDob())
-                .addOn(pax.getAddOn())
-                .issuingCountry(pax.getIssuingCountry())
-                .documentType(pax.getDocumentType())
-                .documentNo(pax.getDocumentNo())
-                .expirationDate(pax.getExpirationDate())
-                .build();
-    }
 }

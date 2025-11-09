@@ -26,5 +26,8 @@ public class BookingResponse {
     private Map<String, Object> additionalInfo;
     private Map<String, Object> clientAdditionalInfo;
     private BookingStatus status;
-    private List<BookingPaxResponse> passengers;
+
+    private List<BookingPaxResponse> paxList;
+    private List<BookingFlightResponse> flightList;
+    private List<BookingHotelResponse> hotelList;
 }

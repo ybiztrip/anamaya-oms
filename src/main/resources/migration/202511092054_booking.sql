@@ -43,3 +43,42 @@ CREATE TABLE booking_pax (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_booking_id (booking_id)
 );
+
+CREATE TABLE booking_flight (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    booking_id BIGINT NOT NULL,
+    type SMALLINT,
+    client_source VARCHAR(50),
+    item_id VARCHAR(256),
+    origin VARCHAR(100),
+    destination VARCHAR(100),
+    departure_datetime TIMESTAMP,
+    arrival_datetime TIMESTAMP,
+    status SMALLINT,
+    created_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_booking_flight_booking_id (booking_id)
+);
+
+CREATE TABLE booking_hotel (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    booking_id BIGINT NOT NULL,
+    client_source VARCHAR(50),
+    item_id VARCHAR(256),
+    rate_key TEXT,
+    num_room SMALLINT,
+    check_in_date DATE,
+    check_out_date DATE,
+    partner_sell_amount DOUBLE,
+    partner_nett_amount DOUBLE,
+    currency VARCHAR(4),
+    special_request TEXT,
+    status SMALLINT,
+    created_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_booking_hotel_booking_id (booking_id)
+);
