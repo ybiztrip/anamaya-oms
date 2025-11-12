@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.service;
 
+import ai.anamaya.service.oms.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.dto.request.FlightOneWaySearchRequest;
 import ai.anamaya.service.oms.dto.response.*;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,11 @@ public class FlightService {
     public ApiResponse<FlightBookingRuleResponse> getBookingRules(String source, String airline) {
         return getProvider(source).getBookingRules(airline);
     }
+
+    public ApiResponse<FlightAddOnsResponse> getAddOns(String source, FlightAddOnsRequest request) {
+        return getProvider(source).getAddOns(request);
+    }
+
 
     public ApiResponse<FlightOneWaySearchResponse> searchOneWay(String source, FlightOneWaySearchRequest request) {
         return getProvider(source).searchOneWay(request);

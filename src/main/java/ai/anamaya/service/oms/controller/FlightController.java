@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.controller;
 
+import ai.anamaya.service.oms.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.dto.request.FlightOneWaySearchRequest;
 import ai.anamaya.service.oms.dto.response.*;
 import ai.anamaya.service.oms.service.FlightService;
@@ -40,6 +41,14 @@ public class FlightController {
             @RequestParam String airlineCode
     ) {
         return flightService.getBookingRules(source, airlineCode);
+    }
+
+    @PostMapping("/booking/add-ons")
+    public ApiResponse<FlightAddOnsResponse> getAddOns(
+            @RequestParam(defaultValue = "biztrip") String source,
+            @RequestBody FlightAddOnsRequest request
+    ) {
+        return flightService.getAddOns(source, request);
     }
 
     @PostMapping("/search/one-way")
