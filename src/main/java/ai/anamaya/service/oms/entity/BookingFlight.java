@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -42,6 +43,18 @@ public class BookingFlight extends BaseEntity {
 
     @Column(name = "arrival_datetime")
     private LocalDateTime arrivalDatetime;
+
+    @Column(name = "adult_amount", precision = 18, scale = 2)
+    private BigDecimal adultAmount;
+
+    @Column(name = "child_amount", precision = 18, scale = 2)
+    private BigDecimal childAmount;
+
+    @Column(name = "infant_amount", precision = 18, scale = 2)
+    private BigDecimal infantAmount;
+
+    @Column(name = "total_amount", precision = 18, scale = 2)
+    private BigDecimal totalAmount;
 
     @Column(name = "status")
     private Short status;

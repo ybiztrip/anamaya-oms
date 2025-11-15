@@ -45,6 +45,7 @@ public class BookingPaxService {
                         existingPax.setLastName(request.getLastName());
                         existingPax.setTitle(request.getTitle());
                         existingPax.setEmail(request.getEmail());
+                        existingPax.setGender(request.getGender());
                         existingPax.setType(request.getType());
                         existingPax.setNationality(request.getNationality());
                         existingPax.setPhoneCode(request.getPhoneCode());
@@ -66,6 +67,7 @@ public class BookingPaxService {
                         .lastName(request.getLastName())
                         .title(request.getTitle())
                         .email(request.getEmail())
+                        .gender(request.getGender())
                         .type(request.getType())
                         .nationality(request.getNationality())
                         .phoneCode(request.getPhoneCode())

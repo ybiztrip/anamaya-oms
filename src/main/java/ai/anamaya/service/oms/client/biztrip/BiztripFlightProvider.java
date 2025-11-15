@@ -2,7 +2,9 @@ package ai.anamaya.service.oms.client.biztrip;
 
 import ai.anamaya.service.oms.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.dto.request.FlightOneWaySearchRequest;
+import ai.anamaya.service.oms.dto.request.booking.submit.BookingSubmitRequest;
 import ai.anamaya.service.oms.dto.response.*;
+import ai.anamaya.service.oms.dto.response.booking.submit.BookingSubmitResponse;
 import ai.anamaya.service.oms.service.FlightProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ public class BiztripFlightProvider implements FlightProvider {
     private final BiztripFlightBookingRuleService bookingRuleService;
     private final BiztripFlightBookingAddOnsService addOnsService;
     private final BiztripFlightSearchService searchService;
+    private final BiztripFlightBookingSubmitService bookingSubmitService;
 
     @Override
     public ApiResponse<List<FlightAirportResponse>> getAirports() {
@@ -42,5 +45,10 @@ public class BiztripFlightProvider implements FlightProvider {
     @Override
     public ApiResponse<FlightOneWaySearchResponse> searchOneWay(FlightOneWaySearchRequest request) {
         return searchService.searchOneWay(request);
+    }
+
+    @Override
+    public BookingSubmitResponse submitBooking(BookingSubmitRequest request) {
+        return bookingSubmitService.submit(request);
     }
 }

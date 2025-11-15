@@ -6,10 +6,7 @@ import ai.anamaya.service.oms.dto.request.BookingPaxRequest;
 import ai.anamaya.service.oms.dto.request.BookingRequest;
 import ai.anamaya.service.oms.dto.response.ApiResponse;
 import ai.anamaya.service.oms.dto.response.BookingResponse;
-import ai.anamaya.service.oms.service.BookingFlightService;
-import ai.anamaya.service.oms.service.BookingHotelService;
-import ai.anamaya.service.oms.service.BookingPaxService;
-import ai.anamaya.service.oms.service.BookingService;
+import ai.anamaya.service.oms.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +19,7 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final BookingSubmitService bookingSubmitService;
     private final BookingFlightService bookingFlightService;
     private final BookingHotelService bookingHotelService;
     private final BookingPaxService bookingPaxService;
@@ -60,5 +58,12 @@ public class BookingController {
             @RequestBody List<BookingHotelRequest> requests
     ) {
         return bookingHotelService.updateBookingHotels(id, requests);
+    }
+
+    @PutMapping("/{id}/submit")
+    public ApiResponse<?> submitBooking(
+            @PathVariable Long id
+    ) {
+        return bookingSubmitService.submitBooking(id);
     }
 }

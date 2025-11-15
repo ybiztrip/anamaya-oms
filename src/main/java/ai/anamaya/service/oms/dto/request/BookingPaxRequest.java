@@ -1,11 +1,13 @@
 package ai.anamaya.service.oms.dto.request;
 
+import ai.anamaya.service.oms.enums.PaxGender;
 import ai.anamaya.service.oms.enums.PaxTitle;
 import ai.anamaya.service.oms.enums.PaxType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.List;
 
 @Data
 @Builder
@@ -22,6 +24,10 @@ public class BookingPaxRequest {
     private String lastName;
 
     private String email;
+
+    @NotBlank
+    private PaxGender gender;
+
     private PaxType type;
 
     private PaxTitle title;
@@ -30,7 +36,7 @@ public class BookingPaxRequest {
     private String phoneCode;
     private String phoneNumber;
     private LocalDate dob;
-    private Map<String, Object> addOn;
+    private List<Map<String, Object>> addOn;
     private String issuingCountry;
     private String documentType;
     private String documentNo;

@@ -133,6 +133,7 @@ public class BookingService {
                 .firstName(pax.getFirstName())
                 .lastName(pax.getLastName())
                 .title(pax.getTitle())
+                .gender(pax.getGender())
                 .type(pax.getType())
                 .email(pax.getEmail())
                 .nationality(pax.getNationality())

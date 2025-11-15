@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.entity;
 
+import ai.anamaya.service.oms.enums.PaxGender;
 import ai.anamaya.service.oms.enums.PaxTitle;
 import ai.anamaya.service.oms.enums.PaxType;
 import com.vladmihalcea.hibernate.type.json.JsonType;
@@ -9,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Type;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -37,6 +39,10 @@ public class BookingPax extends BaseEntity {
     private String lastName;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "gender", nullable = false)
+    private PaxGender gender;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     private PaxType type;
 
@@ -58,7 +64,7 @@ public class BookingPax extends BaseEntity {
 
     @Type(JsonType.class)
     @Column(name = "add_on", columnDefinition = "json")
-    private Map<String, Object> addOn;
+    private List<Map<String, Object>> addOn;
 
     @Column(name = "issuing_country")
     private String issuingCountry;

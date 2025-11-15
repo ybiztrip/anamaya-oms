@@ -26,6 +26,7 @@ CREATE TABLE booking_pax (
     email VARCHAR(256),
     first_name VARCHAR(256) NOT NULL,
     last_name VARCHAR(256) NOT NULL,
+    gender VARCHAR(50) NOT NULL,
     type VARCHAR(50) NOT NULL,
     title VARCHAR(50) NOT NULL,
     nationality VARCHAR(50),
@@ -54,6 +55,10 @@ CREATE TABLE booking_flight (
     destination VARCHAR(100),
     departure_datetime TIMESTAMP,
     arrival_datetime TIMESTAMP,
+    adult_amount DECIMAL(18,2) NULL
+    child_amount DECIMAL(18,2) NULL
+    infant_amount DECIMAL(18,2) NULL
+    total_amount DECIMAL(18,2) NULL
     status SMALLINT,
     created_by BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
