@@ -5,24 +5,26 @@ import ai.anamaya.service.oms.service.BookingStatusUpdateService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
-import com.google.cloud.spring.pubsub.annotation.GcpPubSubSubscription;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class BookingPubSubConsumer {
 
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper mapper;
     private final BookingStatusUpdateService bookingStatusUpdateService;
 
-    @GcpPubSubSubscription("oms-booking-status-sub")
-    public void onMessage(String messageJson) {
+    @ServiceActivator(inputChannel = "bookingStatusInputChannel")
+    public void receiveMessage(Message<String> message) {
         try {
-            log.info("Received Pub/Sub message: {}", messageJson);
+            String json = message.getPayload();
+            log.info("Received Pub/Sub message: {}", json);
 
             BookingStatusMessage msg =
-                objectMapper.readValue(messageJson, BookingStatusMessage.class);
+                mapper.readValue(json, BookingStatusMessage.class);
 
             bookingStatusUpdateService.handleBookingStatusUpdate(msg);
 
