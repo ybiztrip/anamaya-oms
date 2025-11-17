@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.service;
 
+import ai.anamaya.service.oms.client.queue.BookingPubSubPublisher;
 import ai.anamaya.service.oms.dto.pubsub.BookingStatusMessage;
 import ai.anamaya.service.oms.dto.response.*;
 import ai.anamaya.service.oms.entity.Booking;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class BookingApproveService {
 
     private final BookingRepository bookingRepository;
+    private final BookingPubSubPublisher bookingPubSubPublisher;
     private final JwtUtils jwtUtils;
 
     public ApiResponse<String> approveBooking(Long id) {
@@ -34,17 +36,17 @@ public class BookingApproveService {
             throw new AccessDeniedException("You are not authorized to modify this booking");
         }
 
-//        if (booking.getStatus() != BookingStatus.CREATED){
-//            throw new IllegalArgumentException("Wrong status");
-//        }
-//
-//        booking.setStatus(BookingStatus.APPROVED);
-//        bookingRepository.save(booking);
+        if (booking.getStatus() != BookingStatus.CREATED){
+            throw new IllegalArgumentException("Wrong status");
+        }
 
-//        BookingStatusMessage message =
-//            new BookingStatusMessage(booking.getId(), booking.getStatus());
-//
-//        bookingPubSubPublisher.publishBookingStatus(message);
+        booking.setStatus(BookingStatus.APPROVED);
+        bookingRepository.save(booking);
+
+        BookingStatusMessage message =
+            new BookingStatusMessage(booking.getId(), booking.getStatus());
+
+        bookingPubSubPublisher.publishBookingStatus(message);
 
 
         return ApiResponse.success("Booking approved");

@@ -1,7 +1,6 @@
 package ai.anamaya.service.oms.service;
 
 import ai.anamaya.service.oms.dto.pubsub.BookingStatusMessage;
-import ai.anamaya.service.oms.dto.request.BalanceAdjustRequest;
 import ai.anamaya.service.oms.entity.Booking;
 import ai.anamaya.service.oms.enums.BookingStatus;
 import ai.anamaya.service.oms.exception.NotFoundException;
