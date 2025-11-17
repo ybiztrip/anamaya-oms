@@ -65,7 +65,7 @@ public class Booking extends BaseEntity {
     @Column(columnDefinition = "json")
     private Map<String, Object> clientAdditionalInfo;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BookingStatus status;
 }

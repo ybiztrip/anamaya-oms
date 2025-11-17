@@ -9,6 +9,7 @@ import ai.anamaya.service.oms.dto.response.BookingResponse;
 import ai.anamaya.service.oms.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
 public class BookingController {
 
     private final BookingService bookingService;
+    private final BookingApproveService bookingApproveService;
     private final BookingSubmitService bookingSubmitService;
     private final BookingFlightService bookingFlightService;
     private final BookingHotelService bookingHotelService;
@@ -65,5 +67,11 @@ public class BookingController {
             @PathVariable Long id
     ) {
         return bookingSubmitService.submitBooking(id);
+    }
+
+    @PreAuthorize("hasAnyRole('COMPANY_ADMIN')")
+    @PutMapping("/{id}/approve")
+    public ApiResponse<String> approve(@PathVariable Long id) {
+        return bookingApproveService.approveBooking(id);
     }
 }

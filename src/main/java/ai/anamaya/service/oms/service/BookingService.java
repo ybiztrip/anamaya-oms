@@ -72,7 +72,7 @@ public class BookingService {
             .contactDob(request.getContactDob())
             .additionalInfo(request.getAdditionalInfo())
             .clientAdditionalInfo(request.getClientAdditionalInfo())
-            .status(BookingStatus.CREATED)
+            .status(BookingStatus.DRAFT)
             .createdBy(userId)
             .updatedBy(userId)
             .build();
