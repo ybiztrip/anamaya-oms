@@ -1,0 +1,10 @@
+package ai.anamaya.service.oms.core.client.biztrip.dto.submit;
+
+import lombok.Data;
+
+@Data
+public class BiztripPartnerFare {
+    private BiztripFareDetail adultFare;
+    private BiztripFareDetail childFare;
+    private BiztripFareDetail infantFare;
+}

@@ -1,0 +1,54 @@
+package ai.anamaya.service.oms.core.client.biztrip;
+
+import ai.anamaya.service.oms.core.dto.request.FlightAddOnsRequest;
+import ai.anamaya.service.oms.core.dto.request.FlightOneWaySearchRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSubmitRequest;
+import ai.anamaya.service.oms.core.dto.response.*;
+import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
+import ai.anamaya.service.oms.core.service.FlightProvider;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service("biztripFlightProvider")
+@RequiredArgsConstructor
+public class BiztripFlightProvider implements FlightProvider {
+
+    private final BiztripFlightAirportService airportService;
+    private final BiztripFlightAirlineService airlineService;
+    private final BiztripFlightBookingRuleService bookingRuleService;
+    private final BiztripFlightBookingAddOnsService addOnsService;
+    private final BiztripFlightSearchService searchService;
+    private final BiztripFlightBookingSubmitService bookingSubmitService;
+
+    @Override
+    public ApiResponse<List<FlightAirportResponse>> getAirports() {
+        return airportService.getAirports();
+    }
+
+    @Override
+    public ApiResponse<List<FlightAirlineResponse>> getAirlines() {
+        return airlineService.getAirlines();
+    }
+
+    @Override
+    public ApiResponse<FlightBookingRuleResponse> getBookingRules(String airlineCode) {
+        return bookingRuleService.getBookingRules(airlineCode);
+    }
+
+    @Override
+    public ApiResponse<FlightAddOnsResponse> getAddOns(FlightAddOnsRequest request) {
+        return addOnsService.getAddOns(request);
+    }
+
+    @Override
+    public ApiResponse<FlightOneWaySearchResponse> searchOneWay(FlightOneWaySearchRequest request) {
+        return searchService.searchOneWay(request);
+    }
+
+    @Override
+    public BookingSubmitResponse submitBooking(BookingSubmitRequest request) {
+        return bookingSubmitService.submit(request);
+    }
+}
