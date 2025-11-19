@@ -39,3 +39,7 @@ build/
 
 ### config ###
 application*.yml
+
+
+## cedentials
+**/credentials/*.json
