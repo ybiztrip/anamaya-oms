@@ -1,4 +1,4 @@
-package ai.anamaya.service.oms.core.security;
+package ai.anamaya.service.oms.rest.security;
 
 import ai.anamaya.service.oms.core.entity.User;
 import ai.anamaya.service.oms.core.repository.UserRepository;
