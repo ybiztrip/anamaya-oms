@@ -1,10 +1,11 @@
 package ai.anamaya.service.oms.rest.controller;
 
-import ai.anamaya.service.oms.core.dto.request.BalanceAdjustRequest;
-import ai.anamaya.service.oms.core.dto.request.BalanceTopUpRequest;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
-import ai.anamaya.service.oms.core.dto.response.CompanyBalanceResponse;
 import ai.anamaya.service.oms.core.service.BalanceService;
+import ai.anamaya.service.oms.rest.dto.request.BalanceAdjustRequestRest;
+import ai.anamaya.service.oms.rest.dto.request.BalanceTopUpRequestRest;
+import ai.anamaya.service.oms.rest.dto.response.CompanyBalanceResponseRest;
+import ai.anamaya.service.oms.rest.mapper.BalanceMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,29 +19,45 @@ import java.util.Map;
 public class BalanceController {
 
     private final BalanceService balanceService;
+    private final BalanceMapper mapper;
 
     @PostMapping("/adjust")
-    public ApiResponse<CompanyBalanceResponse> adjust(@RequestBody BalanceAdjustRequest request) {
-        return ApiResponse.success(balanceService.adjustBalance(request));
+    public ApiResponse<CompanyBalanceResponseRest> adjust(
+        @Valid @RequestBody BalanceAdjustRequestRest reqRest) {
+
+        var reqCore = mapper.toCore(reqRest);
+        var result = balanceService.adjustBalance(reqCore);
+
+        return ApiResponse.success(mapper.toRest(result));
     }
 
     @PostMapping("/topup")
-    public ApiResponse<CompanyBalanceResponse> topUpBalance(@Valid @RequestBody BalanceTopUpRequest request) {
-        return ApiResponse.success(balanceService.topUpBalance(request));
+    public ApiResponse<CompanyBalanceResponseRest> topUp(
+        @Valid @RequestBody BalanceTopUpRequestRest reqRest) {
+
+        var reqCore = mapper.toCore(reqRest);
+        var result = balanceService.topUpBalance(reqCore);
+
+        return ApiResponse.success(mapper.toRest(result));
     }
 
-
     @GetMapping
-    public ApiResponse<List<CompanyBalanceResponse>> getAll() {
-        return ApiResponse.success(balanceService.getBalancesByCompany());
+    public ApiResponse<List<CompanyBalanceResponseRest>> getAll() {
+        var list = balanceService.getBalancesByCompany()
+            .stream()
+            .map(mapper::toRest)
+            .toList();
+
+        return ApiResponse.success(list);
     }
 
     @GetMapping("/{code}")
     public ApiResponse<Map<String, Object>> getBalanceDetails(
-            @PathVariable String code,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+        @PathVariable String code,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+
+        // keep using core response since it's dynamic map
         return balanceService.getBalanceDetails(code, page, size);
     }
-
 }
