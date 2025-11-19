@@ -5,9 +5,8 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Inherit Spring Boot defaults from parent -->
     <parent>
-        <groupId>ai.anamaya.service</groupId>
+        <groupId>ai.anamaya.service.oms</groupId>
         <artifactId>oms</artifactId>
         <version>1.0.0</version>
     </parent>
@@ -18,9 +17,11 @@
 
     <dependencies>
 
+        <!-- Core module -->
         <dependency>
             <groupId>ai.anamaya.service.oms</groupId>
             <artifactId>core</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Web MVC -->
@@ -29,18 +30,13 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
-
         <!-- Validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Lombok (compile-only + annotation processor via Boot defaults) -->
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -71,7 +67,6 @@
 
     <build>
         <plugins>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -81,25 +76,20 @@
                     <target>17</target>
 
                     <annotationProcessorPaths>
-
-                        <!-- Lombok processor -->
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>1.18.32</version>
                         </path>
-
-                        <!-- MapStruct processor -->
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
                             <version>1.5.5.Final</version>
                         </path>
-
                     </annotationProcessorPaths>
+
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 

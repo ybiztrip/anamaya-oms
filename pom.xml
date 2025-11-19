@@ -1,26 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- ⭐ Inherit Spring Boot parent so child modules get all versions automatically -->
+    <!-- Spring Boot parent: all versions auto-managed -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.3.4</version>
     </parent>
 
-    <groupId>ai.anamaya.service</groupId>
+    <groupId>ai.anamaya.service.oms</groupId>
     <artifactId>oms</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
 
-    <name>oms</name>
-    <description>Order Management Monolith Service</description>
-
-    <!-- Add all modules here -->
     <modules>
         <module>core</module>
         <module>rest</module>
