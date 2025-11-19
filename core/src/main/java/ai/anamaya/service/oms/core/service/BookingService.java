@@ -30,7 +30,7 @@ public class BookingService {
     private final BookingHotelRepository bookingHotelRepository;
     private final JwtUtils jwtUtils;
 
-    public ApiResponse<BookingResponse> getBookingById(Long id) {
+    public BookingResponse getBookingById(Long id) {
         Long companyId = jwtUtils.getCompanyIdFromToken();
 
         Booking booking = bookingRepository.findById(id)
@@ -40,7 +40,7 @@ public class BookingService {
             throw new AccessDeniedException("You are not authorized to access this booking");
         }
 
-        return ApiResponse.success(toResponse(booking, true, true));
+        return toResponse(booking, true, true);
     }
 
     public Booking getValidatedBooking(Long id) {
@@ -53,7 +53,7 @@ public class BookingService {
         return booking;
     }
 
-    public ApiResponse<BookingResponse> createBooking(BookingRequest request){
+    public BookingResponse createBooking(BookingRequest request){
         Long userId = jwtUtils.getUserIdFromToken();
         Long companyId = jwtUtils.getCompanyIdFromToken();
         ObjectMapper mapper = new ObjectMapper();
@@ -79,7 +79,7 @@ public class BookingService {
 
         bookingRepository.save(booking);
 
-        return ApiResponse.success(toResponse(booking, false, false));
+        return toResponse(booking, false, false);
     }
 
     public BookingResponse toResponse(Booking booking, boolean pax, boolean detail) {

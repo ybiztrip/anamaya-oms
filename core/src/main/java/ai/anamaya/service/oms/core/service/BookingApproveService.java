@@ -26,7 +26,7 @@ public class BookingApproveService {
     private final BookingPubSubPublisher bookingPubSubPublisher;
     private final JwtUtils jwtUtils;
 
-    public ApiResponse<String> approveBooking(Long id) {
+    public String approveBooking(Long id) {
         Long companyId = jwtUtils.getCompanyIdFromToken();
 
         Booking booking = bookingRepository.findById(id)
@@ -49,7 +49,7 @@ public class BookingApproveService {
         bookingPubSubPublisher.publishBookingStatus(message);
 
 
-        return ApiResponse.success("Booking approved");
+        return "Booking approved";
     }
 
 }

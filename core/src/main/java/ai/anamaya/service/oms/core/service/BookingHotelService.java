@@ -1,12 +1,11 @@
 package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.dto.request.BookingHotelRequest;
-import ai.anamaya.service.oms.core.dto.response.ApiResponse;
+import ai.anamaya.service.oms.core.dto.response.BookingResponse;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingHotel;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
-import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.BookingHotelRepository;
 import ai.anamaya.service.oms.core.repository.BookingRepository;
 import ai.anamaya.service.oms.core.security.JwtUtils;
@@ -26,7 +25,7 @@ public class BookingHotelService {
     private final BookingService bookingService;
 
     @Transactional
-    public ApiResponse<?> updateBookingHotels(Long bookingId, List<BookingHotelRequest> requests) {
+    public BookingResponse updateBookingHotels(Long bookingId, List<BookingHotelRequest> requests) {
         Long userId = jwtUtils.getUserIdFromToken();
 
         Booking booking = bookingService.getValidatedBooking(bookingId);
@@ -77,6 +76,6 @@ public class BookingHotelService {
             }
         }
 
-        return ApiResponse.success(bookingService.toResponse(booking, true, true));
+        return bookingService.toResponse(booking, true, true);
     }
 }

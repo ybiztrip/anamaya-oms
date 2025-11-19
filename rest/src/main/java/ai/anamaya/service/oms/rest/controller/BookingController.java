@@ -1,19 +1,19 @@
 package ai.anamaya.service.oms.rest.controller;
 
-import ai.anamaya.service.oms.core.dto.request.BookingFlightRequest;
-import ai.anamaya.service.oms.core.dto.request.BookingHotelRequest;
-import ai.anamaya.service.oms.core.dto.request.BookingPaxRequest;
-import ai.anamaya.service.oms.core.dto.request.BookingRequest;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
-import ai.anamaya.service.oms.core.dto.response.BookingResponse;
 import ai.anamaya.service.oms.core.service.*;
+import ai.anamaya.service.oms.rest.dto.request.BookingFlightRequestRest;
+import ai.anamaya.service.oms.rest.dto.request.BookingHotelRequestRest;
+import ai.anamaya.service.oms.rest.dto.request.BookingPaxRequestRest;
+import ai.anamaya.service.oms.rest.dto.request.BookingRequestRest;
+import ai.anamaya.service.oms.rest.dto.response.BookingResponseRest;
+import ai.anamaya.service.oms.rest.mapper.BookingMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/bookings")
 @RequiredArgsConstructor
@@ -26,52 +26,67 @@ public class BookingController {
     private final BookingHotelService bookingHotelService;
     private final BookingPaxService bookingPaxService;
 
+    private final BookingMapper mapper;
+
     @PostMapping
-    public ApiResponse<BookingResponse> createBooking(@Valid @RequestBody BookingRequest request) {
-        return bookingService.createBooking(request);
+    public ApiResponse<BookingResponseRest> createBooking(
+        @Valid @RequestBody BookingRequestRest reqRest) {
+
+        var reqCore = mapper.toCore(reqRest);
+        var resultCore = bookingService.createBooking(reqCore);
+
+        return ApiResponse.success(mapper.toRest(resultCore));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<BookingResponse> updateBookingPax(
-            @PathVariable("id") Long bookingId,
-            @RequestBody List<BookingPaxRequest> paxRequests
-    ) {
-        return bookingPaxService.updateBookingPax(bookingId, paxRequests);
+    public ApiResponse<BookingResponseRest> updateBookingPax(
+        @PathVariable Long id,
+        @RequestBody List<BookingPaxRequestRest> paxRest) {
+
+        var paxCore = mapper.toCorePax(paxRest);
+
+        var resultCore = bookingPaxService.updateBookingPax(id, paxCore);
+        return ApiResponse.success(mapper.toRest(resultCore));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<BookingResponse> getBooking(
-            @PathVariable Long id
-    ) {
-        return bookingService.getBookingById(id);
+    public ApiResponse<BookingResponseRest> getBooking(@PathVariable Long id) {
+        var resultCore = bookingService.getBookingById(id);
+        return ApiResponse.success(mapper.toRest(resultCore));
     }
 
     @PutMapping("/{id}/flights")
     public ApiResponse<?> updateBookingFlights(
-            @PathVariable Long id,
-            @RequestBody List<BookingFlightRequest> requests
-    ) {
-        return bookingFlightService.updateBookingFlights(id, requests);
+        @PathVariable Long id,
+        @RequestBody List<BookingFlightRequestRest> restList) {
+
+        var listCore = mapper.toCoreFlights(restList);
+        var resultCore = bookingFlightService.updateBookingFlights(id, listCore);
+
+        return ApiResponse.success(resultCore);
     }
 
     @PutMapping("/{id}/hotels")
     public ApiResponse<?> updateBookingHotels(
-            @PathVariable Long id,
-            @RequestBody List<BookingHotelRequest> requests
-    ) {
-        return bookingHotelService.updateBookingHotels(id, requests);
+        @PathVariable Long id,
+        @RequestBody List<BookingHotelRequestRest> restList) {
+        var listCore = mapper.toCoreHotels(restList);
+        var resultCore = bookingHotelService.updateBookingHotels(id, listCore);
+
+        return ApiResponse.success(resultCore);
     }
 
     @PutMapping("/{id}/submit")
-    public ApiResponse<?> submitBooking(
-            @PathVariable Long id
-    ) {
-        return bookingSubmitService.submitBooking(id);
+    public ApiResponse<?> submitBooking(@PathVariable Long id) {
+        var result = bookingSubmitService.submitBooking(id);
+        return ApiResponse.success(result);
     }
 
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN')")
     @PutMapping("/{id}/approve")
     public ApiResponse<String> approve(@PathVariable Long id) {
-        return bookingApproveService.approveBooking(id);
+        return ApiResponse.success(
+            bookingApproveService.approveBooking(id)
+        );
     }
 }

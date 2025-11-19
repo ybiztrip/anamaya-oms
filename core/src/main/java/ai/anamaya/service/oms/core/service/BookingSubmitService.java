@@ -1,7 +1,6 @@
 package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.dto.request.booking.submit.*;
-import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
@@ -47,7 +46,7 @@ public class BookingSubmitService {
         return provider;
     }
 
-    public ApiResponse<BookingSubmitResponse> submitBooking(Long bookingId) {
+    public BookingSubmitResponse submitBooking(Long bookingId) {
 
         Booking booking = getValidatedBooking(bookingId);
 
@@ -61,7 +60,7 @@ public class BookingSubmitService {
 
         updateBookingFlightAmounts(bookingId, response);
 
-        return ApiResponse.success(response);
+        return response;
     }
 
     private Booking getValidatedBooking(Long id) {

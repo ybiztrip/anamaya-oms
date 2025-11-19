@@ -2,6 +2,7 @@ package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.dto.request.BookingFlightRequest;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
+import ai.anamaya.service.oms.core.dto.response.BookingResponse;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
@@ -26,7 +27,7 @@ public class BookingFlightService {
     private final BookingService bookingService;
 
     @Transactional
-    public ApiResponse<?> updateBookingFlights(Long bookingId, List<BookingFlightRequest> requests) {
+    public BookingResponse updateBookingFlights(Long bookingId, List<BookingFlightRequest> requests) {
         Long userId = jwtUtils.getUserIdFromToken();
 
         Booking booking = bookingService.getValidatedBooking(bookingId);
@@ -71,6 +72,6 @@ public class BookingFlightService {
             }
         }
 
-        return ApiResponse.success(bookingService.toResponse(booking, true, true));
+        return bookingService.toResponse(booking, true, true);
     }
 }

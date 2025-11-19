@@ -6,7 +6,6 @@ import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingPax;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
-import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
 import ai.anamaya.service.oms.core.repository.BookingRepository;
 import ai.anamaya.service.oms.core.security.JwtUtils;
@@ -26,7 +25,7 @@ public class BookingPaxService {
     private final JwtUtils jwtUtils;
 
     @Transactional
-    public ApiResponse<BookingResponse> updateBookingPax(Long bookingId, List<BookingPaxRequest> paxRequests) {
+    public BookingResponse updateBookingPax(Long bookingId, List<BookingPaxRequest> paxRequests) {
         Long userId = jwtUtils.getUserIdFromToken();
 
         Booking booking = bookingService.getValidatedBooking(bookingId);
@@ -86,7 +85,7 @@ public class BookingPaxService {
             }
         });
 
-        return ApiResponse.success(bookingService.toResponse(booking, true, false));
+        return bookingService.toResponse(booking, true, false);
     }
 
 }
