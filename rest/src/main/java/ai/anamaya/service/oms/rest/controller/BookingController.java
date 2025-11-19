@@ -1,4 +1,4 @@
-package ai.anamaya.service.oms.core.controller;
+package ai.anamaya.service.oms.rest.controller;
 
 import ai.anamaya.service.oms.core.dto.request.BookingFlightRequest;
 import ai.anamaya.service.oms.core.dto.request.BookingHotelRequest;

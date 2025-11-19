@@ -1,9 +1,9 @@
-package ai.anamaya.service.oms.core.controller;
+package ai.anamaya.service.oms.rest.controller;
 
 import ai.anamaya.service.oms.core.dto.request.UpdatePasswordRequest;
+import ai.anamaya.service.oms.core.dto.request.UserCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.UserUpdateRequest;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
-import ai.anamaya.service.oms.core.dto.request.UserCreateRequest;
 import ai.anamaya.service.oms.core.dto.response.UserResponse;
 import ai.anamaya.service.oms.core.service.UserService;
 import jakarta.validation.Valid;

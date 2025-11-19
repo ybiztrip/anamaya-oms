@@ -1,6 +1,6 @@
-package ai.anamaya.service.oms.core.config;
+package ai.anamaya.service.oms.rest.config;
 
-import ai.anamaya.service.oms.core.security.JwtAuthenticationFilter;
+import ai.anamaya.service.oms.rest.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

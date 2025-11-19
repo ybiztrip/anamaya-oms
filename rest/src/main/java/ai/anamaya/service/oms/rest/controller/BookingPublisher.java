@@ -1,8 +1,7 @@
-package ai.anamaya.service.oms.core.controller;
+package ai.anamaya.service.oms.rest.controller;
 
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController

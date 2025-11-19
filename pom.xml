@@ -23,6 +23,7 @@
     <!-- Add all modules here -->
     <modules>
         <module>core</module>
+        <module>rest</module>
     </modules>
 
     <properties>
