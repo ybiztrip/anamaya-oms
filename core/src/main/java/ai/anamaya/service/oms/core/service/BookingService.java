@@ -2,10 +2,7 @@ package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.dto.request.BookingRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
-import ai.anamaya.service.oms.core.entity.Booking;
-import ai.anamaya.service.oms.core.entity.BookingFlight;
-import ai.anamaya.service.oms.core.entity.BookingHotel;
-import ai.anamaya.service.oms.core.entity.BookingPax;
+import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
@@ -16,9 +13,11 @@ import ai.anamaya.service.oms.core.repository.BookingRepository;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +28,37 @@ public class BookingService {
     private final BookingFlightRepository bookingFlightRepository;
     private final BookingHotelRepository bookingHotelRepository;
     private final JwtUtils jwtUtils;
+
+    public Page<BookingResponse> getAll(int page, int size, String sort) {
+
+        Sort sorting = Sort.by("createdAt").descending(); // fix: createdAt in entity
+
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(";");
+            String field = parts[0];
+            Sort.Direction direction =
+                (parts.length > 1 && parts[1].equalsIgnoreCase("desc"))
+                    ? Sort.Direction.DESC
+                    : Sort.Direction.ASC;
+
+            sorting = Sort.by(direction, field);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sorting);
+
+        Page<Booking> bookings = bookingRepository.findAll(pageable);
+
+        List<BookingResponse> mapped =
+            bookings.getContent().stream()
+                .map(b -> toResponse(b, false, false))
+                .toList();
+
+        return new PageImpl<>(
+            mapped,
+            pageable,
+            bookings.getTotalElements()
+        );
+    }
 
     public BookingResponse getBookingById(Long id) {
         Long companyId = jwtUtils.getCompanyIdFromToken();

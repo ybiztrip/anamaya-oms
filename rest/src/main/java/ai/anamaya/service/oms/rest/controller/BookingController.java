@@ -1,12 +1,14 @@
 package ai.anamaya.service.oms.rest.controller;
 
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
+import ai.anamaya.service.oms.core.dto.response.BookingResponse;
 import ai.anamaya.service.oms.core.service.*;
 import ai.anamaya.service.oms.rest.dto.request.BookingFlightRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.BookingHotelRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.BookingPaxRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.BookingRequestRest;
 import ai.anamaya.service.oms.rest.dto.response.BookingResponseRest;
+import ai.anamaya.service.oms.rest.dto.response.UserResponseRest;
 import ai.anamaya.service.oms.rest.mapper.BookingMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +50,31 @@ public class BookingController {
         var resultCore = bookingPaxService.updateBookingPax(id, paxCore);
         return ApiResponse.success(mapper.toRest(resultCore));
     }
+
+    @GetMapping
+    public ApiResponse<List<BookingResponseRest>> getAll(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String sort
+    ) {
+        var pageResult = bookingService.getAll(page, size, sort);
+
+        List<BookingResponseRest> listRest = pageResult
+            .getContent()
+            .stream()
+            .map(mapper::toRest)
+            .toList();
+
+        return ApiResponse.paginatedSuccess(
+            listRest,
+            pageResult.getTotalElements(),
+            pageResult.getTotalPages(),
+            pageResult.isLast(),
+            pageResult.getSize(),
+            pageResult.getNumber()
+        );
+    }
+
 
     @GetMapping("/{id}")
     public ApiResponse<BookingResponseRest> getBooking(@PathVariable Long id) {
