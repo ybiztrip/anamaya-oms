@@ -23,7 +23,7 @@ public class AuthService {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    public ApiResponse<LoginResponse> login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new NotFoundException("Invalid email or password"));
 
@@ -33,14 +33,12 @@ public class AuthService {
 
         String token = jwtTokenProvider.generateToken(user.getId(), user.getCompanyId(), user.getEmail());
 
-        LoginResponse loginResponse = LoginResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .token(token)
-                .build();
-
-        return ApiResponse.success(loginResponse);
+        return LoginResponse.builder()
+            .id(user.getId())
+            .email(user.getEmail())
+            .firstName(user.getFirstName())
+            .lastName(user.getLastName())
+            .token(token)
+            .build();
     }
 }

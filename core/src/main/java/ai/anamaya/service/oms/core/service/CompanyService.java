@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 @Service
 @Transactional
 public class CompanyService {
@@ -25,81 +24,59 @@ public class CompanyService {
         this.repository = repository;
     }
 
-    public ApiResponse<List<CompanyResponse>> findAll(int page, int size, String sort) {
-        Sort sorting = Sort.by("created_at").descending();
+    public Page<CompanyResponse> findAll(int page, int size, Sort sort) {
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-        if (sort != null && !sort.isBlank()) {
-            String[] sortParams = sort.split(";");
-            String sortField = sortParams[0];
-            Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")
-                    ? Sort.Direction.DESC
-                    : Sort.Direction.ASC;
-            sorting = Sort.by(direction, sortField);
-        }
-
-        Pageable pageable = PageRequest.of(page, size, sorting);
-        Page<Company> companies = repository.findAll(pageable);
-
-        List<CompanyResponse> data = companies.getContent().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-
-        return ApiResponse.paginatedSuccess(
-                data,
-                companies.getTotalElements(),
-                companies.getTotalPages(),
-                companies.isLast(),
-                companies.getSize(),
-                companies.getNumber()
-        );
+        return repository.findAll(pageable)
+            .map(this::toResponse);
     }
 
-    public ApiResponse<CompanyResponse> findById(Long id) {
-        return repository.findById(id)
-                .map(company -> ApiResponse.success(toResponse(company)))
-                .orElseGet(() -> ApiResponse.error("Company not found"));
+    public CompanyResponse findById(Long id) {
+        Company company = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Company not found"));
+
+        return toResponse(company);
     }
 
-    public ApiResponse<CompanyResponse> create(CompanyRequest request) {
+    public CompanyResponse create(CompanyRequest request) {
         Company company = Company.builder()
-                .name(request.getName())
-                .status(request.getStatus())
-                .createdBy(request.getCreatedBy())
-                .build();
+            .name(request.getName())
+            .status(request.getStatus())
+            .createdBy(request.getCreatedBy())
+            .build();
 
         repository.save(company);
-        return ApiResponse.success(toResponse(company));
+        return toResponse(company);
     }
 
-    public ApiResponse<CompanyResponse> update(Long id, CompanyRequest request) {
-        var company = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Company not found"));
+    public CompanyResponse update(Long id, CompanyRequest request) {
+        Company company = repository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Company not found"));
 
         company.setName(request.getName());
         company.setStatus(request.getStatus());
         company.setUpdatedBy(request.getCreatedBy());
-        repository.save(company);
 
-        return ApiResponse.success(toResponse(company));
+        repository.save(company);
+        return toResponse(company);
     }
 
-    public ApiResponse<String> delete(Long id) {
+    public void delete(Long id) {
         if (!repository.existsById(id)) {
-            return ApiResponse.error("Company not found");
+            throw new RuntimeException("Company not found");
         }
         repository.deleteById(id);
-        return ApiResponse.success("Company deleted successfully");
     }
 
     private CompanyResponse toResponse(Company company) {
         return CompanyResponse.builder()
-                .id(company.getId())
-                .name(company.getName())
-                .status(company.getStatus())
-                .createdBy(company.getCreatedBy())
-                .createdAt(company.getCreatedAt())
-                .updatedBy(company.getUpdatedBy())
-                .updatedAt(company.getUpdatedAt())
-                .build();
+            .id(company.getId())
+            .name(company.getName())
+            .status(company.getStatus())
+            .createdBy(company.getCreatedBy())
+            .createdAt(company.getCreatedAt())
+            .updatedBy(company.getUpdatedBy())
+            .updatedAt(company.getUpdatedAt())
+            .build();
     }
 }
