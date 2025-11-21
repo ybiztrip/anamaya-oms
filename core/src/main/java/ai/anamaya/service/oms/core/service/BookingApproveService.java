@@ -52,4 +52,8 @@ public class BookingApproveService {
         return "Booking approved";
     }
 
+    public String approveConfirmBooking(Long id) {
+        return "Booking approved confirm";
+    }
+
 }

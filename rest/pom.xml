@@ -17,7 +17,6 @@
 
     <dependencies>
 
-        <!-- Core module -->
         <dependency>
             <groupId>ai.anamaya.service.oms</groupId>
             <artifactId>core</artifactId>

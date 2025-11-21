@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.dto.request.BookingRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
 import ai.anamaya.service.oms.core.entity.*;
@@ -14,10 +15,13 @@ import ai.anamaya.service.oms.core.security.JwtUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.criteria.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -29,13 +33,16 @@ public class BookingService {
     private final BookingHotelRepository bookingHotelRepository;
     private final JwtUtils jwtUtils;
 
-    public Page<BookingResponse> getAll(int page, int size, String sort) {
 
-        Sort sorting = Sort.by("createdAt").descending(); // fix: createdAt in entity
+    public Page<BookingResponse> getAll(int page, int size, String sort, BookingListFilter filter) {
+
+        // Sorting
+        Sort sorting = Sort.by("createdAt").descending();
 
         if (sort != null && !sort.isBlank()) {
             String[] parts = sort.split(";");
             String field = parts[0];
+
             Sort.Direction direction =
                 (parts.length > 1 && parts[1].equalsIgnoreCase("desc"))
                     ? Sort.Direction.DESC
@@ -46,18 +53,49 @@ public class BookingService {
 
         Pageable pageable = PageRequest.of(page, size, sorting);
 
-        Page<Booking> bookings = bookingRepository.findAll(pageable);
+        Specification<Booking> spec = BookingSpecification.filter(filter);
 
-        List<BookingResponse> mapped =
-            bookings.getContent().stream()
-                .map(b -> toResponse(b, false, false))
-                .toList();
+        Page<Booking> bookings = bookingRepository.findAll(spec, pageable);
 
-        return new PageImpl<>(
-            mapped,
-            pageable,
-            bookings.getTotalElements()
-        );
+        List<BookingResponse> mapped = bookings.getContent().stream()
+            .map(b -> toResponse(b, false, false))
+            .toList();
+
+        return new PageImpl<>(mapped, pageable, bookings.getTotalElements());
+    }
+
+    public static class BookingSpecification {
+
+        public static Specification<Booking> filter(BookingListFilter filter) {
+            return (root, query, cb) -> {
+
+                List<Predicate> predicates = new ArrayList<>();
+
+                if (filter.getStatuses() != null && !filter.getStatuses().isEmpty()) {
+                    predicates.add(root.get("status").in(filter.getStatuses()));
+                }
+
+                if (filter.getCompanyId() != null && filter.getCompanyId() != 0) {
+                    predicates.add(cb.equal(root.get("companyId"), filter.getCompanyId()));
+                }
+
+                if (filter.getDateFrom() != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(
+                        root.get("createdAt"),
+                        filter.getDateFrom().atStartOfDay()
+                    ));
+                }
+
+                if (filter.getDateTo() != null) {
+                    predicates.add(cb.lessThanOrEqualTo(
+                        root.get("createdAt"),
+                        filter.getDateTo().atTime(23, 59, 59)
+                    ));
+                }
+
+                return cb.and(predicates.toArray(new Predicate[0]));
+            };
+        }
     }
 
     public BookingResponse getBookingById(Long id) {

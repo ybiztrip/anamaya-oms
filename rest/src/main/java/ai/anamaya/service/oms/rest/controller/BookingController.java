@@ -1,14 +1,13 @@
 package ai.anamaya.service.oms.rest.controller;
 
+import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
-import ai.anamaya.service.oms.core.dto.response.BookingResponse;
 import ai.anamaya.service.oms.core.service.*;
 import ai.anamaya.service.oms.rest.dto.request.BookingFlightRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.BookingHotelRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.BookingPaxRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.BookingRequestRest;
 import ai.anamaya.service.oms.rest.dto.response.BookingResponseRest;
-import ai.anamaya.service.oms.rest.dto.response.UserResponseRest;
 import ai.anamaya.service.oms.rest.mapper.BookingMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -55,9 +54,10 @@ public class BookingController {
     public ApiResponse<List<BookingResponseRest>> getAll(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(required = false) String sort
+        @RequestParam(required = false) String sort,
+        @ModelAttribute BookingListFilter filter
     ) {
-        var pageResult = bookingService.getAll(page, size, sort);
+        var pageResult = bookingService.getAll(page, size, sort, filter);
 
         List<BookingResponseRest> listRest = pageResult
             .getContent()
