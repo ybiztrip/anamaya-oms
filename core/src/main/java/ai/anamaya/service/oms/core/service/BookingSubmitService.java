@@ -5,6 +5,7 @@ import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResp
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
 import ai.anamaya.service.oms.core.entity.BookingPax;
+import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.enums.PaxType;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
@@ -59,6 +60,7 @@ public class BookingSubmitService {
         BookingSubmitResponse response = provider.submitBooking(request);
 
         updateBookingFlightAmounts(bookingId, response);
+        booking.setStatus(BookingStatus.CREATED);
 
         return response;
     }
