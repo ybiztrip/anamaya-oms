@@ -1,4 +1,4 @@
-package ai.anamaya.service.oms.core.dto.request.booking.submit;
+package ai.anamaya.service.oms.core.client.biztrip.dto.submit.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,9 +11,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BookingSubmitRequest {
-    private ContactDetail contactDetail;
-    private Passengers passengers;
+public class BiztripBookingSubmitRequest {
+    private BiztripBookingContactDetail contactDetail;
+    private BiztripBookingPassengers passengers;
     private List<String> flightIds;
     private String destinationId;
     private String journeyType;

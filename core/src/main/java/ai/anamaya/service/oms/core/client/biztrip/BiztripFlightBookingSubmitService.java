@@ -1,7 +1,9 @@
 package ai.anamaya.service.oms.core.client.biztrip;
 
-import ai.anamaya.service.oms.core.client.biztrip.dto.submit.BiztripSubmitResponse;
-import ai.anamaya.service.oms.core.client.biztrip.mapper.BiztripBookingSubmitMapper;
+import ai.anamaya.service.oms.core.client.biztrip.dto.submit.request.BiztripBookingSubmitRequest;
+import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripSubmitResponse;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripBookingSubmitRequestMapper;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripBookingSubmitResponseMapper;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSubmitRequest;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
@@ -23,20 +25,22 @@ public class BiztripFlightBookingSubmitService {
     private final JwtUtils jwtUtils;
     private final ObjectMapper mapper;
 
-    private final BiztripBookingSubmitMapper submitMapper = new BiztripBookingSubmitMapper();
+    private final BiztripBookingSubmitRequestMapper submitRequestMapper = new BiztripBookingSubmitRequestMapper();
+    private final BiztripBookingSubmitResponseMapper submitResponseMapper = new BiztripBookingSubmitResponseMapper();
 
     public BookingSubmitResponse submit(BookingSubmitRequest request) {
         try {
             Long companyId = jwtUtils.getCompanyIdFromToken();
             String token = authService.getAccessToken(companyId);
 
-            logRequestAsCurl(request, token);
+            BiztripBookingSubmitRequest biztripReq = submitRequestMapper.map(request);
+            logRequestAsCurl(biztripReq, token);
 
             String rawResponse = biztripWebClient.post()
                 .uri("/flight/booking/submit")
                 .header(HttpHeaders.AUTHORIZATION, token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
+                .bodyValue(biztripReq)
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
@@ -55,7 +59,7 @@ public class BiztripFlightBookingSubmitService {
                 );
             }
 
-            return submitMapper.map(biztripResponse);
+            return submitResponseMapper.map(biztripResponse);
 
         } catch (Exception e) {
             log.error("Submit booking to Biztrip failed", e);
@@ -63,7 +67,7 @@ public class BiztripFlightBookingSubmitService {
         }
     }
 
-    private void logRequestAsCurl(BookingSubmitRequest request, String token) {
+    private void logRequestAsCurl(BiztripBookingSubmitRequest request, String token) {
         try {
             String json = mapper.writerWithDefaultPrettyPrinter()
                 .writeValueAsString(request);

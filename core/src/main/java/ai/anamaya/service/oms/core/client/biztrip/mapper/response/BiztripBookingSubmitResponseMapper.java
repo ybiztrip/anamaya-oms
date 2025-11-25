@@ -1,11 +1,11 @@
-package ai.anamaya.service.oms.core.client.biztrip.mapper;
+package ai.anamaya.service.oms.core.client.biztrip.mapper.response;
 
-import ai.anamaya.service.oms.core.client.biztrip.dto.submit.*;
+import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.*;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.*;
 
 import java.util.List;
 
-public class BiztripBookingSubmitMapper {
+public class BiztripBookingSubmitResponseMapper {
 
     public BookingSubmitResponse map(BiztripSubmitResponse b) {
         BookingSubmitResponse res = new BookingSubmitResponse();
@@ -33,12 +33,9 @@ public class BiztripBookingSubmitMapper {
         FareDetail out = new FareDetail();
         out.setAdultFare(mapPrice(fare.getTotalFareWithCurrency()));
 
-        // child fare might be null
         if (fare.getAdditionalFeeWithCurrency() != null)
-            out.setChildFare(mapPrice(fare.getAdditionalFeeWithCurrency())); // optional
+            out.setChildFare(mapPrice(fare.getAdditionalFeeWithCurrency()));
 
-        // infant (Biztrip)
-        // if Biztrip has infant fare detail, map here (Biztrip does not always provide)
         return out;
     }
 

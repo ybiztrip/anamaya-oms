@@ -1,4 +1,4 @@
-package ai.anamaya.service.oms.core.client.biztrip.dto.submit;
+package ai.anamaya.service.oms.core.client.biztrip.dto.submit.response;
 
 import lombok.Data;
 
