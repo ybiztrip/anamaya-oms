@@ -13,7 +13,7 @@ CREATE TABLE booking (
     contact_dob DATE NULL,
     additional_info JSON,
     client_additional_info JSON,
-    status SMALLINT NOT NULL,
+    status VARCHAR(20) NOT NULL,
     created_by BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by BIGINT,
@@ -59,13 +59,25 @@ CREATE TABLE booking_flight (
     child_amount DECIMAL(18,2) NULL
     infant_amount DECIMAL(18,2) NULL
     total_amount DECIMAL(18,2) NULL
-    status SMALLINT,
+    status VARCHAR(20),
     created_by BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by BIGINT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_booking_flight_booking_id (booking_id)
 );
+
+CREATE TABLE booking_flight_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    booking_id BIGINT NOT NULL,
+    status VARCHAR(20),
+    data text,
+    created_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_booking_flight_history_booking_id (booking_id)
+)
 
 CREATE TABLE booking_hotel (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

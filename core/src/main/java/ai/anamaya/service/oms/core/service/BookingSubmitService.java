@@ -1,14 +1,18 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.dto.request.booking.status.BookingStatusCheckRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.*;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
+import ai.anamaya.service.oms.core.entity.BookingFlightHistory;
 import ai.anamaya.service.oms.core.entity.BookingPax;
+import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.enums.PaxType;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
+import ai.anamaya.service.oms.core.repository.BookingFlightHistoryRepository;
 import ai.anamaya.service.oms.core.repository.BookingFlightRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
 import ai.anamaya.service.oms.core.repository.BookingRepository;
@@ -17,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,6 +35,7 @@ public class BookingSubmitService {
     private final BookingRepository bookingRepository;
     private final BookingPaxRepository bookingPaxRepository;
     private final BookingFlightRepository bookingFlightRepository;
+    private final BookingFlightHistoryRepository bookingFlightHistoryRepository;
     private final JwtUtils jwtUtils;
 
     private final Map<String, FlightProvider> flightProviders;
@@ -47,12 +53,22 @@ public class BookingSubmitService {
         return provider;
     }
 
+    @Transactional
     public BookingSubmitResponse submitBooking(Long bookingId) {
 
         Booking booking = getValidatedBooking(bookingId);
 
+        if(booking.getStatus() != BookingStatus.DRAFT) {
+            throw new IllegalArgumentException("Wrong status");
+        }
+
+        booking.setStatus(BookingStatus.CREATED);
+
         List<BookingPax> pax = bookingPaxRepository.findByBookingId(bookingId);
         List<BookingFlight> flights = bookingFlightRepository.findByBookingId(bookingId);
+        if(flights == null || flights.isEmpty()) {
+            return null;
+        }
 
         BookingSubmitRequest request = buildSubmitRequest(booking, pax, flights);
 
@@ -60,9 +76,65 @@ public class BookingSubmitService {
         BookingSubmitResponse response = provider.submitBooking(request);
 
         updateBookingFlightAmounts(bookingId, response);
-        booking.setStatus(BookingStatus.CREATED);
+        BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromPartnerStatus(response.getBookingSubmissionStatus());
+        bookingFlightHistoryRepository.save(
+            BookingFlightHistory.builder()
+                .bookingId(bookingId)
+                .status(bookingFlightStatus)
+                .data(response.toString())
+                .build()
+        );
+
+        if(bookingFlightStatus == BookingFlightStatus.CREATED) {
+            booking.setStatus(BookingStatus.ON_PROCESS_CREATE);
+        }
 
         return response;
+    }
+
+    @Transactional
+    public void retryBookingSubmit(Long bookingId) {
+
+        Booking booking = getValidatedBooking(bookingId);
+
+        if(booking.getStatus() != BookingStatus.ON_PROCESS_CREATE) {
+            throw new IllegalArgumentException("Wrong status");
+        }
+
+        List<BookingFlight> processingFlights = bookingFlightRepository.findByBookingId(bookingId);
+        if (processingFlights == null || processingFlights.isEmpty()) {
+            return;
+        }
+
+        List<String> bookingReferenceIds = processingFlights.stream()
+            .filter(f -> f.getStatus() == BookingFlightStatus.CREATED)
+            .map(BookingFlight::getBookingReference)
+            .toList();
+
+        FlightProvider provider = getProvider("biztrip");
+        BookingSubmitResponse response = provider.checkStatus(BookingStatusCheckRequest.builder()
+            .bookingReferenceIds(bookingReferenceIds)
+            .build()
+        );
+
+        if(!BookingFlightStatus.isSuccessBook(response.getBookingSubmissionStatus())) {
+            return;
+        }
+
+        //update booking_flight price
+        BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromPartnerStatus(response.getBookingSubmissionStatus());
+        bookingFlightRepository.updateStatusByBookingReferences(bookingId,
+            bookingReferenceIds,
+            bookingFlightStatus
+        );
+        bookingFlightHistoryRepository.save(
+            BookingFlightHistory.builder()
+                .bookingId(bookingId)
+                .status(bookingFlightStatus)
+                .data(response.toString())
+                .build()
+        );
+        booking.setStatus(BookingStatus.CREATED);
     }
 
     private Booking getValidatedBooking(Long id) {

@@ -48,7 +48,6 @@ public class BookingApproveService {
 
         bookingPubSubPublisher.publishBookingStatus(message);
 
-
         return "Booking approved";
     }
 

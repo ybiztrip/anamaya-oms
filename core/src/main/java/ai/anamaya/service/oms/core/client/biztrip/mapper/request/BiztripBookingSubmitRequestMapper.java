@@ -81,7 +81,7 @@ public class BiztripBookingSubmitRequestMapper {
     }
 
     private String convertAdditionalData(String additionalData) {
-        if (additionalData.isEmpty() || additionalData.equalsIgnoreCase("{}")) return null;
+        if (additionalData.isEmpty() || additionalData.equalsIgnoreCase("{}")) return "";
         return additionalData;
     }
 

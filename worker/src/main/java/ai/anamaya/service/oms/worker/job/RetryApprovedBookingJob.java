@@ -2,8 +2,8 @@ package ai.anamaya.service.oms.worker.job;
 
 import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
+import ai.anamaya.service.oms.core.service.BookingApproveService;
 import ai.anamaya.service.oms.core.service.BookingService;
-import ai.anamaya.service.oms.core.service.BookingSubmitService;
 import ai.anamaya.service.oms.core.util.RedisLockManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,13 +17,13 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RetryPendingBookingJob {
+public class RetryApprovedBookingJob {
 
     @Autowired
     private RedisLockManager redisLock;
 
     private final BookingService bookingService;
-    private final BookingSubmitService  bookingSubmitService;
+    private final BookingApproveService  bookingApproveService;
 
     @Scheduled(cron = "${cron.task.retry-pending-order}")
     public void checkBookings() {
@@ -33,7 +33,7 @@ public class RetryPendingBookingJob {
         int size = 50;
 
         BookingListFilter filter = new BookingListFilter();
-        filter.setStatuses(List.of(BookingStatus.CREATED));
+        filter.setStatuses(List.of(BookingStatus.APPROVED));
 
         while (true) {
 
@@ -49,7 +49,7 @@ public class RetryPendingBookingJob {
                         return;
                     }
 
-                    bookingSubmitService.retryBookingSubmit(bookingId);
+                    bookingApproveService.approveConfirmBooking(bookingId);
 
                 } catch (Exception ex) {
                     log.error("Error processing booking {}", bookingId, ex);
