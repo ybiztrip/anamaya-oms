@@ -35,4 +35,18 @@ public class JwtUtils {
         Claims claims = jwtTokenProvider.getClaims(token);
         return claims.get("userId", Long.class);
     }
+
+    public String getEmailFromToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getCredentials() == null) {
+            return null;
+        }
+
+        String token = authentication.getCredentials().toString();
+        Claims claims = jwtTokenProvider.getClaims(token);
+
+        return claims.getSubject();
+    }
+
 }

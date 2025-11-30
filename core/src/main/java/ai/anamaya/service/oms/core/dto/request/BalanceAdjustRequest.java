@@ -1,5 +1,8 @@
 package ai.anamaya.service.oms.core.dto.request;
 
+import ai.anamaya.service.oms.core.enums.BalanceCodeType;
+import ai.anamaya.service.oms.core.enums.BalanceSourceType;
+import ai.anamaya.service.oms.core.enums.BalanceTransactionType;
 import lombok.*;
 import java.math.BigDecimal;
 
@@ -8,9 +11,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BalanceAdjustRequest {
-    private String code;
-    private Short sourceType;
-    private Short type;
+    private Long companyId;
+    private BalanceCodeType code;
+    private BalanceSourceType sourceType;
+    private BalanceTransactionType type;
     private BigDecimal amount;
     private Long referenceId;
     private String referenceCode;

@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.dto.response;
 
+import ai.anamaya.service.oms.core.enums.BalanceCodeType;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 public class CompanyBalanceResponse {
     private Long id;
     private Long companyId;
-    private String code;
+    private BalanceCodeType code;
     private BigDecimal balance;
     private String currency;
     private Short status;

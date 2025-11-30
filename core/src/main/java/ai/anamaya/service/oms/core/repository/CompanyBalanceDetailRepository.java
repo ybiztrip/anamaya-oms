@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.repository;
 
 import ai.anamaya.service.oms.core.entity.CompanyBalanceDetail;
+import ai.anamaya.service.oms.core.enums.BalanceSourceType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +14,7 @@ public interface CompanyBalanceDetailRepository extends JpaRepository<CompanyBal
 
     Page<CompanyBalanceDetail> findByBalanceId(Long balanceId, Pageable pageable);
 
-    List<CompanyBalanceDetail> findByReferenceId(Long referenceId);
+    List<CompanyBalanceDetail> findByReferenceIdAndSourceType(Long referenceId, BalanceSourceType sourceType);
 
     Page<CompanyBalanceDetail> findByBalanceIdOrderByCreatedAtDesc(Long balanceId, Pageable pageable);
 }

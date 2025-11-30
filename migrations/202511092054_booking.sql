@@ -14,6 +14,8 @@ CREATE TABLE booking (
     additional_info JSON,
     client_additional_info JSON,
     status VARCHAR(20) NOT NULL,
+    approved_by BIGINT,
+    approved_by_name VARCHAR(256),
     created_by BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by BIGINT,
@@ -59,6 +61,7 @@ CREATE TABLE booking_flight (
     child_amount DECIMAL(18,2) NULL
     infant_amount DECIMAL(18,2) NULL
     total_amount DECIMAL(18,2) NULL
+    booking_reference VARCHAR(256) NOT NULL,
     status VARCHAR(20),
     created_by BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -92,6 +95,7 @@ CREATE TABLE booking_hotel (
     partner_nett_amount DOUBLE,
     currency VARCHAR(4),
     special_request TEXT,
+    booking_reference VARCHAR(256) NOT NULL,
     status SMALLINT,
     created_by BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

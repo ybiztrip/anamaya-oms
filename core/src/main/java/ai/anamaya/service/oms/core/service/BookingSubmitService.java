@@ -10,8 +10,6 @@ import ai.anamaya.service.oms.core.entity.BookingPax;
 import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.enums.PaxType;
-import ai.anamaya.service.oms.core.exception.AccessDeniedException;
-import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.BookingFlightHistoryRepository;
 import ai.anamaya.service.oms.core.repository.BookingFlightRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
@@ -32,6 +30,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BookingSubmitService {
 
+    private final BookingCommonService bookingCommonService;
     private final BookingRepository bookingRepository;
     private final BookingPaxRepository bookingPaxRepository;
     private final BookingFlightRepository bookingFlightRepository;
@@ -56,7 +55,7 @@ public class BookingSubmitService {
     @Transactional
     public BookingSubmitResponse submitBooking(Long bookingId) {
 
-        Booking booking = getValidatedBooking(bookingId);
+        Booking booking = bookingCommonService.getValidatedBookingById(false, bookingId);
 
         if(booking.getStatus() != BookingStatus.DRAFT) {
             throw new IllegalArgumentException("Wrong status");
@@ -95,7 +94,7 @@ public class BookingSubmitService {
     @Transactional
     public void retryBookingSubmit(Long bookingId) {
 
-        Booking booking = getValidatedBooking(bookingId);
+        Booking booking = bookingCommonService.getValidatedBookingById(true, bookingId);
 
         if(booking.getStatus() != BookingStatus.ON_PROCESS_CREATE) {
             throw new IllegalArgumentException("Wrong status");
@@ -135,19 +134,6 @@ public class BookingSubmitService {
                 .build()
         );
         booking.setStatus(BookingStatus.CREATED);
-    }
-
-    private Booking getValidatedBooking(Long id) {
-        Long companyId = jwtUtils.getCompanyIdFromToken();
-
-        Booking booking = bookingRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Booking not found"));
-
-        if (!booking.getCompanyId().equals(companyId)) {
-            throw new AccessDeniedException("You are not authorized to access this booking");
-        }
-
-        return booking;
     }
 
     private BookingSubmitRequest buildSubmitRequest(

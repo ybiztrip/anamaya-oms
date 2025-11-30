@@ -35,6 +35,10 @@ public class BalanceService {
         Long companyId = jwtUtils.getCompanyIdFromToken();
         Long userId = jwtUtils.getUserIdFromToken();
 
+        if(companyId == null && request.getCompanyId() != 0) {
+            companyId = request.getCompanyId();
+        }
+
         CompanyBalance balance = balanceRepository.findByCompanyIdAndCode(companyId, request.getCode())
                 .orElseThrow(() -> new NotFoundException(
                         "Balance with code '" + request.getCode() + "' not found for your company."));
@@ -60,12 +64,11 @@ public class BalanceService {
                 .orElseThrow(() -> new NotFoundException(
                         "Balance with code '" + request.getCode() + "' not found for your company."));
 
-        // Type 1 = CREDIT
         return processBalanceAdjustment(
                 balance,
-                (short) 1,
+                BalanceTransactionType.CREDIT,
                 request.getAmount(),
-                request.getSourceType(),
+                BalanceSourceType.TOPUP,
                 request.getReferenceId(),
                 request.getReferenceCode(),
                 request.getRemarks() != null ? request.getRemarks() : "Balance top-up",
@@ -75,9 +78,9 @@ public class BalanceService {
 
     private CompanyBalanceResponse processBalanceAdjustment(
             CompanyBalance balance,
-            short typeValue,
+            BalanceTransactionType type,
             BigDecimal amount,
-            short sourceType,
+            BalanceSourceType sourceType,
             Long referenceId,
             String referenceCode,
             String remarks,
@@ -85,8 +88,6 @@ public class BalanceService {
     ) {
         BigDecimal begin = balance.getBalance();
         BigDecimal end;
-
-        BalanceTransactionType type = BalanceTransactionType.fromValue(typeValue);
 
         switch (type) {
             case CREDIT -> {
@@ -110,7 +111,7 @@ public class BalanceService {
                 .referenceId(referenceId)
                 .referenceCode(referenceCode)
                 .sourceType(sourceType)
-                .type(type.getValue())
+                .type(type)
                 .amount(amount)
                 .beginBalance(begin)
                 .endBalance(end)
@@ -132,8 +133,14 @@ public class BalanceService {
                 .collect(Collectors.toList());
     }
 
+
     @Transactional(readOnly = true)
-    public ApiResponse<Map<String, Object>> getBalanceDetails(String code, int page, int size) {
+    public List<CompanyBalanceDetail> getBalanceDetailByReference(BalanceSourceType sourceType, Long referenceId) {
+        return detailRepository.findByReferenceIdAndSourceType(referenceId, sourceType);
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse<Map<String, Object>> getBalanceDetails(BalanceCodeType code, int page, int size) {
         Long companyId = jwtUtils.getCompanyIdFromToken();
 
         CompanyBalance balance = balanceRepository.findByCompanyIdAndCode(companyId, code)

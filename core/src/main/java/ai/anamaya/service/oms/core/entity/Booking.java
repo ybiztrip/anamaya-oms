@@ -9,6 +9,8 @@ import org.hibernate.annotations.Type;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedBy;
+
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -68,4 +70,10 @@ public class Booking extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BookingStatus status;
+
+    @Column(name = "approved_by")
+    private Long approvedBy;
+
+    @Column(name = "approved_by_name")
+    private String approvedByName;
 }

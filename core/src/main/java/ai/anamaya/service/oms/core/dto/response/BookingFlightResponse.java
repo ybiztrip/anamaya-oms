@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.dto.response;
 
+import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import lombok.*;
 import java.time.LocalDateTime;
 
@@ -17,5 +18,5 @@ public class BookingFlightResponse {
     private String destination;
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
-    private Short status;
+    private BookingFlightStatus status;
 }

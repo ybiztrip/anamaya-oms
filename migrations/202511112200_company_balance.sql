@@ -19,8 +19,8 @@ CREATE TABLE company_balance_detail (
     balance_id BIGINT NOT NULL,
     reference_id BIGINT,                      -- e.g. booking_id
     reference_code VARCHAR(100),              -- e.g. BOOK123, TXN20251109
-    source_type SMALLINT NOT NULL,            -- 1 = Booking, etc.
-    type SMALLINT NOT NULL,                   -- 1 = CREDIT, 2 = DEBIT
+    source_type VARCHAR(20) NOT NULL,            -- 1 = Booking, etc.
+    type VARCHAR(20) NOT NULL,                -- CREDIT, DEBIT
     amount DECIMAL(18,2) NOT NULL,
     begin_balance DECIMAL(18,2) NOT NULL,
     end_balance DECIMAL(18,2) NOT NULL,

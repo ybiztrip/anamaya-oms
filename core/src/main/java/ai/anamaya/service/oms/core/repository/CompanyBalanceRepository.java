@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.repository;
 
 import ai.anamaya.service.oms.core.entity.CompanyBalance;
+import ai.anamaya.service.oms.core.enums.BalanceCodeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -10,5 +11,5 @@ public interface CompanyBalanceRepository extends JpaRepository<CompanyBalance, 
 
     List<CompanyBalance> findByCompanyId(Long companyId);
 
-    Optional<CompanyBalance> findByCompanyIdAndCode(Long companyId, String code);
+    Optional<CompanyBalance> findByCompanyIdAndCode(Long companyId, BalanceCodeType code);
 }

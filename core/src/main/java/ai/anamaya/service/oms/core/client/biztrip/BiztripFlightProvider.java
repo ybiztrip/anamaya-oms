@@ -2,6 +2,7 @@ package ai.anamaya.service.oms.core.client.biztrip;
 
 import ai.anamaya.service.oms.core.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.core.dto.request.FlightOneWaySearchRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.status.BookingStatusCheckRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSubmitRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
@@ -19,6 +20,7 @@ public class BiztripFlightProvider implements FlightProvider {
     private final BiztripFlightAirlineService airlineService;
     private final BiztripFlightBookingRuleService bookingRuleService;
     private final BiztripFlightBookingAddOnsService addOnsService;
+    private final BiztripFlightBookingCheckStatusService  biztripFlightBookingCheckStatusService;
     private final BiztripFlightSearchService searchService;
     private final BiztripFlightBookingSubmitService bookingSubmitService;
 
@@ -50,5 +52,10 @@ public class BiztripFlightProvider implements FlightProvider {
     @Override
     public BookingSubmitResponse submitBooking(BookingSubmitRequest request) {
         return bookingSubmitService.submit(request);
+    }
+
+    @Override
+    public BookingSubmitResponse checkStatus(BookingStatusCheckRequest request) {
+        return biztripFlightBookingCheckStatusService.checkStatus(request);
     }
 }

@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.entity;
 
+import ai.anamaya.service.oms.core.enums.BalanceCodeType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -19,7 +20,8 @@ public class CompanyBalance extends BaseEntity {
     private Long companyId;
 
     @Column(nullable = false)
-    private String code;
+    @Enumerated(EnumType.STRING)
+    private BalanceCodeType code;
 
     @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal balance;

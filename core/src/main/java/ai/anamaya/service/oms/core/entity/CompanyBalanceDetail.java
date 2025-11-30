@@ -1,5 +1,7 @@
 package ai.anamaya.service.oms.core.entity;
 
+import ai.anamaya.service.oms.core.enums.BalanceSourceType;
+import ai.anamaya.service.oms.core.enums.BalanceTransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -25,11 +27,13 @@ public class CompanyBalanceDetail extends BaseEntity {
     @Column(name = "reference_code")
     private String referenceCode;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "source_type")
-    private Short sourceType; // e.g., Booking, Procurement
+    private BalanceSourceType sourceType; // e.g., Booking, Procurement
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    private Short type; // 1 = CREDIT, 2 = DEBIT
+    private BalanceTransactionType type; // 1 = CREDIT, 2 = DEBIT
 
     @Column(name = "amount", precision = 18, scale = 2)
     private BigDecimal amount;

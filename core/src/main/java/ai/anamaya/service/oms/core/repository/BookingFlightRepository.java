@@ -12,6 +12,7 @@ import java.util.List;
 public interface BookingFlightRepository extends JpaRepository<BookingFlight, Long> {
     List<BookingFlight> findByBookingId(Long bookingId);
 
+
     @Modifying
     @Query("""
         UPDATE BookingFlight bf

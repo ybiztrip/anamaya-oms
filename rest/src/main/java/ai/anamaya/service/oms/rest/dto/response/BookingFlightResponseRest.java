@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.rest.dto.response;
 
+import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,5 +22,5 @@ public class BookingFlightResponseRest {
     private String destination;
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
-    private Short status;
+    private BookingFlightStatus status;
 }
