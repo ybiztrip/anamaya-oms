@@ -1,12 +1,14 @@
 package ai.anamaya.service.oms.core.client.biztrip;
 
-import ai.anamaya.service.oms.core.client.biztrip.dto.submit.request.BiztripBookingSubmitRequest;
-import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripSubmitResponse;
-import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripBookingSubmitRequestMapper;
-import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripBookingSubmitResponseMapper;
+import ai.anamaya.service.oms.core.client.biztrip.dto.submit.request.BiztripBookingCheckFullStatusRequest;
+import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripBaseResponse;
+import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripCheckFullStatusResponse;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripBookingCheckFullStatusRequestMapper;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripBookingCheckFullStatusResponseMapper;
+import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.booking.status.BookingStatusCheckRequest;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
-import ai.anamaya.service.oms.core.security.JwtUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,40 +24,44 @@ public class BiztripFlightBookingCheckStatusService {
 
     private final WebClient biztripWebClient;
     private final BiztripAuthService authService;
-    private final JwtUtils jwtUtils;
     private final ObjectMapper mapper;
 
-    private final BiztripBookingSubmitResponseMapper submitResponseMapper = new BiztripBookingSubmitResponseMapper();
+    private final BiztripBookingCheckFullStatusRequestMapper requestMapper = new BiztripBookingCheckFullStatusRequestMapper();
+    private final BiztripBookingCheckFullStatusResponseMapper submitResponseMapper = new BiztripBookingCheckFullStatusResponseMapper();
 
-    public BookingSubmitResponse checkStatus(BookingStatusCheckRequest request) {
+
+    public BookingSubmitResponse checkStatus(CallerContext callerContext, BookingStatusCheckRequest request) {
         try {
-            Long companyId = jwtUtils.getCompanyIdFromToken();
-            String token = authService.getAccessToken(companyId);
+            String token = authService.getAccessToken(callerContext.companyId());
+            BiztripBookingCheckFullStatusRequest biztripReq = requestMapper.map(request);
 
             String rawResponse = biztripWebClient.post()
                 .uri("/flight/booking/full-status")
                 .header(HttpHeaders.AUTHORIZATION, token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(request)
+                .bodyValue(biztripReq)
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
 
-            log.error("Biztrip raw response: {}", rawResponse);
+            log.debug("Biztrip raw response: {}", rawResponse);
 
-            BiztripSubmitResponse biztripResponse =
-                mapper.readValue(rawResponse, BiztripSubmitResponse.class);
+            BiztripBaseResponse<BiztripCheckFullStatusResponse> biztripResponse =
+                mapper.readValue(
+                    rawResponse,
+                    new TypeReference<BiztripBaseResponse<BiztripCheckFullStatusResponse>>() {}
+                );
 
-            if (biztripResponse == null ||
-                biztripResponse.getFlightBookingDetail() == null) {
-
+            if (biztripResponse == null
+                || biztripResponse.getData() == null
+                || biztripResponse.getData().getBookingStatusResult().isEmpty()
+            ) {
                 throw new RuntimeException(
-                    "Biztrip did not return flightBookingDetail. Raw response: "
-                        + rawResponse
+                    "Biztrip response data is null. Raw response: " + rawResponse
                 );
             }
 
-            return submitResponseMapper.map(biztripResponse);
+            return submitResponseMapper.map(biztripResponse.getData());
 
         } catch (Exception e) {
             log.error("Submit booking to Biztrip failed", e);

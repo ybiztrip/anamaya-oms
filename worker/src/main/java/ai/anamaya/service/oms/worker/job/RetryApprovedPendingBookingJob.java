@@ -17,23 +17,23 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RetryNeedPaymentBookingJob {
+public class RetryApprovedPendingBookingJob {
 
     @Autowired
     private RedisLockManager redisLock;
 
     private final BookingService bookingService;
-    private final BookingApproveService bookingApproveService;
+    private final BookingApproveService  bookingApproveService;
 
-    @Scheduled(cron = "${cron.task.retry-pending-order}")
-    public void checkBookings() {
-        log.info("Running booking scheduler...");
+    @Scheduled(cron = "${cron.task.retry-approved-pending-booking}")
+    public void retryApprovedPendingBookingJob() {
+        log.info("Running retry approved pending booking scheduler...");
 
         int page = 0;
         int size = 50;
 
         BookingListFilter filter = new BookingListFilter();
-        filter.setStatuses(List.of(BookingStatus.ON_PROCESS));
+        filter.setStatuses(List.of(BookingStatus.APPROVED));
 
         while (true) {
 
@@ -49,7 +49,7 @@ public class RetryNeedPaymentBookingJob {
                         return;
                     }
 
-                    bookingApproveService.retryApproveConfirmBooking(bookingId);
+                    bookingApproveService.approveConfirmBooking(bookingId);
 
                 } catch (Exception ex) {
                     log.error("Error processing booking {}", bookingId, ex);
@@ -68,7 +68,7 @@ public class RetryNeedPaymentBookingJob {
             page++;
         }
 
-        log.info("Booking scheduler completed.");
+        log.info("Retry approved pending Booking scheduler completed.");
     }
 
 

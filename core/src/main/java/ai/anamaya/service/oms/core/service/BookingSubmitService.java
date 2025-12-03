@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.booking.status.BookingStatusCheckRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.*;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
@@ -101,12 +102,13 @@ public class BookingSubmitService {
     }
 
     @Transactional
-    public void retryBookingSubmit(Long bookingId) {
+    public void retryBookingSubmit(CallerContext callerContext, Long bookingId) {
 
         Booking booking = bookingCommonService.getValidatedBookingById(true, bookingId);
 
         if(booking.getStatus() != BookingStatus.ON_PROCESS_CREATE) {
-            throw new IllegalArgumentException("Wrong status");
+            log.debug("Skip retryBookingSubmit for bookingId={}, status={}", bookingId, booking.getStatus());
+            return;
         }
 
         List<BookingFlight> processingFlights = bookingFlightRepository.findByBookingId(bookingId);
@@ -120,16 +122,18 @@ public class BookingSubmitService {
             .toList();
 
         FlightProvider provider = getProvider("biztrip");
-        BookingSubmitResponse response = provider.checkStatus(BookingStatusCheckRequest.builder()
-            .bookingReferenceIds(bookingReferenceIds)
-            .build()
+        BookingSubmitResponse response = provider.checkStatus(
+            callerContext,
+            BookingStatusCheckRequest.builder()
+                .bookingReferenceIds(bookingReferenceIds)
+                .build()
         );
 
         if(!BookingFlightStatus.isSuccessBook(response.getBookingSubmissionStatus())) {
             return;
         }
 
-        //update booking_flight price
+        updateBookingFlightData(bookingId, response);
         BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromPartnerStatus(response.getBookingSubmissionStatus());
         bookingFlightRepository.updateStatusByBookingReferences(bookingId,
             bookingReferenceIds,
@@ -210,10 +214,12 @@ public class BookingSubmitService {
     private void updateBookingFlightData(Long bookingId, BookingSubmitResponse response) {
 
         var detail = response.getFlightBookingDetail();
-        var fare = detail.getFareDetail();
+        if (detail == null) {
+            return;
+        }
 
         List<BookingFlight> flights = bookingFlightRepository.findByBookingId(bookingId);
-
+        var fare = detail.getFareDetail();
         for (BookingFlight f : flights) {
             if (fare.getAdultFare() != null)
                 f.setAdultAmount(BigDecimal.valueOf(fare.getAdultFare().getAmount()));
@@ -230,4 +236,5 @@ public class BookingSubmitService {
             bookingFlightRepository.save(f);
         }
     }
+
 }

@@ -1,5 +1,7 @@
 package ai.anamaya.service.oms.worker.job;
 
+import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.service.BookingService;
@@ -25,15 +27,15 @@ public class RetryPendingBookingJob {
     private final BookingService bookingService;
     private final BookingSubmitService  bookingSubmitService;
 
-    @Scheduled(cron = "${cron.task.retry-pending-order}")
-    public void checkBookings() {
-        log.info("Running booking scheduler...");
+    @Scheduled(cron = "${cron.task.retry-pending-booking}")
+    public void retryPendingBookingJob() {
+        log.info("Running retry pending booking scheduler...");
 
         int page = 0;
         int size = 50;
 
         BookingListFilter filter = new BookingListFilter();
-        filter.setStatuses(List.of(BookingStatus.CREATED));
+        filter.setStatuses(List.of(BookingStatus.ON_PROCESS_CREATE));
 
         while (true) {
 
@@ -49,7 +51,8 @@ public class RetryPendingBookingJob {
                         return;
                     }
 
-                    bookingSubmitService.retryBookingSubmit(bookingId);
+                    CallerContext systemContext = new SystemCallerContext(b.getCompanyId());
+                    bookingSubmitService.retryBookingSubmit(systemContext, bookingId);
 
                 } catch (Exception ex) {
                     log.error("Error processing booking {}", bookingId, ex);
@@ -68,7 +71,7 @@ public class RetryPendingBookingJob {
             page++;
         }
 
-        log.info("Booking scheduler completed.");
+        log.info("Retry pending booking scheduler completed.");
     }
 
 

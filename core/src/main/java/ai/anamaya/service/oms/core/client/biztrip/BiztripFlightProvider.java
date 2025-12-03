@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.client.biztrip;
 
+import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.core.dto.request.FlightOneWaySearchRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.status.BookingStatusCheckRequest;
@@ -55,7 +56,7 @@ public class BiztripFlightProvider implements FlightProvider {
     }
 
     @Override
-    public BookingSubmitResponse checkStatus(BookingStatusCheckRequest request) {
-        return biztripFlightBookingCheckStatusService.checkStatus(request);
+    public BookingSubmitResponse checkStatus(CallerContext callerContext, BookingStatusCheckRequest request) {
+        return biztripFlightBookingCheckStatusService.checkStatus(callerContext, request);
     }
 }
