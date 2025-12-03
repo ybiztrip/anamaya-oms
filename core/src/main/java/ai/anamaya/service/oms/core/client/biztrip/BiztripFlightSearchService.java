@@ -72,7 +72,7 @@ public class BiztripFlightSearchService {
             return ApiResponse.success(searchResponse);
 
         } catch (WebClientResponseException e) {
-            log.error("BizTrip API error: {} - {}", e.getRawStatusCode(), e.getResponseBodyAsString());
+            log.error("BizTrip API error: {} - {}", e.getStatusCode().value(), e.getResponseBodyAsString());
             return ApiResponse.error("External API error: " + e.getMessage());
         } catch (Exception e) {
             log.error("Unexpected error fetching flight search", e);

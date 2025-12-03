@@ -90,9 +90,7 @@ public class BalanceService {
         BigDecimal end;
 
         switch (type) {
-            case CREDIT -> {
-                end = begin.add(amount);
-            }
+            case CREDIT -> end = begin.add(amount);
             case DEBIT -> {
                 if (begin.compareTo(amount) < 0) {
                     throw new IllegalArgumentException("Insufficient balance for debit operation");

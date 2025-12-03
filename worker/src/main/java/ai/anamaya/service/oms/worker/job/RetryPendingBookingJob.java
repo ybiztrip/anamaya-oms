@@ -46,7 +46,7 @@ public class RetryPendingBookingJob {
                 String lockKey = redisLock.bookingLockKey(bookingId);
 
                 try {
-                    if (!redisLock.acquireLock(lockKey, Duration.ofSeconds(30))) {
+                    if (redisLock.acquireLock(lockKey, Duration.ofSeconds(30))) {
                         log.warn("Booking {} is already being processed. Skipping.", bookingId);
                         return;
                     }

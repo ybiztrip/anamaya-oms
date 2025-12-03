@@ -75,7 +75,7 @@ public class BiztripFlightBookingRuleService {
             return ApiResponse.success(bookingRuleResponse);
 
         } catch (WebClientResponseException e) {
-            log.error("BizTrip API error: {} - {}", e.getRawStatusCode(), e.getResponseBodyAsString());
+            log.error("BizTrip API error: {} - {}", e.getStatusCode().value(), e.getResponseBodyAsString());
             return ApiResponse.error("External API error: " + e.getMessage());
         } catch (Exception e) {
             log.error("Unexpected error fetching booking rules", e);

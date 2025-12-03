@@ -77,7 +77,7 @@ public class BiztripAuthService {
             return tokenResponse.getAccessToken();
 
         } catch (WebClientResponseException e) {
-            log.error("BizTrip Auth API error: {} - {}", e.getRawStatusCode(), e.getResponseBodyAsString());
+            log.error("BizTrip Auth API error: {} - {}", e.getStatusCode().value(), e.getResponseBodyAsString());
             throw new RuntimeException("BizTrip auth failed: " + e.getMessage());
         } catch (Exception e) {
             log.error("Unexpected error fetching BizTrip token", e);

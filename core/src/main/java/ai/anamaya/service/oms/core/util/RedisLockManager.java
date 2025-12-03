@@ -19,7 +19,7 @@ public class RedisLockManager {
     public boolean acquireLock(String key, Duration ttl) {
         Boolean success = redisTemplate.opsForValue()
             .setIfAbsent(key, "1", ttl);
-        return Boolean.TRUE.equals(success);
+        return !Boolean.TRUE.equals(success);
     }
 
     public void releaseLock(String key) {

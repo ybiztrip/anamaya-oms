@@ -70,7 +70,7 @@ public class BiztripHotelRateService {
             return ApiResponse.success(rates);
 
         } catch (WebClientResponseException e) {
-            log.error("BizTrip Hotel Rate API error: {} - {}", e.getRawStatusCode(), e.getResponseBodyAsString());
+            log.error("BizTrip Hotel Rate API error: {} - {}", e.getStatusCode().value(), e.getResponseBodyAsString());
             return ApiResponse.error("External API error: " + e.getMessage());
         } catch (Exception e) {
             log.error("Unexpected error fetching hotel rates", e);
