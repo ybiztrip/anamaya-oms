@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BookingStatusMessage {
     private Long bookingId;
+    private Long companyId;
     private BookingStatus status;
 }

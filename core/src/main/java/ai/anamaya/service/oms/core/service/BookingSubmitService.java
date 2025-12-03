@@ -38,7 +38,6 @@ public class BookingSubmitService {
     private final BookingPaxRepository bookingPaxRepository;
     private final BookingFlightRepository bookingFlightRepository;
     private final BookingFlightHistoryRepository bookingFlightHistoryRepository;
-    private final JwtUtils jwtUtils;
 
     private final Map<String, FlightProvider> flightProviders;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -80,7 +79,7 @@ public class BookingSubmitService {
         BookingSubmitResponse response = provider.submitBooking(request);
 
         updateBookingFlightData(bookingId, response);
-        BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromPartnerStatus(response.getBookingSubmissionStatus());
+        BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromBookingPartnerStatus(response.getBookingSubmissionStatus());
         bookingFlightHistoryRepository.save(
             BookingFlightHistory.builder()
                 .bookingId(bookingId)
@@ -134,7 +133,7 @@ public class BookingSubmitService {
         }
 
         updateBookingFlightData(bookingId, response);
-        BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromPartnerStatus(response.getBookingSubmissionStatus());
+        BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromBookingPartnerStatus(response.getBookingSubmissionStatus());
         bookingFlightRepository.updateStatusByBookingReferences(bookingId,
             bookingReferenceIds,
             bookingFlightStatus

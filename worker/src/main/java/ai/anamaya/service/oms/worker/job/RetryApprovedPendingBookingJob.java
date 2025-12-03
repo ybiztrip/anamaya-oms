@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.worker.job;
 
+import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.service.BookingApproveService;
@@ -49,7 +50,8 @@ public class RetryApprovedPendingBookingJob {
                         return;
                     }
 
-                    bookingApproveService.approveConfirmBooking(bookingId);
+                    SystemCallerContext systemCallerContext = new SystemCallerContext(b.getCompanyId());
+                    bookingApproveService.approveConfirmBooking(systemCallerContext, bookingId);
 
                 } catch (Exception ex) {
                     log.error("Error processing booking {}", bookingId, ex);

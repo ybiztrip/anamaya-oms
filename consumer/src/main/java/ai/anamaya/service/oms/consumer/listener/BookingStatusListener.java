@@ -1,5 +1,7 @@
 package ai.anamaya.service.oms.consumer.listener;
 
+import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.dto.pubsub.BookingStatusMessage;
 import ai.anamaya.service.oms.core.service.BookingApproveService;
 import ai.anamaya.service.oms.core.service.BookingService;
@@ -54,9 +56,11 @@ public class BookingStatusListener {
                 return;
             }
 
+            CallerContext systemContext = new SystemCallerContext(bookingStatus.getCompanyId());
+
             switch (bookingStatus.getStatus()) {
                 case APPROVED:
-                    bookingApproveService.approveConfirmBooking(bookingStatus.getBookingId());
+                    bookingApproveService.approveConfirmBooking(systemContext, bookingStatus.getBookingId());
                     break;
                 case CANCELLED:
                     break;

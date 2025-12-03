@@ -52,7 +52,7 @@ public class BookingCommonService {
     ) {
 
         List<CompanyBalanceDetail> balanceDetails  = balanceService.getBalanceDetailByReference(BalanceSourceType.BOOKING, booking.getId());
-        if(balanceDetails != null || !balanceDetails.isEmpty()) {
+        if(balanceDetails != null) {
             return;
         }
 

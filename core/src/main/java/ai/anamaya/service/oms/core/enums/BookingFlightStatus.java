@@ -9,7 +9,7 @@ public enum BookingFlightStatus {
     ISSUED,
     ISSUANCE_FAILED;
 
-    public static BookingFlightStatus fromPartnerStatus(String status) {
+    public static BookingFlightStatus fromBookingPartnerStatus(String status) {
         if (status == null) {
             return DRAFT;
         }
@@ -20,6 +20,17 @@ public enum BookingFlightStatus {
             case "ISSUING" -> ISSUING;
             case "ISSUED" -> ISSUED;
             case "ISSUANCE_FAILED" -> ISSUANCE_FAILED;
+            default -> DRAFT;
+        };
+    }
+
+    public static BookingFlightStatus fromPaymentPartnerStatus(String status) {
+        if (status == null) {
+            return DRAFT;
+        }
+
+        return switch (status.toUpperCase()) {
+            case "OK" -> ISSUED;
             default -> DRAFT;
         };
     }
