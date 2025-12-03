@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -19,5 +20,5 @@ public class CompanyBalanceDetailResponseRest {
     private BigDecimal beginBalance;
     private BigDecimal endBalance;
     private String remarks;
-    private String createdAt;
+    private LocalDateTime createdAt;
 }

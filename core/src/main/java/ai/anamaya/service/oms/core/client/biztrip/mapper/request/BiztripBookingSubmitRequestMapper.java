@@ -35,6 +35,8 @@ public class BiztripBookingSubmitRequestMapper {
             .lastName(request.getContactDetail().getLastName())
             .phoneNumber(request.getContactDetail().getPhoneNumber())
             .phoneNumberCountryCode(request.getContactDetail().getPhoneNumberCountryCode())
+            .customerPhoneNumber(request.getContactDetail().getPhoneNumber())
+            .customerPhoneNumberCountryCode(request.getContactDetail().getPhoneNumberCountryCode())
             .title(request.getContactDetail().getTitle())
             .dateOfBirth(convertDateFormat(request.getContactDetail().getDateOfBirth()))
             .build()

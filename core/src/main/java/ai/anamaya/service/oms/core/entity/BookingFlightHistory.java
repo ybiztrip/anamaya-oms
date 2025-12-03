@@ -1,15 +1,14 @@
 package ai.anamaya.service.oms.core.entity;
 
 import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
+import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name = "booking_flight_history")
@@ -31,6 +30,7 @@ public class BookingFlightHistory extends BaseEntity {
     @Column(name = "status")
     private BookingFlightStatus status;
 
-    @Column(name = "data")
-    private String data;
+    @Type(JsonType.class)
+    @Column(name = "data", columnDefinition = "json")
+    private Object data;
 }

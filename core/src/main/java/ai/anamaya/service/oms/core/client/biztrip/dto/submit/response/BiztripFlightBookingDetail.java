@@ -11,7 +11,7 @@ public class BiztripFlightBookingDetail {
 
     private BiztripPassengers passengers;
 
-    private BiztripFareDetail fareDetail;
+    private BiztripFareDetails fareDetail;
 
     private List<BiztripJourney> journeys;
 

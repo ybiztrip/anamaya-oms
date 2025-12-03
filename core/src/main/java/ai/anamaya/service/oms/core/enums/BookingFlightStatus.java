@@ -16,7 +16,7 @@ public enum BookingFlightStatus {
 
         return switch (status.toUpperCase()) {
             case "ON_PROCESS_BOOKING" -> CREATED;
-            case "BOOK", "BOOKED_DETAIL_CHANGED" -> BOOKED;
+            case "OK", "BOOK", "BOOKED_DETAIL_CHANGED" -> BOOKED;
             case "ISSUING" -> ISSUING;
             case "ISSUED" -> ISSUED;
             case "ISSUANCE_FAILED" -> ISSUANCE_FAILED;

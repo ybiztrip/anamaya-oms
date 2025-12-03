@@ -27,14 +27,21 @@ public class BiztripBookingSubmitResponseMapper {
         return res;
     }
 
-    private FareDetail mapFare(BiztripFareDetail fare) {
+    private FareDetail mapFare(BiztripFareDetails fare) {
         if (fare == null) return null;
 
         FareDetail out = new FareDetail();
-        out.setAdultFare(mapPrice(fare.getTotalFareWithCurrency()));
+        if(fare.getAdultFare() != null) {
+            out.setAdultFare(mapPrice(fare.getAdultFare().getTotalFareWithCurrency()));
+        }
 
-        if (fare.getAdditionalFeeWithCurrency() != null)
-            out.setChildFare(mapPrice(fare.getAdditionalFeeWithCurrency()));
+        if(fare.getChildFare() != null) {
+            out.setChildFare(mapPrice(fare.getChildFare().getTotalFareWithCurrency()));
+        }
+
+        if(fare.getInfantFare() != null) {
+            out.setChildFare(mapPrice(fare.getInfantFare().getTotalFareWithCurrency()));
+        }
 
         return out;
     }

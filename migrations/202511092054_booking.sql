@@ -14,6 +14,7 @@ CREATE TABLE booking (
     additional_info JSON,
     client_additional_info JSON,
     status VARCHAR(20) NOT NULL,
+    payment_expiration_time TIMESTAMP,
     approved_by BIGINT,
     approved_by_name VARCHAR(256),
     created_by BIGINT,

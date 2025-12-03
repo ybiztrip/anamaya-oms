@@ -7,6 +7,7 @@ import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripBooking
 import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSubmitRequest;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,13 +48,21 @@ public class BiztripFlightBookingSubmitService {
 
             log.error("Biztrip raw response: {}", rawResponse);
 
+            JsonNode root = mapper.readTree(rawResponse);
+            boolean success = root.path("success").asBoolean(false);
+            if (!success) {
+                String errorMessage = root.path("message").asText("Unknown Biztrip error");
+                throw new IllegalArgumentException(errorMessage);
+            }
+
+            JsonNode dataNode = root.get("data");
             BiztripSubmitResponse biztripResponse =
-                mapper.readValue(rawResponse, BiztripSubmitResponse.class);
+                mapper.treeToValue(dataNode, BiztripSubmitResponse.class);
 
             if (biztripResponse == null ||
                 biztripResponse.getFlightBookingDetail() == null) {
 
-                throw new RuntimeException(
+                throw new IllegalArgumentException(
                     "Biztrip did not return flightBookingDetail. Raw response: "
                         + rawResponse
                 );

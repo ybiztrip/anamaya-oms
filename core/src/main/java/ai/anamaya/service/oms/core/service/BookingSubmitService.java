@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +57,8 @@ public class BookingSubmitService {
     @Transactional
     public BookingSubmitResponse submitBooking(Long bookingId) {
 
+        List<Booking> bookings = bookingRepository.findAll();
+
         Booking booking = bookingCommonService.getValidatedBookingById(false, bookingId);
 
         if(booking.getStatus() != BookingStatus.DRAFT) {
@@ -74,18 +78,23 @@ public class BookingSubmitService {
         FlightProvider provider = getProvider("biztrip");
         BookingSubmitResponse response = provider.submitBooking(request);
 
-        updateBookingFlightAmounts(bookingId, response);
+        updateBookingFlightData(bookingId, response);
         BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromPartnerStatus(response.getBookingSubmissionStatus());
         bookingFlightHistoryRepository.save(
             BookingFlightHistory.builder()
                 .bookingId(bookingId)
                 .status(bookingFlightStatus)
-                .data(response.toString())
+                .data(response)
                 .build()
         );
 
         if(bookingFlightStatus == BookingFlightStatus.CREATED) {
             booking.setStatus(BookingStatus.ON_PROCESS_CREATE);
+        }
+
+        if(response.getPaymentExpirationTime() != null && response.getPaymentExpirationTime() > 0) {
+            Long epochMillis = response.getPaymentExpirationTime();
+            booking.setPaymentExpirationTime(Instant.ofEpochMilli(epochMillis).atOffset(ZoneOffset.UTC));
         }
 
         return response;
@@ -198,7 +207,7 @@ public class BookingSubmitService {
             .build();
     }
 
-    private void updateBookingFlightAmounts(Long bookingId, BookingSubmitResponse response) {
+    private void updateBookingFlightData(Long bookingId, BookingSubmitResponse response) {
 
         var detail = response.getFlightBookingDetail();
         var fare = detail.getFareDetail();
@@ -217,6 +226,7 @@ public class BookingSubmitService {
 
             f.setTotalAmount(BigDecimal.valueOf(detail.getGrandTotalFareWithCurrency().getAmount()));
 
+            f.setBookingReference(response.getBookingId());
             bookingFlightRepository.save(f);
         }
     }
