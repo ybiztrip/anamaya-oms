@@ -15,6 +15,7 @@ public class BookingSubmitRequest {
     private ContactDetail contactDetail;
     private Passengers passengers;
     private List<String> flightIds;
+    private String partnerBookingId;
     private String destinationId;
     private String journeyType;
     private String locale;

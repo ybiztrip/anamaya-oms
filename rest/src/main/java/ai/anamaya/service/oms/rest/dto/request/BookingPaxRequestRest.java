@@ -13,7 +13,7 @@ import java.util.Map;
 @Data
 public class BookingPaxRequestRest {
     private Long id;
-    private boolean isDeleted;
+    private boolean deleted;
 
     @NotBlank
     private String firstName;

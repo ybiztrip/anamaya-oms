@@ -15,6 +15,7 @@ public class BiztripBookingSubmitRequest {
     private BiztripBookingContactDetail contactDetail;
     private BiztripBookingPassengers passengers;
     private List<String> flightIds;
+    private String partnerBookingId;
     private String destinationId;
     private String journeyType;
     private String locale;

@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.booking.status.BookingStatusCheckRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.*;
+import ai.anamaya.service.oms.core.dto.response.booking.data.BookingDataResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
@@ -15,7 +16,6 @@ import ai.anamaya.service.oms.core.repository.BookingFlightHistoryRepository;
 import ai.anamaya.service.oms.core.repository.BookingFlightRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
 import ai.anamaya.service.oms.core.repository.BookingRepository;
-import ai.anamaya.service.oms.core.security.JwtUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,10 +55,7 @@ public class BookingSubmitService {
     }
 
     @Transactional
-    public BookingSubmitResponse submitBooking(Long bookingId) {
-
-        List<Booking> bookings = bookingRepository.findAll();
-
+    public BookingSubmitResponse submitBooking(CallerContext callerContext, Long bookingId) {
         Booking booking = bookingCommonService.getValidatedBookingById(false, bookingId);
 
         if(booking.getStatus() != BookingStatus.DRAFT) {
@@ -77,8 +74,6 @@ public class BookingSubmitService {
 
         FlightProvider provider = getProvider("biztrip");
         BookingSubmitResponse response = provider.submitBooking(request);
-
-        updateBookingFlightData(bookingId, response);
         BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromBookingPartnerStatus(response.getBookingSubmissionStatus());
         bookingFlightHistoryRepository.save(
             BookingFlightHistory.builder()
@@ -96,6 +91,19 @@ public class BookingSubmitService {
             Long epochMillis = response.getPaymentExpirationTime();
             booking.setPaymentExpirationTime(Instant.ofEpochMilli(epochMillis).atOffset(ZoneOffset.UTC));
         }
+
+        List<String> bookingReferenceCodes = flights.stream()
+            .filter(f -> f.getStatus() == BookingFlightStatus.CREATED)
+            .map(BookingFlight::getBookingReference)
+            .toList();
+
+        List<BookingDataResponse> bookingDataResponse = provider.searchData(callerContext, BookingSearchDataRequest.builder()
+            .count(100)
+            .page(0)
+            .referenceCodes(bookingReferenceCodes)
+            .build());
+
+        updateBookingFlightData(bookingId, bookingDataResponse);
 
         return response;
     }
@@ -115,37 +123,29 @@ public class BookingSubmitService {
             return;
         }
 
-        List<String> bookingReferenceIds = processingFlights.stream()
+        List<String> bookingReferenceCodes = processingFlights.stream()
             .filter(f -> f.getStatus() == BookingFlightStatus.CREATED)
             .map(BookingFlight::getBookingReference)
             .toList();
 
         FlightProvider provider = getProvider("biztrip");
-        BookingSubmitResponse response = provider.checkStatus(
-            callerContext,
-            BookingStatusCheckRequest.builder()
-                .bookingReferenceIds(bookingReferenceIds)
-                .build()
-        );
+        List<BookingDataResponse> bookingDataResponse = provider.searchData(callerContext, BookingSearchDataRequest.builder()
+            .count(100)
+            .page(0)
+            .referenceCodes(bookingReferenceCodes)
+            .build());
 
-        if(!BookingFlightStatus.isSuccessBook(response.getBookingSubmissionStatus())) {
-            return;
+        updateBookingFlightData(bookingId, bookingDataResponse);
+
+        boolean allBooked = bookingDataResponse.stream()
+            .allMatch(b ->
+                BookingFlightStatus.fromBookingPartnerStatus(b.getStatus()).equals(BookingFlightStatus.BOOKED)
+            );
+
+        if (allBooked) {
+            booking.setStatus(BookingStatus.CREATED);
         }
 
-        updateBookingFlightData(bookingId, response);
-        BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromBookingPartnerStatus(response.getBookingSubmissionStatus());
-        bookingFlightRepository.updateStatusByBookingReferences(bookingId,
-            bookingReferenceIds,
-            bookingFlightStatus
-        );
-        bookingFlightHistoryRepository.save(
-            BookingFlightHistory.builder()
-                .bookingId(bookingId)
-                .status(bookingFlightStatus)
-                .data(response.toString())
-                .build()
-        );
-        booking.setStatus(BookingStatus.CREATED);
     }
 
     private BookingSubmitRequest buildSubmitRequest(
@@ -195,6 +195,7 @@ public class BookingSubmitService {
             .contactDetail(contact)
             .passengers(new Passengers(adults, null, null))
             .flightIds(flightList.stream().map(BookingFlight::getItemId).toList())
+            .partnerBookingId(booking.getCode())
             .destinationId(booking.getJourneyCode())
             .journeyType(flightList.size() > 1 ? "ROUND_TRIP" : "ONE_WAY")
             .locale("id_ID")
@@ -210,30 +211,58 @@ public class BookingSubmitService {
             .build();
     }
 
-    private void updateBookingFlightData(Long bookingId, BookingSubmitResponse response) {
-
-        var detail = response.getFlightBookingDetail();
-        if (detail == null) {
-            return;
-        }
-
+    private void updateBookingFlightData(Long bookingId, List<BookingDataResponse> responses) {
         List<BookingFlight> flights = bookingFlightRepository.findByBookingId(bookingId);
-        var fare = detail.getFareDetail();
+
         for (BookingFlight f : flights) {
-            if (fare.getAdultFare() != null)
-                f.setAdultAmount(BigDecimal.valueOf(fare.getAdultFare().getAmount()));
+            if (f.getStatus().equals(BookingFlightStatus.BOOKED)) {
+                continue;
+            }
 
-            if (fare.getChildFare() != null)
-                f.setChildAmount(BigDecimal.valueOf(fare.getChildFare().getAmount()));
+            for (BookingDataResponse data : responses) {
+                if (!data.getDeparture().equals(f.getOrigin()) && !data.getArrival().equals(f.getDestination()) ) {
+                    continue;
+                }
 
-            if (fare.getInfantFare() != null)
-                f.setInfantAmount(BigDecimal.valueOf(fare.getInfantFare().getAmount()));
+                if (data.getAdultPrice() != null
+                    && data.getAdultPrice().compareTo(BigDecimal.ZERO) > 0) {
+                    f.setAdultAmount(data.getAdultPrice());
+                }
 
-            f.setTotalAmount(BigDecimal.valueOf(detail.getGrandTotalFareWithCurrency().getAmount()));
+                if (data.getChildPrice() != null
+                    && data.getChildPrice().compareTo(BigDecimal.ZERO) > 0) {
+                    f.setChildAmount(data.getChildPrice());
+                }
 
-            f.setBookingReference(response.getBookingId());
-            bookingFlightRepository.save(f);
+                if (data.getInfantPrice() != null
+                    && data.getInfantPrice().compareTo(BigDecimal.ZERO) > 0) {
+                    f.setInfantAmount(data.getInfantPrice());
+                }
+
+                if (data.getTotalPrice() != null
+                    && data.getTotalPrice().compareTo(BigDecimal.ZERO) > 0) {
+                    f.setTotalAmount(data.getTotalPrice());
+                }
+
+                BookingFlightStatus flightStatus = BookingFlightStatus.fromBookingPartnerStatus(data.getStatus());
+                f.setStatus(flightStatus);
+                f.setOtaReference(data.getOtaReference());
+
+                bookingFlightRepository.save(f);
+                if(!flightStatus.equals(BookingFlightStatus.BOOKED)) {
+                    continue;
+                }
+
+                bookingFlightHistoryRepository.save(
+                    BookingFlightHistory.builder()
+                        .bookingId(bookingId)
+                        .status(flightStatus)
+                        .data(data.toString())
+                        .build()
+                );
+            }
         }
+
     }
 
 }

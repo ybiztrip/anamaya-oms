@@ -1,13 +1,12 @@
 package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.dto.request.BookingFlightRequest;
-import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.dto.response.BookingResponse;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
+import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
-import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.BookingFlightRepository;
 import ai.anamaya.service.oms.core.repository.BookingRepository;
 import ai.anamaya.service.oms.core.security.JwtUtils;
@@ -32,7 +31,7 @@ public class BookingFlightService {
 
         Booking booking = bookingService.getValidatedBooking(bookingId);
 
-        if (!booking.getStatus().equals(BookingStatus.CREATED)) {
+        if (booking.getStatus() != BookingStatus.DRAFT) {
             throw new AccessDeniedException("This booking can no longer be updated.");
         }
 
@@ -49,7 +48,7 @@ public class BookingFlightService {
                         existing.setDestination(req.getDestination());
                         existing.setDepartureDatetime(req.getDepartureDatetime());
                         existing.setArrivalDatetime(req.getArrivalDatetime());
-                        existing.setStatus(req.getStatus());
+                        existing.setStatus(BookingFlightStatus.DRAFT);
                         existing.setUpdatedBy(userId);
                         bookingFlightRepository.save(existing);
                     }
@@ -64,7 +63,7 @@ public class BookingFlightService {
                         .destination(req.getDestination())
                         .departureDatetime(req.getDepartureDatetime())
                         .arrivalDatetime(req.getArrivalDatetime())
-                        .status(req.getStatus())
+                        .status(BookingFlightStatus.DRAFT)
                         .createdBy(userId)
                         .updatedBy(userId)
                         .build();

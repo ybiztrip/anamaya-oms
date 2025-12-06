@@ -63,6 +63,7 @@ CREATE TABLE booking_flight (
     infant_amount DECIMAL(18,2) NULL
     total_amount DECIMAL(18,2) NULL
     booking_reference VARCHAR(256) NOT NULL,
+    ota_reference VARCHAR(256) NOT NULL,
     status VARCHAR(20),
     created_by BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -16,6 +16,7 @@ public class BiztripBookingSubmitRequestMapper {
         BiztripBookingSubmitRequest dto = new BiztripBookingSubmitRequest();
 
         dto.setFlightIds(request.getFlightIds());
+        dto.setPartnerBookingId(request.getPartnerBookingId());
         dto.setDestinationId(request.getDestinationId());
         dto.setJourneyType(request.getJourneyType());
         dto.setLocale(request.getLocale());

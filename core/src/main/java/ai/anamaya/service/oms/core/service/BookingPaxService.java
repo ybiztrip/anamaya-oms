@@ -30,7 +30,7 @@ public class BookingPaxService {
 
         Booking booking = bookingService.getValidatedBooking(bookingId);
 
-        if (!booking.getStatus().equals(BookingStatus.CREATED)) {
+        if (booking.getStatus() != BookingStatus.DRAFT) {
             throw new AccessDeniedException("This booking can no longer be updated.");
         }
 

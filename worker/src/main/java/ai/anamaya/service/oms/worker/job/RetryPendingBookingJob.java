@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.worker.job;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
+import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.service.BookingService;
 import ai.anamaya.service.oms.core.service.BookingSubmitService;
@@ -35,7 +36,9 @@ public class RetryPendingBookingJob {
         int size = 50;
 
         BookingListFilter filter = new BookingListFilter();
-        filter.setStatuses(List.of(BookingStatus.ON_PROCESS_CREATE));
+        filter.setStatuses(List.of(
+            BookingStatus.ON_PROCESS_CREATE
+        ));
 
         while (true) {
 

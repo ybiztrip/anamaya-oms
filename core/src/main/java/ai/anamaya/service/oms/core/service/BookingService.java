@@ -128,7 +128,7 @@ public class BookingService {
 
         Booking booking = Booking.builder()
             .companyId(companyId)
-            .code(String.valueOf(Instant.now().toEpochMilli()))
+            .code("ANM:"+Instant.now().toEpochMilli())
             .journeyCode(request.getJourneyCode())
             .contactEmail(request.getContactEmail())
             .contactFirstName(request.getContactFirstName())

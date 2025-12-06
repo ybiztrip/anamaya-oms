@@ -5,8 +5,10 @@ import ai.anamaya.service.oms.core.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.core.dto.request.FlightOneWaySearchRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.payment.BookingPaymentRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.status.BookingStatusCheckRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSearchDataRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSubmitRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
+import ai.anamaya.service.oms.core.dto.response.booking.data.BookingDataResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
 
 import java.util.List;
@@ -21,4 +23,5 @@ public interface FlightProvider {
     BookingSubmitResponse submitBooking(BookingSubmitRequest request);
     BookingSubmitResponse payment(CallerContext callerContext, BookingPaymentRequest request);
     BookingSubmitResponse checkStatus(CallerContext callerContext, BookingStatusCheckRequest request);
+    List<BookingDataResponse> searchData(CallerContext callerContext, BookingSearchDataRequest request);
 }

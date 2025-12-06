@@ -2,7 +2,7 @@ package ai.anamaya.service.oms.rest.dto.request;
 
 import lombok.Data;
 
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Data
 public class BookingFlightRequestRest {
@@ -11,10 +11,10 @@ public class BookingFlightRequestRest {
 
     private String type;
     private String clientSource;
-    private Long itemId;
+    private String itemId;
     private String origin;
     private String destination;
-    private OffsetDateTime departureDatetime;
-    private OffsetDateTime arrivalDatetime;
+    private LocalDateTime departureDatetime;
+    private LocalDateTime arrivalDatetime;
     private String status;
 }

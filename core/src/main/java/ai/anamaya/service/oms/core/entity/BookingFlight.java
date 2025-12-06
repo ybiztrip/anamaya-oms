@@ -6,7 +6,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "booking_flight")
@@ -40,10 +40,10 @@ public class BookingFlight extends BaseEntity {
     private String destination;
 
     @Column(name = "departure_datetime")
-    private OffsetDateTime departureDatetime;
+    private LocalDateTime departureDatetime;
 
     @Column(name = "arrival_datetime")
-    private OffsetDateTime arrivalDatetime;
+    private LocalDateTime arrivalDatetime;
 
     @Column(name = "adult_amount", precision = 18, scale = 2)
     private BigDecimal adultAmount;
@@ -59,6 +59,9 @@ public class BookingFlight extends BaseEntity {
 
     @Column(name = "booking_reference", length = 256)
     private String bookingReference;
+
+    @Column(name = "ota_reference", length = 256)
+    private String otaReference;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

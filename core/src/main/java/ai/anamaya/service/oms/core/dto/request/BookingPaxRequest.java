@@ -6,7 +6,6 @@ import ai.anamaya.service.oms.core.enums.PaxType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.List;
 
@@ -16,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class BookingPaxRequest {
     private Long id;
-    private boolean isDeleted;
+    private boolean deleted;
 
     @NotBlank
     private String firstName;
