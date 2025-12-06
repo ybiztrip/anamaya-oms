@@ -3,10 +3,10 @@ package ai.anamaya.service.oms.core.client.biztrip;
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.request.BiztripBookingSearchDataRequest;
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripBaseResponse;
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripDataResponse;
-import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripBookingSearchDataRequestMapper;
-import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripBookingSearchDataResponseMapper;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripFlightBookingSearchDataRequestMapper;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripFlightBookingSearchDataResponseMapper;
 import ai.anamaya.service.oms.core.context.CallerContext;
-import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSearchDataRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.submit.FlightBookingSearchDataRequest;
 import ai.anamaya.service.oms.core.dto.response.booking.data.BookingDataResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,10 +27,10 @@ public class BiztripFlightBookingSearchDataService {
     private final BiztripAuthService authService;
     private final ObjectMapper mapper;
 
-    private final BiztripBookingSearchDataRequestMapper submitRequestMapper = new BiztripBookingSearchDataRequestMapper();
-    private final BiztripBookingSearchDataResponseMapper submitResponseMapper = new BiztripBookingSearchDataResponseMapper();
+    private final BiztripFlightBookingSearchDataRequestMapper submitRequestMapper = new BiztripFlightBookingSearchDataRequestMapper();
+    private final BiztripFlightBookingSearchDataResponseMapper submitResponseMapper = new BiztripFlightBookingSearchDataResponseMapper();
 
-    public List<BookingDataResponse> search(CallerContext callerContext, BookingSearchDataRequest request) {
+    public List<BookingDataResponse> search(CallerContext callerContext, FlightBookingSearchDataRequest request) {
         try {
             String token = authService.getAccessToken(callerContext.companyId());
 

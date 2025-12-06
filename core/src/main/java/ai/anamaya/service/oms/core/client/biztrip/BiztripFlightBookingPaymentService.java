@@ -3,10 +3,10 @@ package ai.anamaya.service.oms.core.client.biztrip;
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.request.BiztripBookingPaymentRequest;
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripBaseResponse;
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripBookingPaymentConfirmDirectResponse;
-import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripBookingPaymentRequestMapper;
-import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripBookingPaymentConfirmDirectResponseMapper;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripFlightBookingPaymentRequestMapper;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripFlightBookingPaymentConfirmDirectResponseMapper;
 import ai.anamaya.service.oms.core.context.CallerContext;
-import ai.anamaya.service.oms.core.dto.request.booking.payment.BookingPaymentRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.payment.FlightBookingPaymentRequest;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,10 +26,10 @@ public class BiztripFlightBookingPaymentService {
     private final BiztripAuthService authService;
     private final ObjectMapper mapper;
 
-    private final BiztripBookingPaymentRequestMapper submitRequestMapper = new BiztripBookingPaymentRequestMapper();
-    private final BiztripBookingPaymentConfirmDirectResponseMapper submitResponseMapper = new BiztripBookingPaymentConfirmDirectResponseMapper();
+    private final BiztripFlightBookingPaymentRequestMapper submitRequestMapper = new BiztripFlightBookingPaymentRequestMapper();
+    private final BiztripFlightBookingPaymentConfirmDirectResponseMapper submitResponseMapper = new BiztripFlightBookingPaymentConfirmDirectResponseMapper();
 
-    public BookingSubmitResponse payment(CallerContext callerContext, BookingPaymentRequest request) {
+    public BookingSubmitResponse payment(CallerContext callerContext, FlightBookingPaymentRequest request) {
         try {
             String token = authService.getAccessToken(callerContext.companyId());
 

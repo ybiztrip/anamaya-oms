@@ -1,7 +1,6 @@
 package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.context.CallerContext;
-import ai.anamaya.service.oms.core.dto.request.booking.status.BookingStatusCheckRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.*;
 import ai.anamaya.service.oms.core.dto.response.booking.data.BookingDataResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
@@ -70,7 +69,7 @@ public class BookingSubmitService {
             return null;
         }
 
-        BookingSubmitRequest request = buildSubmitRequest(booking, pax, flights);
+        FlightBookingSubmitRequest request = buildSubmitRequest(booking, pax, flights);
 
         FlightProvider provider = getProvider("biztrip");
         BookingSubmitResponse response = provider.submitBooking(request);
@@ -97,7 +96,7 @@ public class BookingSubmitService {
             .map(BookingFlight::getBookingReference)
             .toList();
 
-        List<BookingDataResponse> bookingDataResponse = provider.searchData(callerContext, BookingSearchDataRequest.builder()
+        List<BookingDataResponse> bookingDataResponse = provider.searchData(callerContext, FlightBookingSearchDataRequest.builder()
             .count(100)
             .page(0)
             .referenceCodes(bookingReferenceCodes)
@@ -129,7 +128,7 @@ public class BookingSubmitService {
             .toList();
 
         FlightProvider provider = getProvider("biztrip");
-        List<BookingDataResponse> bookingDataResponse = provider.searchData(callerContext, BookingSearchDataRequest.builder()
+        List<BookingDataResponse> bookingDataResponse = provider.searchData(callerContext, FlightBookingSearchDataRequest.builder()
             .count(100)
             .page(0)
             .referenceCodes(bookingReferenceCodes)
@@ -148,7 +147,7 @@ public class BookingSubmitService {
 
     }
 
-    private BookingSubmitRequest buildSubmitRequest(
+    private FlightBookingSubmitRequest buildSubmitRequest(
         Booking booking,
         List<BookingPax> paxList,
         List<BookingFlight> flightList
@@ -191,7 +190,7 @@ public class BookingSubmitService {
             ).toList();
 
 
-        return BookingSubmitRequest.builder()
+        return FlightBookingSubmitRequest.builder()
             .contactDetail(contact)
             .passengers(new Passengers(adults, null, null))
             .flightIds(flightList.stream().map(BookingFlight::getItemId).toList())

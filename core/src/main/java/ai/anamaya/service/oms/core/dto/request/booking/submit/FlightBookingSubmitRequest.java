@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BookingSubmitRequest {
+public class FlightBookingSubmitRequest {
     private ContactDetail contactDetail;
     private Passengers passengers;
     private List<String> flightIds;

@@ -2,9 +2,9 @@ package ai.anamaya.service.oms.core.client.biztrip;
 
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.request.BiztripBookingSubmitRequest;
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripSubmitResponse;
-import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripBookingSubmitRequestMapper;
-import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripBookingSubmitResponseMapper;
-import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSubmitRequest;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripFlightBookingSubmitRequestMapper;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripFlightBookingSubmitResponseMapper;
+import ai.anamaya.service.oms.core.dto.request.booking.submit.FlightBookingSubmitRequest;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,10 +26,10 @@ public class BiztripFlightBookingSubmitService {
     private final JwtUtils jwtUtils;
     private final ObjectMapper mapper;
 
-    private final BiztripBookingSubmitRequestMapper submitRequestMapper = new BiztripBookingSubmitRequestMapper();
-    private final BiztripBookingSubmitResponseMapper submitResponseMapper = new BiztripBookingSubmitResponseMapper();
+    private final BiztripFlightBookingSubmitRequestMapper submitRequestMapper = new BiztripFlightBookingSubmitRequestMapper();
+    private final BiztripFlightBookingSubmitResponseMapper submitResponseMapper = new BiztripFlightBookingSubmitResponseMapper();
 
-    public BookingSubmitResponse submit(BookingSubmitRequest request) {
+    public BookingSubmitResponse submit(FlightBookingSubmitRequest request) {
         try {
             Long companyId = jwtUtils.getCompanyIdFromToken();
             String token = authService.getAccessToken(companyId);

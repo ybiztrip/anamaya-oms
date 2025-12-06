@@ -3,7 +3,7 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.client.queue.BookingPubSubPublisher;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.pubsub.BookingStatusMessage;
-import ai.anamaya.service.oms.core.dto.request.booking.payment.BookingPaymentRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.payment.FlightBookingPaymentRequest;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
@@ -102,7 +102,7 @@ public class BookingApproveService {
         FlightProvider provider = getProvider("biztrip");
         BookingSubmitResponse response = provider.payment(
             callerContext,
-            BookingPaymentRequest.builder()
+            FlightBookingPaymentRequest.builder()
                 .bookingId(bookingFlights.get(0).getBookingReference())
                 .paymentMethod("DEPOSIT")
                 .build()

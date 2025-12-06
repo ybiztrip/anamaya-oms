@@ -1,7 +1,7 @@
 package ai.anamaya.service.oms.core.client.biztrip.mapper.request;
 
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.request.*;
-import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSubmitRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.submit.FlightBookingSubmitRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.Passenger;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.Passengers;
 
@@ -9,9 +9,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class BiztripBookingSubmitRequestMapper {
+public class BiztripFlightBookingSubmitRequestMapper {
 
-    public BiztripBookingSubmitRequest map(BookingSubmitRequest request) {
+    public BiztripBookingSubmitRequest map(FlightBookingSubmitRequest request) {
 
         BiztripBookingSubmitRequest dto = new BiztripBookingSubmitRequest();
 

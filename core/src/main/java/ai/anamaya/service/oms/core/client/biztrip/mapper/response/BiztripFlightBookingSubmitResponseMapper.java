@@ -5,7 +5,7 @@ import ai.anamaya.service.oms.core.dto.response.booking.submit.*;
 
 import java.util.List;
 
-public class BiztripBookingSubmitResponseMapper {
+public class BiztripFlightBookingSubmitResponseMapper {
 
     public BookingSubmitResponse map(BiztripSubmitResponse b) {
         BookingSubmitResponse res = new BookingSubmitResponse();

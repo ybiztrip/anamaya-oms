@@ -2,11 +2,10 @@ package ai.anamaya.service.oms.core.client.biztrip.mapper.response;
 
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.*;
 import ai.anamaya.service.oms.core.dto.response.booking.data.BookingDataResponse;
-import ai.anamaya.service.oms.core.dto.response.booking.submit.*;
 
 import java.util.List;
 
-public class BiztripBookingSearchDataResponseMapper {
+public class BiztripFlightBookingSearchDataResponseMapper {
 
     public List<BookingDataResponse> map(List<BiztripDataResponse> list) {
         return list.stream()

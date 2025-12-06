@@ -1,13 +1,13 @@
 package ai.anamaya.service.oms.core.client.biztrip.mapper.request;
 
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.request.*;
-import ai.anamaya.service.oms.core.dto.request.booking.status.BookingStatusCheckRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.status.FlightBookingStatusCheckRequest;
 import java.util.List;
 
-public class BiztripBookingCheckFullStatusRequestMapper {
+public class BiztripFlightBookingCheckFullStatusRequestMapper {
 
     public BiztripBookingCheckFullStatusRequest map(
-        BookingStatusCheckRequest request
+        FlightBookingStatusCheckRequest request
     ) {
         if (request == null || request.getBookingReferenceIds() == null) {
             return new BiztripBookingCheckFullStatusRequest(List.of());

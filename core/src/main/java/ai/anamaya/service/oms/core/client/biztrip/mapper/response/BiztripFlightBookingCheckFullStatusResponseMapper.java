@@ -4,7 +4,7 @@ import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.*;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.*;
 
 
-public class BiztripBookingCheckFullStatusResponseMapper {
+public class BiztripFlightBookingCheckFullStatusResponseMapper {
 
     public BookingSubmitResponse map(BiztripCheckFullStatusResponse b) {
         BookingSubmitResponse res = new BookingSubmitResponse();

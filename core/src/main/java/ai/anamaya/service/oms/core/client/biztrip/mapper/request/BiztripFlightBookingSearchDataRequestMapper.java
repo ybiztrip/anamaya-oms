@@ -1,13 +1,13 @@
 package ai.anamaya.service.oms.core.client.biztrip.mapper.request;
 
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.request.*;
-import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSearchDataRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.submit.FlightBookingSearchDataRequest;
 
 import java.util.List;
 
-public class BiztripBookingSearchDataRequestMapper {
+public class BiztripFlightBookingSearchDataRequestMapper {
 
-    public BiztripBookingSearchDataRequest map(BookingSearchDataRequest request) {
+    public BiztripBookingSearchDataRequest map(FlightBookingSearchDataRequest request) {
 
         BiztripBookingSearchDataRequest dto = new BiztripBookingSearchDataRequest();
         dto.setPage(request.getPage());

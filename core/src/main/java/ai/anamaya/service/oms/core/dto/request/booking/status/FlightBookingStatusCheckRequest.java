@@ -1,4 +1,5 @@
-package ai.anamaya.service.oms.core.dto.request.booking.payment;
+package ai.anamaya.service.oms.core.dto.request.booking.status;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BookingPaymentRequest {
-    private String bookingId;
-    private String paymentMethod;
+public class FlightBookingStatusCheckRequest {
+    private List<String> bookingReferenceIds;
 }

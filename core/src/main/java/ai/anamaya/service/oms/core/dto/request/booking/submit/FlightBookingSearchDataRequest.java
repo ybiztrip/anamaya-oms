@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BookingSearchDataRequest {
+public class FlightBookingSearchDataRequest {
     private Integer page;
     private Integer count;
     private LocalDate startDate;

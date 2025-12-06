@@ -3,10 +3,10 @@ package ai.anamaya.service.oms.core.client.biztrip;
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.request.BiztripBookingCheckFullStatusRequest;
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripBaseResponse;
 import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripCheckFullStatusResponse;
-import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripBookingCheckFullStatusRequestMapper;
-import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripBookingCheckFullStatusResponseMapper;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripFlightBookingCheckFullStatusRequestMapper;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripFlightBookingCheckFullStatusResponseMapper;
 import ai.anamaya.service.oms.core.context.CallerContext;
-import ai.anamaya.service.oms.core.dto.request.booking.status.BookingStatusCheckRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.status.FlightBookingStatusCheckRequest;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,11 +26,11 @@ public class BiztripFlightBookingCheckStatusService {
     private final BiztripAuthService authService;
     private final ObjectMapper mapper;
 
-    private final BiztripBookingCheckFullStatusRequestMapper requestMapper = new BiztripBookingCheckFullStatusRequestMapper();
-    private final BiztripBookingCheckFullStatusResponseMapper submitResponseMapper = new BiztripBookingCheckFullStatusResponseMapper();
+    private final BiztripFlightBookingCheckFullStatusRequestMapper requestMapper = new BiztripFlightBookingCheckFullStatusRequestMapper();
+    private final BiztripFlightBookingCheckFullStatusResponseMapper submitResponseMapper = new BiztripFlightBookingCheckFullStatusResponseMapper();
 
 
-    public BookingSubmitResponse checkStatus(CallerContext callerContext, BookingStatusCheckRequest request) {
+    public BookingSubmitResponse checkStatus(CallerContext callerContext, FlightBookingStatusCheckRequest request) {
         try {
             String token = authService.getAccessToken(callerContext.companyId());
             BiztripBookingCheckFullStatusRequest biztripReq = requestMapper.map(request);

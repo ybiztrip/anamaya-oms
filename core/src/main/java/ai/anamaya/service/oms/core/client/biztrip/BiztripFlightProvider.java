@@ -3,10 +3,10 @@ package ai.anamaya.service.oms.core.client.biztrip;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.core.dto.request.FlightOneWaySearchRequest;
-import ai.anamaya.service.oms.core.dto.request.booking.payment.BookingPaymentRequest;
-import ai.anamaya.service.oms.core.dto.request.booking.status.BookingStatusCheckRequest;
-import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSearchDataRequest;
-import ai.anamaya.service.oms.core.dto.request.booking.submit.BookingSubmitRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.payment.FlightBookingPaymentRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.status.FlightBookingStatusCheckRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.submit.FlightBookingSearchDataRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.submit.FlightBookingSubmitRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
 import ai.anamaya.service.oms.core.dto.response.booking.data.BookingDataResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
@@ -56,22 +56,22 @@ public class BiztripFlightProvider implements FlightProvider {
     }
 
     @Override
-    public BookingSubmitResponse submitBooking(BookingSubmitRequest request) {
+    public BookingSubmitResponse submitBooking(FlightBookingSubmitRequest request) {
         return bookingSubmitService.submit(request);
     }
 
     @Override
-    public BookingSubmitResponse payment(CallerContext callerContext, BookingPaymentRequest request) {
+    public BookingSubmitResponse payment(CallerContext callerContext, FlightBookingPaymentRequest request) {
         return biztripFlightBookingPaymentService.payment(callerContext, request);
     }
 
     @Override
-    public BookingSubmitResponse checkStatus(CallerContext callerContext, BookingStatusCheckRequest request) {
+    public BookingSubmitResponse checkStatus(CallerContext callerContext, FlightBookingStatusCheckRequest request) {
         return biztripFlightBookingCheckStatusService.checkStatus(callerContext, request);
     }
 
     @Override
-    public List<BookingDataResponse> searchData(CallerContext callerContext, BookingSearchDataRequest request) {
+    public List<BookingDataResponse> searchData(CallerContext callerContext, FlightBookingSearchDataRequest request) {
         return biztripFlightBookingSearchDataService.search(callerContext, request);
     }
 }
