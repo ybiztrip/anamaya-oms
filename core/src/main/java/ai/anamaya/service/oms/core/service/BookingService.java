@@ -237,6 +237,7 @@ public class BookingService {
                 .bookingId(h.getBookingId())
                 .clientSource(h.getClientSource())
                 .itemId(h.getItemId())
+                .roomId(h.getRoomId())
                 .rateKey(h.getRateKey())
                 .numRoom(h.getNumRoom())
                 .checkInDate(h.getCheckInDate())

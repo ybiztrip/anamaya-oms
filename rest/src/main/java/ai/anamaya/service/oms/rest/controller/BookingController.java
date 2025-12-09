@@ -1,7 +1,5 @@
 package ai.anamaya.service.oms.rest.controller;
 
-import ai.anamaya.service.oms.core.context.CallerContext;
-import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.context.UserCallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
@@ -111,7 +109,8 @@ public class BookingController {
     @PutMapping("/{id}/submit")
     public ApiResponse<?> submitBooking(@PathVariable Long id) {
         Long companyId = jwtUtils.getCompanyIdFromToken();
-        UserCallerContext userCallerContext = new UserCallerContext(companyId);
+        Long userId = jwtUtils.getUserIdFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
         var result = bookingSubmitService.submitBooking(userCallerContext, id);
         return ApiResponse.success(result);
     }

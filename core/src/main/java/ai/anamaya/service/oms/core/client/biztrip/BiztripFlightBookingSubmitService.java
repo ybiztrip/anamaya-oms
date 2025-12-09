@@ -5,7 +5,7 @@ import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripSub
 import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripFlightBookingSubmitRequestMapper;
 import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripFlightBookingSubmitResponseMapper;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.FlightBookingSubmitRequest;
-import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
+import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubmitResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +29,7 @@ public class BiztripFlightBookingSubmitService {
     private final BiztripFlightBookingSubmitRequestMapper submitRequestMapper = new BiztripFlightBookingSubmitRequestMapper();
     private final BiztripFlightBookingSubmitResponseMapper submitResponseMapper = new BiztripFlightBookingSubmitResponseMapper();
 
-    public BookingSubmitResponse submit(FlightBookingSubmitRequest request) {
+    public BookingFlightSubmitResponse submit(FlightBookingSubmitRequest request) {
         try {
             Long companyId = jwtUtils.getCompanyIdFromToken();
             String token = authService.getAccessToken(companyId);

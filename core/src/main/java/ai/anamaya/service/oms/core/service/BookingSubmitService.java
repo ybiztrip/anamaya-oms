@@ -3,7 +3,7 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.*;
 import ai.anamaya.service.oms.core.dto.response.booking.data.BookingDataResponse;
-import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
+import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubmitResponse;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
 import ai.anamaya.service.oms.core.entity.BookingFlightHistory;
@@ -14,7 +14,6 @@ import ai.anamaya.service.oms.core.enums.PaxType;
 import ai.anamaya.service.oms.core.repository.BookingFlightHistoryRepository;
 import ai.anamaya.service.oms.core.repository.BookingFlightRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
-import ai.anamaya.service.oms.core.repository.BookingRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +32,6 @@ import java.util.Map;
 public class BookingSubmitService {
 
     private final BookingCommonService bookingCommonService;
-    private final BookingRepository bookingRepository;
     private final BookingPaxRepository bookingPaxRepository;
     private final BookingFlightRepository bookingFlightRepository;
     private final BookingFlightHistoryRepository bookingFlightHistoryRepository;
@@ -54,7 +52,7 @@ public class BookingSubmitService {
     }
 
     @Transactional
-    public BookingSubmitResponse submitBooking(CallerContext callerContext, Long bookingId) {
+    public BookingFlightSubmitResponse submitBooking(CallerContext callerContext, Long bookingId) {
         Booking booking = bookingCommonService.getValidatedBookingById(false, bookingId);
 
         if(booking.getStatus() != BookingStatus.DRAFT) {
@@ -72,7 +70,7 @@ public class BookingSubmitService {
         FlightBookingSubmitRequest request = buildSubmitRequest(booking, pax, flights);
 
         FlightProvider provider = getProvider("biztrip");
-        BookingSubmitResponse response = provider.submitBooking(request);
+        BookingFlightSubmitResponse response = provider.submitBooking(request);
         BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromBookingPartnerStatus(response.getBookingSubmissionStatus());
         bookingFlightHistoryRepository.save(
             BookingFlightHistory.builder()

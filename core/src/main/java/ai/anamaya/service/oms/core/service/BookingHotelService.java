@@ -30,7 +30,7 @@ public class BookingHotelService {
 
         Booking booking = bookingService.getValidatedBooking(bookingId);
 
-        if (!booking.getStatus().equals(BookingStatus.CREATED)) {
+        if (!booking.getStatus().equals(BookingStatus.DRAFT)) {
             throw new AccessDeniedException("This booking can no longer be updated.");
         }
 
@@ -42,6 +42,7 @@ public class BookingHotelService {
                     } else {
                         existing.setClientSource(req.getClientSource());
                         existing.setItemId(req.getItemId());
+                        existing.setRoomId(req.getRoomId());
                         existing.setRateKey(req.getRateKey());
                         existing.setNumRoom(req.getNumRoom());
                         existing.setCheckInDate(req.getCheckInDate());
@@ -60,6 +61,7 @@ public class BookingHotelService {
                         .bookingId(bookingId)
                         .clientSource(req.getClientSource())
                         .itemId(req.getItemId())
+                        .roomId(req.getRoomId())
                         .rateKey(req.getRateKey())
                         .numRoom(req.getNumRoom())
                         .checkInDate(req.getCheckInDate())

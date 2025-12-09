@@ -8,7 +8,8 @@ public class BookingHotelRequestRest {
     private boolean deleted;
 
     private String clientSource;
-    private Long itemId;
+    private String itemId;
+    private String roomId;
     private String rateKey;
     private Integer numRoom;
     private String checkInDate;

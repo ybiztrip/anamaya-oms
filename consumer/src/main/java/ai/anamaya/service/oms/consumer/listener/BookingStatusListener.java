@@ -52,7 +52,7 @@ public class BookingStatusListener {
             String lockKey = redisLock.bookingLockKey(bookingId);
             if (redisLock.acquireLock(lockKey, Duration.ofSeconds(30))) {
                 log.warn("Booking {} is already being processed. Skipping.", bookingId);
-                message.nack();
+                message.ack();
                 return;
             }
 
@@ -70,7 +70,7 @@ public class BookingStatusListener {
             message.ack();
         } catch (Exception e) {
             log.error("Error processing message", e);
-            message.nack();
+            message.ack();
         } finally {
             try {
                 if (bookingId != null) {

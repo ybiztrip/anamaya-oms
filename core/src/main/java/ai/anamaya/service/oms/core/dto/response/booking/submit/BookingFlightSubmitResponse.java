@@ -3,7 +3,7 @@ package ai.anamaya.service.oms.core.dto.response.booking.submit;
 import lombok.Data;
 
 @Data
-public class BookingSubmitResponse {
+public class BookingFlightSubmitResponse {
     private String bookingSubmissionStatus;
     private String bookingId;
     private String partnerBookingId;

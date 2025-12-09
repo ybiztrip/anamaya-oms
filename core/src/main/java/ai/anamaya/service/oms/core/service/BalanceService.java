@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.BalanceAdjustRequest;
 import ai.anamaya.service.oms.core.dto.request.BalanceTopUpRequest;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
@@ -31,12 +32,15 @@ public class BalanceService {
     private final JwtUtils jwtUtils;
 
     @Transactional
-    public CompanyBalanceResponse adjustBalance(BalanceAdjustRequest request) {
-        Long companyId = jwtUtils.getCompanyIdFromToken();
-        Long userId = jwtUtils.getUserIdFromToken();
+    public CompanyBalanceResponse adjustBalance(CallerContext callerContext, BalanceAdjustRequest request) {
+        Long companyId = callerContext.companyId();
+        Long userId = callerContext.userId();
 
         if(companyId == null && request.getCompanyId() != 0) {
             companyId = request.getCompanyId();
+        }
+        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) == 0) {
+            return null;
         }
 
         CompanyBalance balance = balanceRepository.findByCompanyIdAndCode(companyId, request.getCode())

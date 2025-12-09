@@ -1,7 +1,9 @@
 package ai.anamaya.service.oms.rest.controller;
 
+import ai.anamaya.service.oms.core.context.UserCallerContext;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.enums.BalanceCodeType;
+import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.BalanceService;
 import ai.anamaya.service.oms.rest.dto.request.BalanceAdjustRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.BalanceTopUpRequestRest;
@@ -21,13 +23,18 @@ public class BalanceController {
 
     private final BalanceService balanceService;
     private final BalanceMapper mapper;
+    private final JwtUtils jwtUtils;
 
     @PostMapping("/adjust")
     public ApiResponse<CompanyBalanceResponseRest> adjust(
         @Valid @RequestBody BalanceAdjustRequestRest reqRest) {
 
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
+
         var reqCore = mapper.toCore(reqRest);
-        var result = balanceService.adjustBalance(reqCore);
+        var result = balanceService.adjustBalance(userCallerContext, reqCore);
 
         return ApiResponse.success(mapper.toRest(result));
     }

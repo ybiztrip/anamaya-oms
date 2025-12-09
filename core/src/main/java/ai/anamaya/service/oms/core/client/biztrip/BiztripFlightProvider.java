@@ -9,7 +9,7 @@ import ai.anamaya.service.oms.core.dto.request.booking.submit.FlightBookingSearc
 import ai.anamaya.service.oms.core.dto.request.booking.submit.FlightBookingSubmitRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
 import ai.anamaya.service.oms.core.dto.response.booking.data.BookingDataResponse;
-import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
+import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubmitResponse;
 import ai.anamaya.service.oms.core.service.FlightProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -56,17 +56,17 @@ public class BiztripFlightProvider implements FlightProvider {
     }
 
     @Override
-    public BookingSubmitResponse submitBooking(FlightBookingSubmitRequest request) {
+    public BookingFlightSubmitResponse submitBooking(FlightBookingSubmitRequest request) {
         return bookingSubmitService.submit(request);
     }
 
     @Override
-    public BookingSubmitResponse payment(CallerContext callerContext, FlightBookingPaymentRequest request) {
+    public BookingFlightSubmitResponse payment(CallerContext callerContext, FlightBookingPaymentRequest request) {
         return biztripFlightBookingPaymentService.payment(callerContext, request);
     }
 
     @Override
-    public BookingSubmitResponse checkStatus(CallerContext callerContext, FlightBookingStatusCheckRequest request) {
+    public BookingFlightSubmitResponse checkStatus(CallerContext callerContext, FlightBookingStatusCheckRequest request) {
         return biztripFlightBookingCheckStatusService.checkStatus(callerContext, request);
     }
 

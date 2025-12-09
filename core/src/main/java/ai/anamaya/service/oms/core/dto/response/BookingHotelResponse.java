@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.dto.response;
 
+import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import lombok.*;
 import java.time.LocalDate;
 
@@ -12,6 +13,7 @@ public class BookingHotelResponse {
     private Long bookingId;
     private String clientSource;
     private String itemId;
+    private String roomId;
     private String rateKey;
     private Short numRoom;
     private LocalDate checkInDate;
@@ -20,5 +22,5 @@ public class BookingHotelResponse {
     private Double partnerNettAmount;
     private String currency;
     private String specialRequest;
-    private Short status;
+    private BookingHotelStatus status;
 }

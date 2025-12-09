@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.entity;
 
+import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -25,11 +26,17 @@ public class BookingHotel extends BaseEntity {
     @Column(name = "client_source", length = 50)
     private String clientSource;
 
-    @Column(name = "item_id", length = 256)
+    @Column(name = "item_id", length = 256, nullable = false)
     private String itemId;
+
+    @Column(name = "room_id", length = 256, nullable = false)
+    private String roomId;
 
     @Column(name = "rate_key", columnDefinition = "TEXT")
     private String rateKey;
+
+    @Column(name = "payment_key", columnDefinition = "TEXT")
+    private String paymentKey;
 
     @Column(name = "num_room")
     private Short numRoom;
@@ -52,6 +59,10 @@ public class BookingHotel extends BaseEntity {
     @Column(name = "special_request", columnDefinition = "TEXT")
     private String specialRequest;
 
+    @Column(name = "booking_reference", length = 256)
+    private String bookingReference;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private Short status;
+    private BookingHotelStatus status;
 }

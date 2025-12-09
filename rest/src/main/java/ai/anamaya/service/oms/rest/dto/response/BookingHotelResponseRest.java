@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.rest.dto.response;
 
+import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,5 +25,5 @@ public class BookingHotelResponseRest {
     private Double partnerNettAmount;
     private String currency;
     private String specialRequest;
-    private Short status;
+    private BookingHotelStatus status;
 }

@@ -1,20 +1,19 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.BalanceAdjustRequest;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
 import ai.anamaya.service.oms.core.entity.BookingHotel;
 import ai.anamaya.service.oms.core.entity.CompanyBalanceDetail;
-import ai.anamaya.service.oms.core.enums.BalanceCodeType;
-import ai.anamaya.service.oms.core.enums.BalanceSourceType;
-import ai.anamaya.service.oms.core.enums.BalanceTransactionType;
-import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
+import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.BookingRepository;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Call;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -46,13 +45,14 @@ public class BookingCommonService {
     }
 
     public void bookingDebitBalance(
+        CallerContext callerContext,
         Booking booking,
         List<BookingFlight> bookingFlights,
         List<BookingHotel> bookingHotels
     ) {
 
         List<CompanyBalanceDetail> balanceDetails  = balanceService.getBalanceDetailByReference(BalanceSourceType.BOOKING, booking.getId());
-        if(balanceDetails != null) {
+        if(balanceDetails != null && !balanceDetails.isEmpty()) {
             return;
         }
 
@@ -63,11 +63,13 @@ public class BookingCommonService {
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal hotelTotalAmount = bookingHotels.stream()
-            .filter(h -> h.getStatus() == 1)
+            .filter(h -> h.getStatus() == BookingHotelStatus.CREATED)
             .map(this::calculateHotelAmount)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        balanceService.adjustBalance(BalanceAdjustRequest.builder()
+        balanceService.adjustBalance(
+            callerContext,
+            BalanceAdjustRequest.builder()
             .companyId(booking.getCompanyId())
             .code(BalanceCodeType.WALLET_FLIGHT)
             .sourceType(BalanceSourceType.BOOKING)
@@ -78,7 +80,9 @@ public class BookingCommonService {
             .remarks("Buying flight ticket approved by"+booking.getApprovedByName())
             .build());
 
-        balanceService.adjustBalance(BalanceAdjustRequest.builder()
+        balanceService.adjustBalance(
+            callerContext,
+            BalanceAdjustRequest.builder()
             .companyId(booking.getCompanyId())
             .code(BalanceCodeType.WALLET_HOTEL)
             .sourceType(BalanceSourceType.BOOKING)

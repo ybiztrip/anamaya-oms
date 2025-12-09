@@ -4,4 +4,5 @@ public sealed interface CallerContext
     permits UserCallerContext, SystemCallerContext {
 
     Long companyId();
+    Long userId();
 }

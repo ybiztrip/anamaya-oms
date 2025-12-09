@@ -7,7 +7,7 @@ import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripFlightBo
 import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripFlightBookingCheckFullStatusResponseMapper;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.booking.status.FlightBookingStatusCheckRequest;
-import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingSubmitResponse;
+import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubmitResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class BiztripFlightBookingCheckStatusService {
     private final BiztripFlightBookingCheckFullStatusResponseMapper submitResponseMapper = new BiztripFlightBookingCheckFullStatusResponseMapper();
 
 
-    public BookingSubmitResponse checkStatus(CallerContext callerContext, FlightBookingStatusCheckRequest request) {
+    public BookingFlightSubmitResponse checkStatus(CallerContext callerContext, FlightBookingStatusCheckRequest request) {
         try {
             String token = authService.getAccessToken(callerContext.companyId());
             BiztripBookingCheckFullStatusRequest biztripReq = requestMapper.map(request);

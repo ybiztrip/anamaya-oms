@@ -6,8 +6,8 @@ import ai.anamaya.service.oms.core.dto.response.booking.submit.*;
 
 public class BiztripFlightBookingCheckFullStatusResponseMapper {
 
-    public BookingSubmitResponse map(BiztripCheckFullStatusResponse b) {
-        BookingSubmitResponse res = new BookingSubmitResponse();
+    public BookingFlightSubmitResponse map(BiztripCheckFullStatusResponse b) {
+        BookingFlightSubmitResponse res = new BookingFlightSubmitResponse();
 
         if(b.getBookingStatusResult() == null || b.getBookingStatusResult().isEmpty()) {
             return null;
