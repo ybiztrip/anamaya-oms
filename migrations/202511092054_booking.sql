@@ -27,6 +27,7 @@ CREATE TABLE booking (
 CREATE TABLE booking_pax (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     booking_id BIGINT NOT NULL,
+    booking_code VARCHAR(100),
     email VARCHAR(256),
     first_name VARCHAR(256) NOT NULL,
     last_name VARCHAR(256) NOT NULL,
@@ -61,10 +62,10 @@ CREATE TABLE booking_flight (
     destination VARCHAR(100),
     departure_datetime TIMESTAMP,
     arrival_datetime TIMESTAMP,
-    adult_amount DECIMAL(18,2) NULL
-    child_amount DECIMAL(18,2) NULL
-    infant_amount DECIMAL(18,2) NULL
-    total_amount DECIMAL(18,2) NULL
+    adult_amount DECIMAL(18,2) NULL,
+    child_amount DECIMAL(18,2) NULL,
+    infant_amount DECIMAL(18,2) NULL,
+    total_amount DECIMAL(18,2) NULL,
     booking_reference VARCHAR(256) NOT NULL,
     ota_reference VARCHAR(256) NOT NULL,
     status VARCHAR(20),
@@ -105,7 +106,7 @@ CREATE TABLE booking_hotel (
     special_request TEXT,
     booking_reference VARCHAR(256),
     ota_reference VARCHAR(256),
-    status SMALLINT,
+    status VARCHAR(20) NOT NULL,
     created_by BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by BIGINT,

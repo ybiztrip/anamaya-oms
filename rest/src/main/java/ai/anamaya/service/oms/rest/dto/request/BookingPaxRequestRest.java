@@ -4,6 +4,7 @@ import ai.anamaya.service.oms.core.enums.PaxGender;
 import ai.anamaya.service.oms.core.enums.PaxTitle;
 import ai.anamaya.service.oms.core.enums.PaxType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -23,7 +24,7 @@ public class BookingPaxRequestRest {
 
     private String email;
 
-    @NotBlank
+    @NotNull
     private PaxGender gender;
 
     private PaxType type;

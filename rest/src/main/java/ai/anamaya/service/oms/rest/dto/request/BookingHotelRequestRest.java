@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.rest.dto.request;
 
+import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import lombok.Data;
 
 @Data
@@ -18,5 +19,5 @@ public class BookingHotelRequestRest {
     private String partnerNettAmount;
     private String currency;
     private String specialRequest;
-    private String status;
+    private BookingHotelStatus status;
 }

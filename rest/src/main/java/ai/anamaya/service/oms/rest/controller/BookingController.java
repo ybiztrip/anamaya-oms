@@ -5,10 +5,7 @@ import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.*;
-import ai.anamaya.service.oms.rest.dto.request.BookingFlightRequestRest;
-import ai.anamaya.service.oms.rest.dto.request.BookingHotelRequestRest;
-import ai.anamaya.service.oms.rest.dto.request.BookingPaxRequestRest;
-import ai.anamaya.service.oms.rest.dto.request.BookingRequestRest;
+import ai.anamaya.service.oms.rest.dto.request.*;
 import ai.anamaya.service.oms.rest.dto.response.BookingResponseRest;
 import ai.anamaya.service.oms.rest.mapper.BookingMapper;
 import jakarta.validation.Valid;
@@ -102,9 +99,13 @@ public class BookingController {
     @PutMapping("/{id}/hotels")
     public ApiResponse<?> updateBookingHotels(
         @PathVariable Long id,
-        @RequestBody List<BookingHotelRequestRest> restList) {
-        var listCore = mapper.toCoreHotels(restList);
-        var resultCore = bookingHotelService.updateBookingHotels(id, listCore);
+        @Valid @RequestBody BookingHotelSubmitRequestRest requestRest) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
+
+        var request = mapper.toCoreSubmitHotel(requestRest);
+        var resultCore = bookingHotelService.submitBookingHotel(userCallerContext, id, request);
 
         return ApiResponse.success(resultCore);
     }

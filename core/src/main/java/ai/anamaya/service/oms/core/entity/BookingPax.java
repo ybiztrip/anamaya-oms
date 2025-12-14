@@ -29,6 +29,9 @@ public class BookingPax extends BaseEntity {
     @Column(name = "booking_id", nullable = false)
     private Long bookingId;
 
+    @Column(name = "booking_code", nullable = false)
+    private String bookingCode;
+
     @Column(name = "email")
     private String email;
 
