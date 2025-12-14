@@ -23,6 +23,9 @@ public class BookingHotel extends BaseEntity {
     @Column(name = "booking_id")
     private Long bookingId;
 
+    @Column(name = "booking_code")
+    private String bookingCode;
+
     @Column(name = "client_source", length = 50)
     private String clientSource;
 

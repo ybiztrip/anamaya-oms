@@ -2,6 +2,7 @@ package ai.anamaya.service.oms.core.dto.response;
 
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,8 @@ public class BookingResponse {
     private Long companyId;
     private String code;
     private String journeyCode;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private String contactEmail;
     private String contactFirstName;
     private String contactLastName;

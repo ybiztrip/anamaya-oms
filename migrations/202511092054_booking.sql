@@ -3,6 +3,8 @@ CREATE TABLE booking (
     company_id BIGINT NOT NULL,
     code VARCHAR(100),
     journey_code VARCHAR(100),
+    start_date DATE,
+    end_date DATE,
     contact_email VARCHAR(256) NOT NULL,
     contact_first_name VARCHAR(256) NOT NULL,
     contact_last_name VARCHAR(256) NOT NULL,
@@ -14,7 +16,6 @@ CREATE TABLE booking (
     additional_info JSON,
     client_additional_info JSON,
     status VARCHAR(20) NOT NULL,
-    payment_expiration_time TIMESTAMP,
     approved_by BIGINT,
     approved_by_name VARCHAR(256),
     created_by BIGINT,
@@ -51,6 +52,7 @@ CREATE TABLE booking_pax (
 CREATE TABLE booking_flight (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     booking_id BIGINT NOT NULL,
+    booking_code VARCHAR(100),
     type SMALLINT,
     client_source VARCHAR(50),
     item_id VARCHAR(256),
@@ -88,6 +90,7 @@ CREATE TABLE booking_flight_history (
 CREATE TABLE booking_hotel (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     booking_id BIGINT NOT NULL,
+    booking_code VARCHAR(100),
     client_source VARCHAR(50),
     item_id VARCHAR(256) NOT NULL,
     room_id VARCHAR(256) NOT NULL,

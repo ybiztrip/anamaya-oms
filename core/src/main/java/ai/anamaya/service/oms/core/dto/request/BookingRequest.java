@@ -9,6 +9,8 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookingRequest {
+    private LocalDate startDate;
+    private LocalDate endDate;
     private String journeyCode;
     private String contactEmail;
     private String contactFirstName;

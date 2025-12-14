@@ -35,9 +35,12 @@ public class BookingController {
     @PostMapping
     public ApiResponse<BookingResponseRest> createBooking(
         @Valid @RequestBody BookingRequestRest reqRest) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
 
         var reqCore = mapper.toCore(reqRest);
-        var resultCore = bookingService.createBooking(reqCore);
+        var resultCore = bookingService.createBooking(userCallerContext, reqCore);
 
         return ApiResponse.success(mapper.toRest(resultCore));
     }

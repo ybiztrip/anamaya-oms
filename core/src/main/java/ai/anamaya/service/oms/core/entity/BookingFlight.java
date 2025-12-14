@@ -24,6 +24,9 @@ public class BookingFlight extends BaseEntity {
     @Column(name = "booking_id")
     private Long bookingId;
 
+    @Column(name = "booking_code")
+    private String bookingCode;
+
     @Column(name = "type")
     private Short type;
 

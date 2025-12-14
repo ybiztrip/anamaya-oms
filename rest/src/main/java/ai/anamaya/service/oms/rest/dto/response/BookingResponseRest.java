@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.rest.dto.response;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,8 @@ public class BookingResponseRest {
     private Long companyId;
     private String code;
     private String journeyCode;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
     private String contactEmail;
     private String contactFirstName;
@@ -21,7 +24,7 @@ public class BookingResponseRest {
     private String contactNationality;
     private String contactPhoneCode;
     private String contactPhoneNumber;
-    private String contactDob;
+    private LocalDate contactDob;
 
     private Map<String, Object> additionalInfo;
     private Map<String, Object> clientAdditionalInfo;

@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.dto.request.BookingRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
@@ -12,7 +13,6 @@ import ai.anamaya.service.oms.core.repository.BookingHotelRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
 import ai.anamaya.service.oms.core.repository.BookingRepository;
 import ai.anamaya.service.oms.core.security.JwtUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -121,15 +121,16 @@ public class BookingService {
         return booking;
     }
 
-    public BookingResponse createBooking(BookingRequest request){
-        Long userId = jwtUtils.getUserIdFromToken();
-        Long companyId = jwtUtils.getCompanyIdFromToken();
-        ObjectMapper mapper = new ObjectMapper();
+    public BookingResponse createBooking(CallerContext callerContext, BookingRequest request){
+        Long userId = callerContext.userId();
+        Long companyId = callerContext.companyId();
 
         Booking booking = Booking.builder()
             .companyId(companyId)
             .code("ANM:"+Instant.now().toEpochMilli())
             .journeyCode(request.getJourneyCode())
+            .startDate(request.getStartDate())
+            .endDate(request.getEndDate())
             .contactEmail(request.getContactEmail())
             .contactFirstName(request.getContactFirstName())
             .contactLastName(request.getContactLastName())
@@ -140,7 +141,7 @@ public class BookingService {
             .contactDob(request.getContactDob())
             .additionalInfo(request.getAdditionalInfo())
             .clientAdditionalInfo(request.getClientAdditionalInfo())
-            .status(BookingStatus.DRAFT)
+            .status(BookingStatus.APPROVED)
             .createdBy(userId)
             .updatedBy(userId)
             .build();
@@ -156,6 +157,8 @@ public class BookingService {
                 .companyId(booking.getCompanyId())
                 .code(booking.getCode())
                 .journeyCode(booking.getJourneyCode())
+                .startDate(booking.getStartDate())
+                .endDate(booking.getEndDate())
                 .contactEmail(booking.getContactEmail())
                 .contactFirstName(booking.getContactFirstName())
                 .contactLastName(booking.getContactLastName())

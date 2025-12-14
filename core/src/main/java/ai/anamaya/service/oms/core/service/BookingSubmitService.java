@@ -84,11 +84,6 @@ public class BookingSubmitService {
             booking.setStatus(BookingStatus.ON_PROCESS_CREATE);
         }
 
-        if(response.getPaymentExpirationTime() != null && response.getPaymentExpirationTime() > 0) {
-            Long epochMillis = response.getPaymentExpirationTime();
-            booking.setPaymentExpirationTime(Instant.ofEpochMilli(epochMillis).atOffset(ZoneOffset.UTC));
-        }
-
         List<String> bookingReferenceCodes = flights.stream()
             .filter(f -> f.getStatus() == BookingFlightStatus.CREATED)
             .map(BookingFlight::getBookingReference)

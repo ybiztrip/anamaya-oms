@@ -5,12 +5,14 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleInvalidJson(HttpMessageNotReadableException ex) {
+
+        Throwable root = ex.getRootCause();
+        String message = "Invalid request format";
+
+        if (root instanceof DateTimeParseException dtpe) {
+            message = "Invalid date value. Use format yyyy-MM-dd";
+        }
+
+        return ResponseEntity.badRequest().body(
+            Map.of(
+                "success", false,
+                "message", message
+            )
+        );
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
