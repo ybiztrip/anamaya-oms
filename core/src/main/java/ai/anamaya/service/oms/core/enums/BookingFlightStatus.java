@@ -1,17 +1,16 @@
 package ai.anamaya.service.oms.core.enums;
 
 public enum BookingFlightStatus {
-
-    DRAFT,
     CREATED,
     BOOKED,
+    APPROVED,
     ISSUING,
     ISSUED,
     ISSUANCE_FAILED;
 
     public static BookingFlightStatus fromBookingPartnerStatus(String status) {
         if (status == null) {
-            return DRAFT;
+            return CREATED;
         }
 
         return switch (status.toUpperCase()) {
@@ -20,18 +19,18 @@ public enum BookingFlightStatus {
             case "ISSUING" -> ISSUING;
             case "ISSUED" -> ISSUED;
             case "ISSUANCE_FAILED" -> ISSUANCE_FAILED;
-            default -> DRAFT;
+            default -> CREATED;
         };
     }
 
     public static BookingFlightStatus fromPaymentPartnerStatus(String status) {
         if (status == null) {
-            return DRAFT;
+            return CREATED;
         }
 
         return switch (status.toUpperCase()) {
             case "OK" -> ISSUED;
-            default -> DRAFT;
+            default -> CREATED;
         };
     }
 

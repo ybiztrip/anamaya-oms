@@ -115,9 +115,17 @@ public class BookingController {
 
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN')")
     @PutMapping("/{id}/approve")
-    public ApiResponse<String> approve(@PathVariable Long id) {
+    public ApiResponse<String> approve(
+        @PathVariable Long id,
+        @Valid @RequestBody BookingApproveRequestRest requestRest
+    ) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
+
+        var request = mapper.toCoreApprove(requestRest);
         return ApiResponse.success(
-            bookingApproveService.approveBooking(id)
+            bookingApproveService.approveBooking(userCallerContext, id, request)
         );
     }
 }

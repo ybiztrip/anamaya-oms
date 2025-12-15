@@ -18,6 +18,7 @@ import java.util.List;
 public interface BookingMapper {
 
     BookingRequest toCore(BookingRequestRest rest);
+    BookingApproveRequest toCoreApprove(BookingApproveRequestRest rest);
 
     BookingPaxRequest toCore(BookingPaxRequestRest rest);
     List<BookingPaxRequest> toCorePax(List<BookingPaxRequestRest> list);

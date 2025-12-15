@@ -83,7 +83,7 @@ public class BookingFlightService {
                 .destination(req.getDestination())
                 .departureDatetime(req.getDepartureDatetime())
                 .arrivalDatetime(req.getArrivalDatetime())
-                .status(BookingFlightStatus.DRAFT)
+                .status(BookingFlightStatus.CREATED)
                 .createdBy(userId)
                 .updatedBy(userId)
                 .build();

@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.client.queue.BookingPubSubPublisher;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.pubsub.BookingStatusMessage;
+import ai.anamaya.service.oms.core.dto.request.BookingApproveRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCheckRateRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.payment.FlightBookingPaymentRequest;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,7 +47,6 @@ public class BookingApproveService {
 
     private final Map<String, FlightProvider> flightProviders;
     private final Map<String, HotelProvider> hotelProviders;
-    private final ObjectMapper mapper = new ObjectMapper();
 
     private FlightProvider getFlightProvider(String source) {
         String key = (source != null ? source.toLowerCase() : "biztrip") + "FlightProvider";
@@ -71,31 +72,104 @@ public class BookingApproveService {
         return provider;
     }
 
-    public String approveBooking(Long id) {
+    @Transactional(rollbackFor = Exception.class)
+    public String approveBooking(CallerContext callerContext, Long bookingId, BookingApproveRequest request) {
         Long companyId = jwtUtils.getCompanyIdFromToken();
         Long userId = jwtUtils.getUserIdFromToken();
         String userEmail = jwtUtils.getEmailFromToken();
 
-        Booking booking = bookingRepository.findById(id)
+        Booking booking = bookingRepository.findById(bookingId)
             .orElseThrow(() -> new NotFoundException("Booking not found"));
 
         if (!booking.getCompanyId().equals(companyId)) {
             throw new AccessDeniedException("You are not authorized to modify this booking");
         }
 
-        if (booking.getStatus() != BookingStatus.CREATED){
-            throw new IllegalArgumentException("Wrong status");
+        if (booking.getStatus() == BookingStatus.CREATED){
+            booking.setStatus(BookingStatus.APPROVED);
+            booking.setApprovedBy(userId);
+            booking.setApprovedByName(userEmail);
+            bookingRepository.save(booking);
         }
 
-        booking.setStatus(BookingStatus.APPROVED);
-        booking.setApprovedBy(userId);
-        booking.setApprovedByName(userEmail);
-        bookingRepository.save(booking);
+        List<BookingStatusMessage> bookingStatusMessages = new ArrayList<>();
+        if (request.getFlightIds() != null && !request.getFlightIds().isEmpty()) {
+            List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndIdIn(bookingId, request.getFlightIds());
+            List<BookingFlight> notValidFlights = bookingFlights.stream()
+                .filter(f -> f.getStatus() != BookingFlightStatus.BOOKED)
+                .toList();
 
-        BookingStatusMessage message =
-            new BookingStatusMessage(booking.getId(), booking.getCompanyId(), booking.getStatus());
+            if (!notValidFlights.isEmpty()) {
+                throw new IllegalStateException(
+                    "Some booking flights are not valid to APPROVED: " +
+                        notValidFlights.stream()
+                            .map(BookingFlight::getId)
+                            .toList()
+                );
+            }
 
-        bookingPubSubPublisher.publishBookingStatus(message);
+            bookingFlights.forEach(h -> {
+                h.setStatus(BookingFlightStatus.APPROVED);
+                h.setUpdatedBy(userId);
+            });
+            bookingFlightRepository.saveAll(bookingFlights);
+
+            bookingStatusMessages.addAll(
+                bookingFlights.stream()
+                    .map(f -> BookingStatusMessage.builder()
+                        .companyId(booking.getCompanyId())
+                        .bookingType(BookingType.FLIGHT)
+                        .bookingId(f.getBookingId())
+                        .bookingCode(f.getBookingCode())
+                        .status(BookingStatus.APPROVED)
+                        .build()
+                    )
+                    .toList()
+            );
+
+        }
+
+        if (request.getHotelIds() != null && !request.getHotelIds().isEmpty()) {
+            List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingIdAndIdIn(bookingId, request.getHotelIds());
+            List<BookingHotel> notValidHotels = bookingHotels.stream()
+                .filter(h -> h.getStatus() != BookingHotelStatus.BOOKED)
+                .toList();
+
+            if (!notValidHotels.isEmpty()) {
+                throw new IllegalStateException(
+                    "Some booking hotels are not valid to APPROVED: " +
+                        notValidHotels.stream()
+                            .map(BookingHotel::getId)
+                            .toList()
+                );
+            }
+
+            bookingHotels.forEach(h -> {
+                h.setStatus(BookingHotelStatus.APPROVED);
+                h.setUpdatedBy(userId);
+            });
+            bookingHotelRepository.saveAll(bookingHotels);
+
+            bookingStatusMessages.addAll(
+                bookingHotels.stream()
+                    .map(f -> BookingStatusMessage.builder()
+                        .companyId(booking.getCompanyId())
+                        .bookingType(BookingType.HOTEL)
+                        .bookingId(f.getBookingId())
+                        .bookingCode(f.getBookingCode())
+                        .status(BookingStatus.APPROVED)
+                        .build()
+                    )
+                    .toList()
+            );
+        }
+
+        if (bookingStatusMessages.isEmpty()) {
+            throw new IllegalArgumentException("No booking has been approved");
+        }
+        for (BookingStatusMessage message : bookingStatusMessages) {
+            bookingPubSubPublisher.publishBookingStatus(message);
+        }
 
         return "Booking approved";
     }

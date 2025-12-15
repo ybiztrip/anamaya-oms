@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface BookingFlightRepository extends JpaRepository<BookingFlight, Long> {
+    List<BookingFlight> findByBookingIdAndIdIn(Long bookingId, List<Long> ids);
     List<BookingFlight> findByBookingId(Long bookingId);
     List<BookingFlight> findByBookingIdAndBookingCode(Long bookingId, String bookingCode);
 

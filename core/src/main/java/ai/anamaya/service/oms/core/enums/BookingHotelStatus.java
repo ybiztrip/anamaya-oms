@@ -1,15 +1,15 @@
 package ai.anamaya.service.oms.core.enums;
 
 public enum BookingHotelStatus {
-    DRAFT,
     CREATED,
     BOOKED,
+    APPROVED,
     ISSUED,
     CANCELLED;
 
     public static BookingHotelStatus fromBookingPartnerStatus(String status) {
         if (status == null) {
-            return DRAFT;
+            return CREATED;
         }
 
         return switch (status.toUpperCase()) {
