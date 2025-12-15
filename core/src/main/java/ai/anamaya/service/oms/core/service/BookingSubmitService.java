@@ -187,7 +187,7 @@ public class BookingSubmitService {
             .contactDetail(contact)
             .passengers(new Passengers(adults, null, null))
             .flightIds(flightList.stream().map(BookingFlight::getItemId).toList())
-            .partnerBookingId(booking.getCode())
+            .partnerBookingId(flightList.get(0).getBookingCode())
             .destinationId(booking.getJourneyCode())
             .journeyType(flightList.size() > 1 ? "ROUND_TRIP" : "ONE_WAY")
             .locale("id_ID")

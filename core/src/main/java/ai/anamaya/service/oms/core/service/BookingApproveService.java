@@ -16,7 +16,6 @@ import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.*;
 import ai.anamaya.service.oms.core.security.JwtUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -172,6 +171,57 @@ public class BookingApproveService {
         }
 
         return "Booking approved";
+    }
+
+    @Transactional
+    public void approveConfirmBooking(CallerContext callerContext, BookingStatusMessage request) {
+        Booking booking = bookingCommonService.getValidatedBookingById(true, request.getBookingId());
+
+        if(booking.getStatus() != BookingStatus.APPROVED) {
+            throw new IllegalArgumentException("Wrong status");
+        }
+
+        switch (request.getBookingType()) {
+            case FLIGHT -> {
+                ApproveConfirmFlightBooking(callerContext, booking, request);
+            }
+            case HOTEL -> {
+                ApproveConfirmHotelBooking(callerContext, booking, request);
+            }
+            default -> {
+                return;
+            }
+        }
+    }
+
+    public void ApproveConfirmFlightBooking(CallerContext callerContext, Booking booking, BookingStatusMessage request) {
+        Long userId = callerContext.userId();
+
+        List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
+        bookingCommonService.bookingDebitBalance(callerContext, booking, bookingFlights, null);
+        processFlights(callerContext, booking, bookingFlights);
+
+        bookingFlights.forEach(h -> {
+            h.setStatus(BookingFlightStatus.ISSUED);
+            h.setUpdatedBy(userId);
+        });
+        bookingFlightRepository.saveAll(bookingFlights);
+    }
+
+    public void ApproveConfirmHotelBooking(CallerContext callerContext, Booking booking, BookingStatusMessage request) {
+        Long userId = callerContext.userId();
+
+        List<BookingPax> bookingPaxes = bookingPaxRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
+        List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
+        processHotels(callerContext, booking, bookingPaxes, bookingHotels);
+
+        bookingHotels.forEach(h -> {
+            h.setStatus(BookingHotelStatus.ISSUED);
+            h.setUpdatedBy(userId);
+        });
+        bookingHotelRepository.saveAll(bookingHotels);
+        bookingCommonService.bookingDebitBalance(callerContext, booking, null, bookingHotels);
+
     }
 
     @Transactional
@@ -342,7 +392,7 @@ public class BookingApproveService {
 
         return HotelBookingCreateRequest.builder()
             .propertyId(hotel.getItemId())
-            .partnerBookingId(booking.getCode())
+            .partnerBookingId(hotel.getBookingCode())
             .checkInDate(hotel.getCheckInDate().toString())
             .checkOutDate(hotel.getCheckOutDate().toString())
             .displayCurrency(hotel.getCurrency())
@@ -398,13 +448,6 @@ public class BookingApproveService {
                     : "{}"
             )
             .build();
-    }
-
-
-
-
-    public String retryApproveConfirmBooking(Long id) {
-        return "Booking approved confirm";
     }
 
 }

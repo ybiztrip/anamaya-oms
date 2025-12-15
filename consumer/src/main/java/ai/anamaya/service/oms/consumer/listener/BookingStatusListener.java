@@ -60,7 +60,7 @@ public class BookingStatusListener {
 
             switch (bookingStatus.getStatus()) {
                 case APPROVED:
-                    bookingApproveService.approveConfirmBooking(systemContext, bookingStatus.getBookingId());
+                    bookingApproveService.approveConfirmBooking(systemContext, bookingStatus);
                     break;
                 case CANCELLED:
                     break;
