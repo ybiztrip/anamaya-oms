@@ -224,7 +224,7 @@ public class BookingService {
                 .arrivalDatetime(f.getArrivalDatetime())
                 .status(f.getStatus())
                 .paxs(
-                    bookingPaxRepository.findByBookingIdAndBookingCode(f.getId(), f.getBookingCode())
+                    bookingPaxRepository.findByBookingIdAndBookingCode(f.getBookingId(), f.getBookingCode())
                         .stream()
                         .map(this::toPaxResponse)
                         .toList()
@@ -250,7 +250,7 @@ public class BookingService {
                 .specialRequest(h.getSpecialRequest())
                 .status(h.getStatus())
                 .paxs(
-                    bookingPaxRepository.findByBookingIdAndBookingCode(h.getId(), h.getBookingCode())
+                    bookingPaxRepository.findByBookingIdAndBookingCode(h.getBookingId(), h.getBookingCode())
                         .stream()
                         .map(this::toPaxResponse)
                         .toList()

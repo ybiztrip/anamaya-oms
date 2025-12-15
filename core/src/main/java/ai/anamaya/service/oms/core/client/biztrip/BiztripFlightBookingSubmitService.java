@@ -51,7 +51,7 @@ public class BiztripFlightBookingSubmitService {
             JsonNode root = mapper.readTree(rawResponse);
             boolean success = root.path("success").asBoolean(false);
             if (!success) {
-                String errorMessage = root.path("message").asText("Unknown Biztrip error");
+                String errorMessage = root.path("errorMessage").asText("Biztrip error");
                 throw new IllegalArgumentException(errorMessage);
             }
 

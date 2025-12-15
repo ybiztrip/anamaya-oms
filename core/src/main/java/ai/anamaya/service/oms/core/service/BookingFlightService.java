@@ -55,7 +55,7 @@ public class BookingFlightService {
         return provider;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public BookingResponse submitBookingFlights(CallerContext callerContext, Long bookingId, BookingFlightSubmitRequest request) {
         Long userId = callerContext.userId();
         Booking booking = bookingService.getValidatedBooking(bookingId);
@@ -68,6 +68,11 @@ public class BookingFlightService {
         String bookingCode = "ANMF:"+ Instant.now().toEpochMilli();
 
         for (BookingFlightRequest req : requestFlights) {
+            if (req.getDepartureDatetime().isBefore(booking.getStartDate().atStartOfDay())
+                || req.getDepartureDatetime().isAfter(booking.getEndDate().atStartOfDay())
+            ) {
+                throw new IllegalArgumentException("Booking date flight is outside journey date");
+            }
             BookingFlight newFlight = BookingFlight.builder()
                 .bookingId(bookingId)
                 .bookingCode(bookingCode)
@@ -86,6 +91,8 @@ public class BookingFlightService {
         }
 
         bookingPaxService.submitBookingPax(callerContext, bookingId, bookingCode, request.getPaxs());
+
+        createBookingFLight(callerContext, booking, bookingCode);
 
         return bookingService.toResponse(booking, true, true);
     }

@@ -86,7 +86,7 @@ CREATE TABLE booking_flight_history (
     updated_by BIGINT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_booking_flight_history_booking_id (booking_id)
-)
+);
 
 CREATE TABLE booking_hotel (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

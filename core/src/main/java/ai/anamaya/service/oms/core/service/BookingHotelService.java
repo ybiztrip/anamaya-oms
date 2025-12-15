@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +38,12 @@ public class BookingHotelService {
 
         BookingHotelRequest reqHotel = request.getHotel();
         String bookingCode = "ANMH:"+Instant.now().toEpochMilli();
+
+        if (reqHotel.getCheckInDate().isBefore(booking.getStartDate())
+            || reqHotel.getCheckInDate().isAfter(booking.getEndDate())
+        ) {
+            throw new IllegalArgumentException("Booking date hotel is outside journey date");
+        }
 
         BookingHotel newHotel = BookingHotel.builder()
             .bookingId(bookingId)

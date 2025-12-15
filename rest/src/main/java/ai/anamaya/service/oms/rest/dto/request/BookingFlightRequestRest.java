@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.rest.dto.request;
 
+import jakarta.validation.constraints.AssertTrue;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -17,4 +18,13 @@ public class BookingFlightRequestRest {
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
     private String status;
+
+    @AssertTrue(message = "departureDatetime must be less than arrivalDatetime")
+    public boolean isDateValid() {
+        if (departureDatetime == null || arrivalDatetime == null) {
+            return true;
+        }
+        return departureDatetime.isBefore(arrivalDatetime);
+    }
+
 }
