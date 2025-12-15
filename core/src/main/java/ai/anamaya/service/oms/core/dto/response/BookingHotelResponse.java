@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.core.dto.response;
 import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import lombok.*;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 public class BookingHotelResponse {
     private Long id;
     private Long bookingId;
+    private String bookingCode;
     private String clientSource;
     private String itemId;
     private String roomId;
@@ -23,4 +25,5 @@ public class BookingHotelResponse {
     private String currency;
     private String specialRequest;
     private BookingHotelStatus status;
+    private List<BookingPaxResponse> paxs;
 }

@@ -26,6 +26,9 @@ public class BookingFlightHistory extends BaseEntity {
     @Column(name = "booking_id")
     private Long bookingId;
 
+    @Column(name = "booking_code")
+    private String  bookingCode;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private BookingFlightStatus status;

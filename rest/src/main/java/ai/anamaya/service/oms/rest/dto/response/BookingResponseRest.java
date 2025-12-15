@@ -30,7 +30,6 @@ public class BookingResponseRest {
     private Map<String, Object> clientAdditionalInfo;
     private String status;
 
-    private List<BookingPaxResponseRest> paxList;
-    private List<BookingFlightResponseRest> flightList;
-    private List<BookingHotelResponseRest> hotelList;
+    private List<BookingFlightResponseRest> flights;
+    private List<BookingHotelResponseRest> hotels;
 }

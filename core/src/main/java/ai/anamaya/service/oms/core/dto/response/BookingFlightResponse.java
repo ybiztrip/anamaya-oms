@@ -4,6 +4,7 @@ import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 public class BookingFlightResponse {
     private Long id;
     private Long bookingId;
+    private String bookingCode;
     private Short type;
     private String clientSource;
     private String itemId;
@@ -20,4 +22,5 @@ public class BookingFlightResponse {
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
     private BookingFlightStatus status;
+    private List<BookingPaxResponse> paxs;
 }

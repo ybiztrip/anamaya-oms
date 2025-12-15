@@ -23,7 +23,7 @@ public interface BookingMapper {
     List<BookingPaxRequest> toCorePax(List<BookingPaxRequestRest> list);
 
     BookingFlightRequest toCore(BookingFlightRequestRest rest);
-    List<BookingFlightRequest> toCoreFlights(List<BookingFlightRequestRest> list);
+    BookingFlightSubmitRequest toCoreSubmitFlights(BookingFlightSubmitRequestRest rest);
 
     BookingHotelRequest toCore(BookingHotelRequestRest rest);
     BookingHotelSubmitRequest toCoreSubmitHotel(BookingHotelSubmitRequestRest rest);
@@ -31,6 +31,12 @@ public interface BookingMapper {
     BookingResponseRest toRest(BookingResponse core);
 
     BookingPaxResponseRest toRest(BookingPaxResponse core);
+    List<BookingPaxResponseRest> toRestPaxs(List<BookingPaxResponse> list);
+
     BookingFlightResponseRest toRest(BookingFlightResponse core);
+    List<BookingFlightResponseRest> toRestFlights(List<BookingFlightResponse> list);
+
     BookingHotelResponseRest toRest(BookingHotelResponse core);
+    List<BookingHotelResponseRest> toRestHotels(List<BookingHotelResponse> list);
 }
+

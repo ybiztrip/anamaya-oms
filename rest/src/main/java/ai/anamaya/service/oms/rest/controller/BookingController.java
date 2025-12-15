@@ -85,19 +85,22 @@ public class BookingController {
         return ApiResponse.success(mapper.toRest(resultCore));
     }
 
-    @PutMapping("/{id}/flights")
-    public ApiResponse<?> updateBookingFlights(
+    @PostMapping("/{id}/flights")
+    public ApiResponse<?> submitBookingFlights(
         @PathVariable Long id,
-        @RequestBody List<BookingFlightRequestRest> restList) {
+        @RequestBody BookingFlightSubmitRequestRest requestRest) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
 
-        var listCore = mapper.toCoreFlights(restList);
-        var resultCore = bookingFlightService.updateBookingFlights(id, listCore);
+        var request = mapper.toCoreSubmitFlights(requestRest);
+        var resultCore = bookingFlightService.submitBookingFlights(userCallerContext, id, request);
 
         return ApiResponse.success(resultCore);
     }
 
-    @PutMapping("/{id}/hotels")
-    public ApiResponse<?> updateBookingHotels(
+    @PostMapping("/{id}/hotels")
+    public ApiResponse<?> submitBookingHotels(
         @PathVariable Long id,
         @Valid @RequestBody BookingHotelSubmitRequestRest requestRest) {
         Long companyId = jwtUtils.getCompanyIdFromToken();
@@ -108,15 +111,6 @@ public class BookingController {
         var resultCore = bookingHotelService.submitBookingHotel(userCallerContext, id, request);
 
         return ApiResponse.success(resultCore);
-    }
-
-    @PutMapping("/{id}/submit")
-    public ApiResponse<?> submitBooking(@PathVariable Long id) {
-        Long companyId = jwtUtils.getCompanyIdFromToken();
-        Long userId = jwtUtils.getUserIdFromToken();
-        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
-        var result = bookingSubmitService.submitBooking(userCallerContext, id);
-        return ApiResponse.success(result);
     }
 
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN')")

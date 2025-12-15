@@ -171,23 +171,14 @@ public class BookingService {
                 .clientAdditionalInfo(booking.getClientAdditionalInfo())
                 .status(booking.getStatus());
 
-        if (pax) {
-            builder.paxList(
-                bookingPaxRepository.findByBookingId(booking.getId())
-                .stream()
-                .map(this::toPaxResponse)
-                .toList()
-            );
-        }
-
         if (detail) {
-            builder.flightList(
+            builder.flights(
                 bookingFlightRepository.findByBookingId(booking.getId())
                     .stream()
                     .map(this::toFlightResponse)
                     .toList()
             )
-            .hotelList(
+            .hotels(
                 bookingHotelRepository.findByBookingId(booking.getId())
                     .stream()
                     .map(this::toHotelResponse)
@@ -223,6 +214,7 @@ public class BookingService {
         return BookingFlightResponse.builder()
                 .id(f.getId())
                 .bookingId(f.getBookingId())
+                .bookingCode(f.getBookingCode())
                 .type(f.getType())
                 .clientSource(f.getClientSource())
                 .itemId(f.getItemId())
@@ -231,6 +223,12 @@ public class BookingService {
                 .departureDatetime(f.getDepartureDatetime())
                 .arrivalDatetime(f.getArrivalDatetime())
                 .status(f.getStatus())
+                .paxs(
+                    bookingPaxRepository.findByBookingIdAndBookingCode(f.getId(), f.getBookingCode())
+                        .stream()
+                        .map(this::toPaxResponse)
+                        .toList()
+                )
                 .build();
     }
 
@@ -238,6 +236,7 @@ public class BookingService {
         return BookingHotelResponse.builder()
                 .id(h.getId())
                 .bookingId(h.getBookingId())
+                .bookingCode(h.getBookingCode())
                 .clientSource(h.getClientSource())
                 .itemId(h.getItemId())
                 .roomId(h.getRoomId())
@@ -250,6 +249,12 @@ public class BookingService {
                 .currency(h.getCurrency())
                 .specialRequest(h.getSpecialRequest())
                 .status(h.getStatus())
+                .paxs(
+                    bookingPaxRepository.findByBookingIdAndBookingCode(h.getId(), h.getBookingCode())
+                        .stream()
+                        .map(this::toPaxResponse)
+                        .toList()
+                )
                 .build();
     }
 }
