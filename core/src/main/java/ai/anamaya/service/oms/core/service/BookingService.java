@@ -8,10 +8,7 @@ import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
-import ai.anamaya.service.oms.core.repository.BookingFlightRepository;
-import ai.anamaya.service.oms.core.repository.BookingHotelRepository;
-import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
-import ai.anamaya.service.oms.core.repository.BookingRepository;
+import ai.anamaya.service.oms.core.repository.*;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -21,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import jakarta.persistence.criteria.Predicate;
 
 @Service
@@ -31,6 +30,7 @@ public class BookingService {
     private final BookingPaxRepository bookingPaxRepository;
     private final BookingFlightRepository bookingFlightRepository;
     private final BookingHotelRepository bookingHotelRepository;
+    private final CompanyConfigRepository companyConfigRepository;
     private final JwtUtils jwtUtils;
 
 
@@ -125,6 +125,13 @@ public class BookingService {
         Long userId = callerContext.userId();
         Long companyId = callerContext.companyId();
 
+        BookingStatus status = BookingStatus.CREATED;
+        Optional<CompanyConfig> isAutoApproveBookingJourney = companyConfigRepository.findByCompanyIdAndCode(companyId, "IS_AUTO_APPROVE_BOOKING_JOURNEY");
+        if (isAutoApproveBookingJourney.isPresent()
+            && Boolean.TRUE.equals(isAutoApproveBookingJourney.get().getValueBool())) {
+            status = BookingStatus.APPROVED;
+        }
+
         Booking booking = Booking.builder()
             .companyId(companyId)
             .code("ANM:"+Instant.now().toEpochMilli())
@@ -141,7 +148,7 @@ public class BookingService {
             .contactDob(request.getContactDob())
             .additionalInfo(request.getAdditionalInfo())
             .clientAdditionalInfo(request.getClientAdditionalInfo())
-            .status(BookingStatus.APPROVED)
+            .status(status)
             .createdBy(userId)
             .updatedBy(userId)
             .build();

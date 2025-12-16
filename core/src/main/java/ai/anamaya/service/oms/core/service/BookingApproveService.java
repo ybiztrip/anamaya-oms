@@ -4,11 +4,7 @@ import ai.anamaya.service.oms.core.client.queue.BookingPubSubPublisher;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.pubsub.BookingStatusMessage;
 import ai.anamaya.service.oms.core.dto.request.BookingApproveRequest;
-import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCheckRateRequest;
-import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.payment.FlightBookingPaymentRequest;
-import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingCheckRateResponse;
-import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingCreateResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubmitResponse;
 import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.*;
@@ -21,11 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 
 @Slf4j
@@ -40,12 +34,11 @@ public class BookingApproveService {
     private final BookingHotelRepository bookingHotelRepository;
     private final BookingPaxRepository bookingPaxRepository;
     private final BookingPubSubPublisher bookingPubSubPublisher;
-    private final BalanceService balanceService;
+    private final BookingHotelService bookingHotelService;
     private final JwtUtils jwtUtils;
 
 
     private final Map<String, FlightProvider> flightProviders;
-    private final Map<String, HotelProvider> hotelProviders;
 
     private FlightProvider getFlightProvider(String source) {
         String key = (source != null ? source.toLowerCase() : "biztrip") + "FlightProvider";
@@ -54,18 +47,6 @@ public class BookingApproveService {
         if (provider == null) {
             log.warn("Provider '{}' not found, fallback to 'biztripFlightProvider'", key);
             provider = flightProviders.get("biztripFlightProvider");
-        }
-
-        return provider;
-    }
-
-    private HotelProvider getHotelProvider(String source) {
-        String key = (source != null ? source.toLowerCase() : "biztrip") + "HotelProvider";
-        HotelProvider provider = hotelProviders.get(key);
-
-        if (provider == null) {
-            log.warn("Provider '{}' not found, fallback to 'biztripHotelProvider'", key);
-            provider = hotelProviders.get("biztripHotelProvider");
         }
 
         return provider;
@@ -163,9 +144,6 @@ public class BookingApproveService {
             );
         }
 
-        if (bookingStatusMessages.isEmpty()) {
-            throw new IllegalArgumentException("No booking has been approved");
-        }
         for (BookingStatusMessage message : bookingStatusMessages) {
             bookingPubSubPublisher.publishBookingStatus(message);
         }
@@ -186,7 +164,7 @@ public class BookingApproveService {
                 ApproveConfirmFlightBooking(callerContext, booking, request);
             }
             case HOTEL -> {
-                ApproveConfirmHotelBooking(callerContext, booking, request);
+                bookingHotelService.approveProcessBooking(callerContext, booking, request);
             }
             default -> {
                 return;
@@ -208,22 +186,6 @@ public class BookingApproveService {
         bookingFlightRepository.saveAll(bookingFlights);
     }
 
-    public void ApproveConfirmHotelBooking(CallerContext callerContext, Booking booking, BookingStatusMessage request) {
-        Long userId = callerContext.userId();
-
-        List<BookingPax> bookingPaxes = bookingPaxRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
-        List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
-        processHotels(callerContext, booking, bookingPaxes, bookingHotels);
-
-        bookingHotels.forEach(h -> {
-            h.setStatus(BookingHotelStatus.ISSUED);
-            h.setUpdatedBy(userId);
-        });
-        bookingHotelRepository.saveAll(bookingHotels);
-        bookingCommonService.bookingDebitBalance(callerContext, booking, null, bookingHotels);
-
-    }
-
     @Transactional
     public void approveConfirmBooking(CallerContext callerContext, Long bookingId) {
         Booking booking = bookingCommonService.getValidatedBookingById(true, bookingId);
@@ -243,7 +205,7 @@ public class BookingApproveService {
         }
 
         if (!bookingHotels.isEmpty()) {
-            processHotels(callerContext, booking, bookingPaxes, bookingHotels);
+//            processHotels(callerContext, booking, bookingPaxes, bookingHotels);
         }
 
         booking.setStatus(BookingStatus.ISSUED);
@@ -284,170 +246,5 @@ public class BookingApproveService {
         }
     }
 
-    private void processHotels(
-        CallerContext callerContext,
-        Booking booking,
-        List<BookingPax> bookingPaxes,
-        List<BookingHotel> bookingHotels
-    ) {
-        HotelProvider provider = getHotelProvider("biztrip");
-
-        for (BookingHotel hotel : bookingHotels) {
-
-            HotelBookingCheckRateResponse rateResponse =
-                provider.checkRate(
-                    callerContext,
-                    buildHotelBookingCheckRateRequest(hotel, bookingPaxes)
-                );
-
-            if (!"AVAILABLE".equals(rateResponse.getRateStatus())) {
-                throw new IllegalStateException(
-                    "Hotel rate not available for bookingId=" + booking.getId()
-                );
-            }
-
-            hotel.setPaymentKey(rateResponse.getPaymentKey());
-            HotelBookingCreateResponse createResponse =
-                provider.create(
-                    callerContext,
-                    buildHotelBookingCreateRequest(booking, bookingPaxes, hotel)
-                );
-
-            BookingHotelStatus hotelStatus =
-                BookingHotelStatus.fromBookingPartnerStatus(
-                    createResponse.getStatus()
-                );
-
-            hotel.setStatus(hotelStatus);
-            hotel.setBookingReference(createResponse.getBookingReference());
-            hotel.setPartnerSellAmount(
-                Double.valueOf(createResponse.getTotalAmount())
-            );
-            hotel.setCurrency(createResponse.getCurrency());
-        }
-    }
-
-    private HotelBookingCheckRateRequest buildHotelBookingCheckRateRequest(
-        BookingHotel hotel,
-        List<BookingPax> bookingPaxes
-    ) {
-
-        long numAdults =
-            bookingPaxes.stream()
-                .filter(p -> p.getType() == PaxType.ADULT)
-                .count();
-
-        return HotelBookingCheckRateRequest.builder()
-                .propertyId(hotel.getItemId())
-                .roomId(hotel.getRoomId())
-                .checkInDate(hotel.getCheckInDate().toString())
-                .checkOutDate(hotel.getCheckOutDate().toString())
-                .numRooms(hotel.getNumRoom().intValue())
-                .numAdults((int) numAdults)
-                .displayCurrency(hotel.getCurrency())
-                .userNationality("ID")
-                .rateKey(hotel.getRateKey())
-                .build();
-    }
-
-    private HotelBookingCreateRequest buildHotelBookingCreateRequest(
-        Booking booking,
-        List<BookingPax> bookingPaxes,
-        BookingHotel hotel
-    ) {
-
-        List<HotelBookingCreateRequest.GuestInfo> guests =
-            bookingPaxes.stream()
-                .filter(pax -> pax.getType() == PaxType.ADULT)
-                .map(pax ->
-                    HotelBookingCreateRequest.GuestInfo.builder()
-                        .title(pax.getTitle() != null
-                            ? pax.getTitle().name()
-                            : null)
-                        .firstName(pax.getFirstName())
-                        .lastName(pax.getLastName())
-                        .email(pax.getEmail())
-                        .gender(pax.getGender() != null
-                            ? pax.getGender().name()
-                            : null)
-                        .idtype(pax.getDocumentType())
-                        .idnumber(pax.getDocumentNo())
-                        .build()
-                )
-                .toList();
-
-        long numAdults =
-            bookingPaxes.stream()
-                .filter(p -> p.getType() == PaxType.ADULT)
-                .count();
-
-        List<Integer> childrenAges =
-            bookingPaxes.stream()
-                .filter(p -> p.getType() == PaxType.CHILD)
-                .map(p -> p.getDob() != null
-                    ? LocalDate.now().getYear() - p.getDob().getYear()
-                    : null)
-                .filter(Objects::nonNull)
-                .toList();
-
-        return HotelBookingCreateRequest.builder()
-            .propertyId(hotel.getItemId())
-            .partnerBookingId(hotel.getBookingCode())
-            .checkInDate(hotel.getCheckInDate().toString())
-            .checkOutDate(hotel.getCheckOutDate().toString())
-            .displayCurrency(hotel.getCurrency())
-            .specialRequest(hotel.getSpecialRequest())
-            .language("en")
-            .userNationality("ID")
-
-            .customerInfo(
-                HotelBookingCreateRequest.CustomerInfo.builder()
-                    .title(booking.getContactTitle() != null
-                        ? booking.getContactFirstName()+ " " + booking.getContactLastName()
-                        : null)
-                    .firstName(booking.getContactFirstName())
-                    .lastName(booking.getContactLastName())
-                    .email(booking.getContactEmail())
-                    .phone(booking.getContactPhoneNumber())
-                    .build()
-            )
-
-            .rooms(List.of(
-                HotelBookingCreateRequest.Room.builder()
-                    .roomId(hotel.getRoomId())
-                    .rateKey(hotel.getRateKey())
-                    .paymentKey(hotel.getPaymentKey())
-                    .numRooms(hotel.getNumRoom().intValue())
-                    .numAdults((int) numAdults)
-                    .numChild(childrenAges.size())
-                    .childrenAges(childrenAges)
-                    .guestInfo(guests)
-                    .build()
-            ))
-
-            .totalRates(
-                HotelBookingCreateRequest.TotalRates.builder()
-                    .partnerSellAmount(
-                        String.valueOf(hotel.getPartnerSellAmount())
-                    )
-                    .partnerNettAmount(
-                        String.valueOf(hotel.getPartnerNettAmount())
-                    )
-                    .build()
-            )
-
-            .userPayment(
-                HotelBookingCreateRequest.UserPayment.builder()
-                    .userPayment("DEPOSIT")
-                    .build()
-            )
-
-            .additionalData(
-                booking.getAdditionalInfo() != null
-                    ? booking.getAdditionalInfo().toString()
-                    : "{}"
-            )
-            .build();
-    }
 
 }

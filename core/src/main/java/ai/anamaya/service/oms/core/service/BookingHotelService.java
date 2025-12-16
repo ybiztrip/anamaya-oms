@@ -1,35 +1,69 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.client.queue.BookingPubSubPublisher;
 import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.dto.pubsub.BookingStatusMessage;
 import ai.anamaya.service.oms.core.dto.request.BookingHotelRequest;
 import ai.anamaya.service.oms.core.dto.request.BookingHotelSubmitRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCheckRateRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCreateRequest;
 import ai.anamaya.service.oms.core.dto.response.BookingResponse;
+import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingCheckRateResponse;
+import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingCreateResponse;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingHotel;
+import ai.anamaya.service.oms.core.entity.BookingPax;
+import ai.anamaya.service.oms.core.entity.CompanyConfig;
+import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
+import ai.anamaya.service.oms.core.enums.BookingType;
+import ai.anamaya.service.oms.core.enums.PaxType;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.repository.BookingHotelRepository;
-import ai.anamaya.service.oms.core.repository.BookingRepository;
-import ai.anamaya.service.oms.core.security.JwtUtils;
+import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
+import ai.anamaya.service.oms.core.repository.CompanyConfigRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookingHotelService {
 
-    private final BookingRepository bookingRepository;
     private final BookingHotelRepository bookingHotelRepository;
-    private final JwtUtils jwtUtils;
+    private final BookingPaxRepository bookingPaxRepository;
+    private final CompanyConfigRepository companyConfigRepository;
     private final BookingService bookingService;
+    private final BookingCommonService bookingCommonService;
     private final BookingPaxService bookingPaxService;
+    private final BookingPubSubPublisher bookingPubSubPublisher;
+
+    private final Map<String, HotelProvider> hotelProviders;
+    private HotelProvider getHotelProvider(String source) {
+        String key = (source != null ? source.toLowerCase() : "biztrip") + "HotelProvider";
+        HotelProvider provider = hotelProviders.get(key);
+
+        if (provider == null) {
+            log.warn("Provider '{}' not found, fallback to 'biztripHotelProvider'", key);
+            provider = hotelProviders.get("biztripHotelProvider");
+        }
+
+        return provider;
+    }
 
     @Transactional
     public BookingResponse submitBookingHotel(CallerContext callerContext, Long bookingId, BookingHotelSubmitRequest request) {
         Long userId = callerContext.userId();
+        Long companyId = callerContext.companyId();
         Booking booking = bookingService.getValidatedBooking(bookingId);
 
         if (!booking.getStatus().equals(BookingStatus.APPROVED)) {
@@ -43,6 +77,20 @@ public class BookingHotelService {
             || reqHotel.getCheckInDate().isAfter(booking.getEndDate())
         ) {
             throw new IllegalArgumentException("Booking date hotel is outside journey date");
+        }
+
+        BookingHotelStatus status = BookingHotelStatus.BOOKED;
+        Optional<CompanyConfig> isAutoApproveBookingHotel = companyConfigRepository.findByCompanyIdAndCode(companyId, "IS_AUTO_APPROVE_BOOKING_HOTEL");
+        BookingStatusMessage message = null;
+        if (isAutoApproveBookingHotel.isPresent() && Boolean.TRUE.equals(isAutoApproveBookingHotel.get().getValueBool())) {
+            message = BookingStatusMessage.builder()
+                .companyId(booking.getCompanyId())
+                .bookingType(BookingType.HOTEL)
+                .bookingId(booking.getId())
+                .bookingCode(bookingCode)
+                .status(BookingStatus.APPROVED)
+                .build();
+            status = BookingHotelStatus.APPROVED;
         }
 
         BookingHotel newHotel = BookingHotel.builder()
@@ -59,7 +107,7 @@ public class BookingHotelService {
             .partnerNettAmount(reqHotel.getPartnerNettAmount())
             .currency(reqHotel.getCurrency())
             .specialRequest(reqHotel.getSpecialRequest())
-            .status(reqHotel.getStatus())
+            .status(status)
             .createdBy(userId)
             .updatedBy(userId)
             .build();
@@ -67,7 +115,193 @@ public class BookingHotelService {
 
         bookingPaxService.submitBookingPax(callerContext, bookingId, bookingCode, request.getPaxs());
 
+        if (message != null) {
+            bookingPubSubPublisher.publishBookingStatus(message);
+        }
+
         return bookingService.toResponse(booking, true, true);
+    }
+
+    public void approveProcessBooking(CallerContext callerContext, Booking booking, BookingStatusMessage request) {
+        Long userId = callerContext.userId();
+
+        List<BookingPax> bookingPaxes = bookingPaxRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
+        List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
+        processHotels(callerContext, booking, bookingPaxes, bookingHotels);
+
+        bookingHotels.forEach(h -> {
+            h.setStatus(BookingHotelStatus.ISSUED);
+            h.setUpdatedBy(userId);
+        });
+        bookingHotelRepository.saveAll(bookingHotels);
+        bookingCommonService.bookingDebitBalance(callerContext, booking, null, bookingHotels);
+
+    }
+
+    private void processHotels(
+        CallerContext callerContext,
+        Booking booking,
+        List<BookingPax> bookingPaxes,
+        List<BookingHotel> bookingHotels
+    ) {
+        HotelProvider provider = getHotelProvider("biztrip");
+
+        for (BookingHotel hotel : bookingHotels) {
+
+            HotelBookingCheckRateResponse rateResponse =
+                provider.checkRate(
+                    callerContext,
+                    buildHotelBookingCheckRateRequest(hotel, bookingPaxes)
+                );
+
+            if (!"AVAILABLE".equals(rateResponse.getRateStatus())) {
+                throw new IllegalStateException(
+                    "Hotel rate not available for bookingId=" + booking.getId()
+                );
+            }
+
+            hotel.setPaymentKey(rateResponse.getPaymentKey());
+            HotelBookingCreateResponse createResponse =
+                provider.create(
+                    callerContext,
+                    buildHotelBookingCreateRequest(booking, bookingPaxes, hotel)
+                );
+
+            BookingHotelStatus hotelStatus =
+                BookingHotelStatus.fromBookingPartnerStatus(
+                    createResponse.getStatus()
+                );
+
+            hotel.setStatus(hotelStatus);
+            hotel.setBookingReference(createResponse.getBookingReference());
+            hotel.setPartnerSellAmount(
+                Double.valueOf(createResponse.getTotalAmount())
+            );
+            hotel.setCurrency(createResponse.getCurrency());
+        }
+    }
+
+    private HotelBookingCheckRateRequest buildHotelBookingCheckRateRequest(
+        BookingHotel hotel,
+        List<BookingPax> bookingPaxes
+    ) {
+
+        long numAdults =
+            bookingPaxes.stream()
+                .filter(p -> p.getType() == PaxType.ADULT)
+                .count();
+
+        return HotelBookingCheckRateRequest.builder()
+            .propertyId(hotel.getItemId())
+            .roomId(hotel.getRoomId())
+            .checkInDate(hotel.getCheckInDate().toString())
+            .checkOutDate(hotel.getCheckOutDate().toString())
+            .numRooms(hotel.getNumRoom().intValue())
+            .numAdults((int) numAdults)
+            .displayCurrency(hotel.getCurrency())
+            .userNationality("ID")
+            .rateKey(hotel.getRateKey())
+            .build();
+    }
+
+    private HotelBookingCreateRequest buildHotelBookingCreateRequest(
+        Booking booking,
+        List<BookingPax> bookingPaxes,
+        BookingHotel hotel
+    ) {
+
+        List<HotelBookingCreateRequest.GuestInfo> guests =
+            bookingPaxes.stream()
+                .filter(pax -> pax.getType() == PaxType.ADULT)
+                .map(pax ->
+                    HotelBookingCreateRequest.GuestInfo.builder()
+                        .title(pax.getTitle() != null
+                            ? pax.getTitle().name()
+                            : null)
+                        .firstName(pax.getFirstName())
+                        .lastName(pax.getLastName())
+                        .email(pax.getEmail())
+                        .gender(pax.getGender() != null
+                            ? pax.getGender().name()
+                            : null)
+                        .idtype(pax.getDocumentType())
+                        .idnumber(pax.getDocumentNo())
+                        .build()
+                )
+                .toList();
+
+        long numAdults =
+            bookingPaxes.stream()
+                .filter(p -> p.getType() == PaxType.ADULT)
+                .count();
+
+        List<Integer> childrenAges =
+            bookingPaxes.stream()
+                .filter(p -> p.getType() == PaxType.CHILD)
+                .map(p -> p.getDob() != null
+                    ? LocalDate.now().getYear() - p.getDob().getYear()
+                    : null)
+                .filter(Objects::nonNull)
+                .toList();
+
+        return HotelBookingCreateRequest.builder()
+            .propertyId(hotel.getItemId())
+            .partnerBookingId(hotel.getBookingCode())
+            .checkInDate(hotel.getCheckInDate().toString())
+            .checkOutDate(hotel.getCheckOutDate().toString())
+            .displayCurrency(hotel.getCurrency())
+            .specialRequest(hotel.getSpecialRequest())
+            .language("en")
+            .userNationality("ID")
+
+            .customerInfo(
+                HotelBookingCreateRequest.CustomerInfo.builder()
+                    .title(booking.getContactTitle() != null
+                        ? booking.getContactFirstName()+ " " + booking.getContactLastName()
+                        : null)
+                    .firstName(booking.getContactFirstName())
+                    .lastName(booking.getContactLastName())
+                    .email(booking.getContactEmail())
+                    .phone(booking.getContactPhoneNumber())
+                    .build()
+            )
+
+            .rooms(List.of(
+                HotelBookingCreateRequest.Room.builder()
+                    .roomId(hotel.getRoomId())
+                    .rateKey(hotel.getRateKey())
+                    .paymentKey(hotel.getPaymentKey())
+                    .numRooms(hotel.getNumRoom().intValue())
+                    .numAdults((int) numAdults)
+                    .numChild(childrenAges.size())
+                    .childrenAges(childrenAges)
+                    .guestInfo(guests)
+                    .build()
+            ))
+
+            .totalRates(
+                HotelBookingCreateRequest.TotalRates.builder()
+                    .partnerSellAmount(
+                        String.valueOf(hotel.getPartnerSellAmount())
+                    )
+                    .partnerNettAmount(
+                        String.valueOf(hotel.getPartnerNettAmount())
+                    )
+                    .build()
+            )
+
+            .userPayment(
+                HotelBookingCreateRequest.UserPayment.builder()
+                    .userPayment("DEPOSIT")
+                    .build()
+            )
+
+            .additionalData(
+                booking.getAdditionalInfo() != null
+                    ? booking.getAdditionalInfo().toString()
+                    : "{}"
+            )
+            .build();
     }
 
 }

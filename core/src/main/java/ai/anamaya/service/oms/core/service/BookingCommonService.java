@@ -56,16 +56,22 @@ public class BookingCommonService {
             return;
         }
 
-        BigDecimal flightTotalAmount = bookingFlights.stream()
-            .filter(f -> f.getStatus() == BookingFlightStatus.CREATED)
-            .map(BookingFlight::getTotalAmount)
-            .filter(Objects::nonNull)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal flightTotalAmount = BigDecimal.ZERO;
+        if (bookingFlights != null) {
+            flightTotalAmount = bookingFlights.stream()
+                .filter(f -> f.getStatus() == BookingFlightStatus.CREATED)
+                .map(BookingFlight::getTotalAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
 
-        BigDecimal hotelTotalAmount = bookingHotels.stream()
-            .filter(h -> h.getStatus() == BookingHotelStatus.CREATED)
-            .map(this::calculateHotelAmount)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal hotelTotalAmount = BigDecimal.ZERO;
+        if (bookingHotels != null) {
+            hotelTotalAmount = bookingHotels.stream()
+                .filter(h -> h.getStatus() == BookingHotelStatus.CREATED)
+                .map(this::calculateHotelAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
 
         balanceService.adjustBalance(
             callerContext,
