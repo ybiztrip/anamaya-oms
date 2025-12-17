@@ -52,6 +52,7 @@ CREATE TABLE booking_pax (
 
 CREATE TABLE booking_flight (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    company_id BIGINT NOT NULL,
     booking_id BIGINT NOT NULL,
     booking_code VARCHAR(100),
     type SMALLINT,
@@ -90,6 +91,7 @@ CREATE TABLE booking_flight_history (
 
 CREATE TABLE booking_hotel (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    company_id BIGINT NOT NULL,
     booking_id BIGINT NOT NULL,
     booking_code VARCHAR(100),
     client_source VARCHAR(50),

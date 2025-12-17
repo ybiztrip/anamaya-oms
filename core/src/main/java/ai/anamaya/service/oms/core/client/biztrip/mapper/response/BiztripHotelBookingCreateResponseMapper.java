@@ -8,7 +8,13 @@ import java.math.BigDecimal;
 
 public class BiztripHotelBookingCreateResponseMapper {
 
-    public HotelBookingCreateResponse map(BiztripHotelBookingCreateResponse source) {
+    public HotelBookingCreateResponse map(Boolean success, BiztripHotelBookingCreateResponse source) {
+        if (!success) {
+            return HotelBookingCreateResponse.builder()
+                .isCancel(true)
+                .build();
+        }
+
         return HotelBookingCreateResponse.builder()
             .bookingReference(source.getBookingId())
             .status(source.getBookingStatus())

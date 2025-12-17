@@ -49,25 +49,15 @@ public class BiztripHotelBookingCheckRateService {
                 .bodyToMono(String.class)
                 .block();
 
-            log.error("Biztrip Hotel RateCheck raw response: {}", rawResponse);
+            log.info("Biztrip Hotel RateCheck raw response: {}", rawResponse);
 
             JsonNode root = mapper.readTree(rawResponse);
             boolean success = root.path("success").asBoolean(false);
 
-            if (!success) {
-                throw new IllegalArgumentException(
-                    root.path("message").asText("Hotel rate check failed")
-                );
-            }
-
             BiztripHotelRateCheckResponse biztripResponse =
                 mapper.treeToValue(root.get("data"), BiztripHotelRateCheckResponse.class);
 
-            if (biztripResponse == null) {
-                throw new IllegalArgumentException("Empty rate check response");
-            }
-
-            return responseMapper.map(biztripResponse);
+            return responseMapper.map(success, biztripResponse);
 
         } catch (Exception e) {
             log.error("Hotel rate check failed", e);

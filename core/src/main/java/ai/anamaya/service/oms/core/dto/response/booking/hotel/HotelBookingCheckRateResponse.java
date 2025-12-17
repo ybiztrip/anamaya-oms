@@ -8,6 +8,7 @@ import java.util.List;
 @Builder
 public class HotelBookingCheckRateResponse {
 
+    private Boolean isCancel;
     private String paymentKey;
     private String rateStatus;
     private String roomName;

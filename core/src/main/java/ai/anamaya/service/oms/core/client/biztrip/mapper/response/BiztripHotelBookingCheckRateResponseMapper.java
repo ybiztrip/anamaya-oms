@@ -8,8 +8,15 @@ import java.util.stream.Collectors;
 
 public class BiztripHotelBookingCheckRateResponseMapper {
 
-    public HotelBookingCheckRateResponse map(BiztripHotelRateCheckResponse source) {
+    public HotelBookingCheckRateResponse map(Boolean success, BiztripHotelRateCheckResponse source) {
+       if(!success) {
+           return HotelBookingCheckRateResponse.builder()
+               .isCancel(true)
+               .build();
+       }
+
         return HotelBookingCheckRateResponse.builder()
+            .isCancel(!success)
             .paymentKey(source.getRateKey())
             .rateStatus(source.getRateStatus())
             .roomName(source.getRoomName())

@@ -5,8 +5,10 @@ import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.pubsub.BookingStatusMessage;
 import ai.anamaya.service.oms.core.dto.request.BookingHotelRequest;
 import ai.anamaya.service.oms.core.dto.request.BookingHotelSubmitRequest;
+import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCheckRateRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCreateRequest;
+import ai.anamaya.service.oms.core.dto.response.BookingHotelResponse;
 import ai.anamaya.service.oms.core.dto.response.BookingResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingCheckRateResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingCreateResponse;
@@ -22,17 +24,17 @@ import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.repository.BookingHotelRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
 import ai.anamaya.service.oms.core.repository.CompanyConfigRepository;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -58,6 +60,70 @@ public class BookingHotelService {
         }
 
         return provider;
+    }
+
+    public Page<BookingHotelResponse> getAll(int page, int size, String sort, BookingListFilter filter) {
+
+        // Sorting
+        Sort sorting = Sort.by("createdAt").descending();
+
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(";");
+            String field = parts[0];
+
+            Sort.Direction direction =
+                (parts.length > 1 && parts[1].equalsIgnoreCase("desc"))
+                    ? Sort.Direction.DESC
+                    : Sort.Direction.ASC;
+
+            sorting = Sort.by(direction, field);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sorting);
+
+        Specification<BookingHotel> spec = BookingHotelService.BookingSpecification.filter(filter);
+
+        Page<BookingHotel> bookingHotels = bookingHotelRepository.findAll(spec, pageable);
+
+        List<BookingHotelResponse> mapped = bookingHotels.getContent().stream()
+            .map(this::toHotelResponse)
+            .toList();
+
+        return new PageImpl<>(mapped, pageable, bookingHotels.getTotalElements());
+    }
+
+    public static class BookingSpecification {
+
+        public static Specification<BookingHotel> filter(BookingListFilter filter) {
+            return (root, query, cb) -> {
+
+                List<Predicate> predicates = new ArrayList<>();
+
+                if (filter.getStatuses() != null && !filter.getStatuses().isEmpty()) {
+                    predicates.add(root.get("status").in(filter.getStatuses()));
+                }
+
+                if (filter.getCompanyId() != null && filter.getCompanyId() != 0) {
+                    predicates.add(cb.equal(root.get("companyId"), filter.getCompanyId()));
+                }
+
+                if (filter.getDateFrom() != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(
+                        root.get("createdAt"),
+                        filter.getDateFrom().atStartOfDay()
+                    ));
+                }
+
+                if (filter.getDateTo() != null) {
+                    predicates.add(cb.lessThanOrEqualTo(
+                        root.get("createdAt"),
+                        filter.getDateTo().atTime(23, 59, 59)
+                    ));
+                }
+
+                return cb.and(predicates.toArray(new Predicate[0]));
+            };
+        }
     }
 
     @Transactional
@@ -94,6 +160,7 @@ public class BookingHotelService {
         }
 
         BookingHotel newHotel = BookingHotel.builder()
+            .companyId(booking.getCompanyId())
             .bookingId(bookingId)
             .bookingCode(bookingCode)
             .clientSource(reqHotel.getClientSource())
@@ -129,13 +196,21 @@ public class BookingHotelService {
         List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
         processHotels(callerContext, booking, bookingPaxes, bookingHotels);
 
-        bookingHotels.forEach(h -> {
-            h.setStatus(BookingHotelStatus.ISSUED);
-            h.setUpdatedBy(userId);
-        });
         bookingHotelRepository.saveAll(bookingHotels);
-        bookingCommonService.bookingDebitBalance(callerContext, booking, null, bookingHotels);
+    }
 
+    public void retryApproveProcessBooking(CallerContext callerContext, Long bookingId, String bookingCode) {
+        Booking booking = bookingCommonService.getValidatedBookingById(true, bookingId);
+
+        BookingStatusMessage statusMessage = BookingStatusMessage.builder()
+            .companyId(booking.getCompanyId())
+            .bookingType(BookingType.HOTEL)
+            .bookingId(booking.getId())
+            .bookingCode(bookingCode)
+            .status(BookingStatus.APPROVED)
+            .build();
+
+        approveProcessBooking(callerContext, booking, statusMessage);
     }
 
     private void processHotels(
@@ -154,18 +229,33 @@ public class BookingHotelService {
                     buildHotelBookingCheckRateRequest(hotel, bookingPaxes)
                 );
 
+            if(rateResponse.getIsCancel()) {
+                hotel.setStatus(BookingHotelStatus.CANCELLED);
+                continue;
+            }
+
             if (!"AVAILABLE".equals(rateResponse.getRateStatus())) {
                 throw new IllegalStateException(
                     "Hotel rate not available for bookingId=" + booking.getId()
                 );
             }
 
+            hotel.setPartnerNettAmount(Double.valueOf(rateResponse.getNettAmount()));
+            hotel.setPartnerSellAmount(Double.valueOf(rateResponse.getSellAmount()));
             hotel.setPaymentKey(rateResponse.getPaymentKey());
+
+            bookingCommonService.bookingDebitBalance(callerContext, booking, null, hotel);
+
             HotelBookingCreateResponse createResponse =
                 provider.create(
                     callerContext,
                     buildHotelBookingCreateRequest(booking, bookingPaxes, hotel)
                 );
+
+            if(createResponse.getIsCancel()) {
+                hotel.setStatus(BookingHotelStatus.CANCELLED);
+                continue;
+            }
 
             BookingHotelStatus hotelStatus =
                 BookingHotelStatus.fromBookingPartnerStatus(
@@ -304,4 +394,24 @@ public class BookingHotelService {
             .build();
     }
 
+    private BookingHotelResponse toHotelResponse(BookingHotel h) {
+        return BookingHotelResponse.builder()
+            .id(h.getId())
+            .companyId(h.getCompanyId())
+            .bookingId(h.getBookingId())
+            .bookingCode(h.getBookingCode())
+            .clientSource(h.getClientSource())
+            .itemId(h.getItemId())
+            .roomId(h.getRoomId())
+            .rateKey(h.getRateKey())
+            .numRoom(h.getNumRoom())
+            .checkInDate(h.getCheckInDate())
+            .checkOutDate(h.getCheckOutDate())
+            .partnerSellAmount(h.getPartnerSellAmount())
+            .partnerNettAmount(h.getPartnerNettAmount())
+            .currency(h.getCurrency())
+            .specialRequest(h.getSpecialRequest())
+            .status(h.getStatus())
+            .build();
+    }
 }

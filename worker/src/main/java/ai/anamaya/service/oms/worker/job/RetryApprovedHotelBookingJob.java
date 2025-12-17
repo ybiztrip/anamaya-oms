@@ -1,9 +1,9 @@
 package ai.anamaya.service.oms.worker.job;
 
+import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
-import ai.anamaya.service.oms.core.service.BookingApproveService;
-import ai.anamaya.service.oms.core.service.BookingService;
+import ai.anamaya.service.oms.core.service.BookingHotelService;
 import ai.anamaya.service.oms.core.util.RedisLockManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,27 +17,26 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RetryPaymentPendingBookingJob {
+public class RetryApprovedHotelBookingJob {
 
     @Autowired
     private RedisLockManager redisLock;
 
-    private final BookingService bookingService;
-    private final BookingApproveService bookingApproveService;
+    private final BookingHotelService bookingHotelService;
 
-    @Scheduled(cron = "${cron.task.retry-payment-pending-booking}")
-    public void retryPendingPaymentBookingJob() {
-        log.info("Running retry payment pending booking scheduler...");
+    @Scheduled(cron = "${cron.task.retry-approved-hotel-booking}")
+    public void retryApprovedHotelBookingJob() {
+        log.info("Running retry approved hotel booking scheduler...");
 
         int page = 0;
         int size = 50;
 
         BookingListFilter filter = new BookingListFilter();
-        filter.setStatuses(List.of(BookingStatus.ON_PROCESS));
+        filter.setStatuses(List.of(BookingStatus.APPROVED));
 
         while (true) {
 
-            var pageResult = bookingService.getAll(page, size, "createdAt;asc", filter);
+            var pageResult = bookingHotelService.getAll(page, size, "createdAt;asc", filter);
 
             pageResult.getContent().forEach(b -> {
                 Long bookingId = b.getId();
@@ -49,7 +48,8 @@ public class RetryPaymentPendingBookingJob {
                         return;
                     }
 
-                    bookingApproveService.retryApproveConfirmBooking(bookingId);
+                    SystemCallerContext systemCallerContext = new SystemCallerContext(b.getCompanyId());
+                    bookingHotelService.retryApproveProcessBooking(systemCallerContext, b.getBookingId(), b.getBookingCode());
 
                 } catch (Exception ex) {
                     log.error("Error processing booking {}", bookingId, ex);
@@ -68,7 +68,7 @@ public class RetryPaymentPendingBookingJob {
             page++;
         }
 
-        log.info("Retry payment pending booking scheduler completed.");
+        log.info("Retry approved hotel Booking scheduler completed.");
     }
 
 

@@ -54,24 +54,11 @@ public class BiztripHotelBookingCreateService {
             JsonNode root = mapper.readTree(rawResponse);
             boolean success = root.path("success").asBoolean(false);
 
-            if (!success) {
-                String errorMessage = root.path("message")
-                    .asText("Unknown Biztrip hotel booking error");
-                throw new IllegalArgumentException(errorMessage);
-            }
-
             JsonNode dataNode = root.get("data");
             BiztripHotelBookingCreateResponse biztripResponse =
                 mapper.treeToValue(dataNode, BiztripHotelBookingCreateResponse.class);
 
-            if (biztripResponse == null || biztripResponse.getBookingId() == null) {
-                throw new IllegalArgumentException(
-                    "Biztrip did not return hotel booking data. Raw response: "
-                        + rawResponse
-                );
-            }
-
-            return submitResponseMapper.map(biztripResponse);
+            return submitResponseMapper.map(success, biztripResponse);
 
         } catch (Exception e) {
             log.error("Submit hotel booking to Biztrip failed", e);

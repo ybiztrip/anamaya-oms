@@ -166,9 +166,6 @@ public class BookingApproveService {
             case HOTEL -> {
                 bookingHotelService.approveProcessBooking(callerContext, booking, request);
             }
-            default -> {
-                return;
-            }
         }
     }
 
@@ -198,7 +195,7 @@ public class BookingApproveService {
         List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingId(bookingId);
         List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingId(bookingId);
 
-        bookingCommonService.bookingDebitBalance(callerContext, booking, bookingFlights, bookingHotels);
+        bookingCommonService.bookingDebitBalance(callerContext, booking, bookingFlights, null);
 
         if (!bookingFlights.isEmpty()) {
             processFlights(callerContext, booking, bookingFlights);

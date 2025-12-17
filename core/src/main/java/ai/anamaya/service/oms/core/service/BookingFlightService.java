@@ -74,6 +74,7 @@ public class BookingFlightService {
                 throw new IllegalArgumentException("Booking date flight is outside journey date");
             }
             BookingFlight newFlight = BookingFlight.builder()
+                .companyId(booking.getCompanyId())
                 .bookingId(bookingId)
                 .bookingCode(bookingCode)
                 .type(req.getType())

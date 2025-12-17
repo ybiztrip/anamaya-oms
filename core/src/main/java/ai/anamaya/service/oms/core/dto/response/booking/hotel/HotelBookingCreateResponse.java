@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class HotelBookingCreateResponse {
 
+    private Boolean isCancel;
     private String bookingId;
     private String bookingReference;
     private String status;

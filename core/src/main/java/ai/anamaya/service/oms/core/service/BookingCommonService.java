@@ -48,14 +48,10 @@ public class BookingCommonService {
         CallerContext callerContext,
         Booking booking,
         List<BookingFlight> bookingFlights,
-        List<BookingHotel> bookingHotels
+        BookingHotel bookingHotel
     ) {
 
-        List<CompanyBalanceDetail> balanceDetails  = balanceService.getBalanceDetailByReference(BalanceSourceType.BOOKING, booking.getId());
-        if(balanceDetails != null && !balanceDetails.isEmpty()) {
-            return;
-        }
-
+        String referenceCode = "";
         BigDecimal flightTotalAmount = BigDecimal.ZERO;
         if (bookingFlights != null) {
             flightTotalAmount = bookingFlights.stream()
@@ -63,14 +59,22 @@ public class BookingCommonService {
                 .map(BookingFlight::getTotalAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+            referenceCode = bookingFlights.get(0).getBookingCode();
         }
 
         BigDecimal hotelTotalAmount = BigDecimal.ZERO;
-        if (bookingHotels != null) {
-            hotelTotalAmount = bookingHotels.stream()
-                .filter(h -> h.getStatus() == BookingHotelStatus.CREATED)
-                .map(this::calculateHotelAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (bookingHotel != null) {
+            hotelTotalAmount = BigDecimal.valueOf(bookingHotel.getPartnerSellAmount());
+            referenceCode = bookingHotel.getBookingCode();
+        }
+
+        if (referenceCode.isEmpty()) {
+            throw new IllegalArgumentException("reference code is empty.");
+        }
+
+        List<CompanyBalanceDetail> balanceDetails  = balanceService.getBalanceDetailByReferenceCode(BalanceSourceType.BOOKING, referenceCode);
+        if(balanceDetails != null && !balanceDetails.isEmpty()) {
+            return;
         }
 
         balanceService.adjustBalance(
@@ -82,7 +86,7 @@ public class BookingCommonService {
             .type(BalanceTransactionType.DEBIT)
             .amount(flightTotalAmount)
             .referenceId(booking.getId())
-            .referenceCode(booking.getCode())
+            .referenceCode(referenceCode)
             .remarks("Buying flight ticket approved by"+booking.getApprovedByName())
             .build());
 
@@ -95,11 +99,10 @@ public class BookingCommonService {
             .type(BalanceTransactionType.DEBIT)
             .amount(hotelTotalAmount)
             .referenceId(booking.getId())
-            .referenceCode(booking.getCode())
+            .referenceCode(referenceCode)
             .remarks("Buying hotel ticket approved by"+booking.getApprovedByName())
             .build());
     }
-
 
     private BigDecimal calculateHotelAmount(BookingHotel h) {
         long nights = ChronoUnit.DAYS.between(h.getCheckInDate(), h.getCheckOutDate());

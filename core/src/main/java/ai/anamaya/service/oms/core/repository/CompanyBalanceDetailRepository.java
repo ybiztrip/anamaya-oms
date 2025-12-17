@@ -16,5 +16,7 @@ public interface CompanyBalanceDetailRepository extends JpaRepository<CompanyBal
 
     List<CompanyBalanceDetail> findByReferenceIdAndSourceType(Long referenceId, BalanceSourceType sourceType);
 
+    List<CompanyBalanceDetail> findByReferenceCodeAndSourceType(String referenceCode, BalanceSourceType sourceType);
+
     Page<CompanyBalanceDetail> findByBalanceIdOrderByCreatedAtDesc(Long balanceId, Pageable pageable);
 }

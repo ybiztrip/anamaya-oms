@@ -21,6 +21,9 @@ public class BookingFlight extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "company_id")
+    private Long companyId;
+
     @Column(name = "booking_id")
     private Long bookingId;
 

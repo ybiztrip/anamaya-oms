@@ -242,6 +242,7 @@ public class BookingService {
     private BookingHotelResponse toHotelResponse(BookingHotel h) {
         return BookingHotelResponse.builder()
                 .id(h.getId())
+                .companyId(h.getCompanyId())
                 .bookingId(h.getBookingId())
                 .bookingCode(h.getBookingCode())
                 .clientSource(h.getClientSource())

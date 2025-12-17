@@ -135,10 +135,13 @@ public class BalanceService {
                 .collect(Collectors.toList());
     }
 
-
     @Transactional(readOnly = true)
     public List<CompanyBalanceDetail> getBalanceDetailByReference(BalanceSourceType sourceType, Long referenceId) {
         return detailRepository.findByReferenceIdAndSourceType(referenceId, sourceType);
+    }
+    @Transactional(readOnly = true)
+    public List<CompanyBalanceDetail> getBalanceDetailByReferenceCode(BalanceSourceType sourceType, String referenceCode) {
+        return detailRepository.findByReferenceCodeAndSourceType(referenceCode, sourceType);
     }
 
     @Transactional(readOnly = true)
