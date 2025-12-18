@@ -17,7 +17,6 @@ public class BookingFlightRequestRest {
     private String destination;
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
-    private String status;
 
     @AssertTrue(message = "departureDatetime must be less than arrivalDatetime")
     public boolean isDateValid() {

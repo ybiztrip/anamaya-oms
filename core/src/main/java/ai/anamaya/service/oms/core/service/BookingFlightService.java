@@ -93,12 +93,12 @@ public class BookingFlightService {
 
         bookingPaxService.submitBookingPax(callerContext, bookingId, bookingCode, request.getPaxs());
 
-        createBookingFLight(callerContext, booking, bookingCode);
+        createBookingFlight(callerContext, booking, bookingCode);
 
         return bookingService.toResponse(booking, true, true);
     }
 
-    private void createBookingFLight(CallerContext callerContext, Booking booking, String bookingCode) {
+    private void createBookingFlight(CallerContext callerContext, Booking booking, String bookingCode) {
         List<BookingPax> pax = bookingPaxRepository.findByBookingIdAndBookingCode(booking.getId(), bookingCode);
         List<BookingFlight> flights = bookingFlightRepository.findByBookingIdAndBookingCode(booking.getId(), bookingCode);
         if(flights == null || flights.isEmpty()) {

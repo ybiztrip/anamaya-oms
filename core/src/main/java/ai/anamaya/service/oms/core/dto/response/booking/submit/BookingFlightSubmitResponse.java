@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class BookingFlightSubmitResponse {
+    private boolean isError;
     private String bookingSubmissionStatus;
     private String bookingId;
     private String partnerBookingId;

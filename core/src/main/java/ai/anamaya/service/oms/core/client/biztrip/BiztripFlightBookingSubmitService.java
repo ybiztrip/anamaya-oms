@@ -46,29 +46,15 @@ public class BiztripFlightBookingSubmitService {
                 .bodyToMono(String.class)
                 .block();
 
-            log.error("Biztrip raw response: {}", rawResponse);
+            log.info("Biztrip raw response: {}", rawResponse);
 
             JsonNode root = mapper.readTree(rawResponse);
             boolean success = root.path("success").asBoolean(false);
-            if (!success) {
-                String errorMessage = root.path("errorMessage").asText("Biztrip error");
-                throw new IllegalArgumentException(errorMessage);
-            }
-
             JsonNode dataNode = root.get("data");
             BiztripSubmitResponse biztripResponse =
                 mapper.treeToValue(dataNode, BiztripSubmitResponse.class);
 
-            if (biztripResponse == null ||
-                biztripResponse.getFlightBookingDetail() == null) {
-
-                throw new IllegalArgumentException(
-                    "Biztrip did not return flightBookingDetail. Raw response: "
-                        + rawResponse
-                );
-            }
-
-            return submitResponseMapper.map(biztripResponse);
+            return submitResponseMapper.map(success, biztripResponse);
 
         } catch (Exception e) {
             log.error("Submit booking to Biztrip failed", e);

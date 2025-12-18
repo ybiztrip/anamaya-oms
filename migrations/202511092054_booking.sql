@@ -80,6 +80,7 @@ CREATE TABLE booking_flight (
 CREATE TABLE booking_flight_history (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     booking_id BIGINT NOT NULL,
+    booking_code VARCHAR(100),
     status VARCHAR(20),
     data text,
     created_by BIGINT,

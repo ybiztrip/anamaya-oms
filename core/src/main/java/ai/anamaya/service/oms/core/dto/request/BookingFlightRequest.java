@@ -20,5 +20,4 @@ public class BookingFlightRequest {
     private String destination;
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
-    private BookingFlightStatus status;
 }

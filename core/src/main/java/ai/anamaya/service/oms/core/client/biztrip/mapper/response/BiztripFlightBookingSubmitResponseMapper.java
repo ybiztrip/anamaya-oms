@@ -7,8 +7,12 @@ import java.util.List;
 
 public class BiztripFlightBookingSubmitResponseMapper {
 
-    public BookingFlightSubmitResponse map(BiztripSubmitResponse b) {
+    public BookingFlightSubmitResponse map(Boolean success, BiztripSubmitResponse b) {
         BookingFlightSubmitResponse res = new BookingFlightSubmitResponse();
+        if(!success) {
+            res.setError(true);
+            return res;
+        }
 
         res.setBookingSubmissionStatus(b.getBookingSubmissionStatus());
         res.setBookingId(b.getBookingId());

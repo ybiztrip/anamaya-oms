@@ -4,13 +4,14 @@ public enum BookingFlightStatus {
     CREATED,
     BOOKED,
     APPROVED,
+    CANCELLED,
     ISSUING,
     ISSUED,
     ISSUANCE_FAILED;
 
     public static BookingFlightStatus fromBookingPartnerStatus(String status) {
         if (status == null) {
-            return CREATED;
+            return CANCELLED;
         }
 
         return switch (status.toUpperCase()) {
