@@ -11,7 +11,6 @@ import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.*;
-import ai.anamaya.service.oms.core.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,7 +34,6 @@ public class BookingApproveService {
     private final BookingPaxRepository bookingPaxRepository;
     private final BookingPubSubPublisher bookingPubSubPublisher;
     private final BookingHotelService bookingHotelService;
-    private final JwtUtils jwtUtils;
 
 
     private final Map<String, FlightProvider> flightProviders;
@@ -54,9 +52,9 @@ public class BookingApproveService {
 
     @Transactional(rollbackFor = Exception.class)
     public String approveBooking(CallerContext callerContext, Long bookingId, BookingApproveRequest request) {
-        Long companyId = jwtUtils.getCompanyIdFromToken();
-        Long userId = jwtUtils.getUserIdFromToken();
-        String userEmail = jwtUtils.getEmailFromToken();
+        Long companyId = callerContext.companyId();
+        Long userId = callerContext.userId();
+        String userEmail = callerContext.userEmail();
 
         Booking booking = bookingRepository.findById(bookingId)
             .orElseThrow(() -> new NotFoundException("Booking not found"));
@@ -153,7 +151,7 @@ public class BookingApproveService {
 
     @Transactional
     public void approveConfirmBooking(CallerContext callerContext, BookingStatusMessage request) {
-        Booking booking = bookingCommonService.getValidatedBookingById(true, request.getBookingId());
+        Booking booking = bookingCommonService.getValidatedBookingById(callerContext, true, request.getBookingId());
 
         if(booking.getStatus() != BookingStatus.APPROVED) {
             throw new IllegalArgumentException("Wrong status");
@@ -185,7 +183,7 @@ public class BookingApproveService {
 
     @Transactional
     public void approveConfirmBooking(CallerContext callerContext, Long bookingId) {
-        Booking booking = bookingCommonService.getValidatedBookingById(true, bookingId);
+        Booking booking = bookingCommonService.getValidatedBookingById(callerContext, true, bookingId);
 
         if(booking.getStatus() != BookingStatus.APPROVED) {
             throw new IllegalArgumentException("Wrong status");

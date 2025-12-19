@@ -10,7 +10,6 @@ import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.*;
-import ai.anamaya.service.oms.core.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -29,7 +28,6 @@ public class BalanceService {
 
     private final CompanyBalanceRepository balanceRepository;
     private final CompanyBalanceDetailRepository detailRepository;
-    private final JwtUtils jwtUtils;
 
     @Transactional
     public CompanyBalanceResponse adjustBalance(CallerContext callerContext, BalanceAdjustRequest request) {
@@ -60,9 +58,9 @@ public class BalanceService {
     }
 
     @Transactional
-    public CompanyBalanceResponse topUpBalance(BalanceTopUpRequest request) {
-        Long companyId = jwtUtils.getCompanyIdFromToken();
-        Long userId = jwtUtils.getUserIdFromToken();
+    public CompanyBalanceResponse topUpBalance(CallerContext callerContext, BalanceTopUpRequest request) {
+        Long companyId = callerContext.companyId();
+        Long userId = callerContext.userId();
 
         CompanyBalance balance = balanceRepository.findByCompanyIdAndCode(companyId, request.getCode())
                 .orElseThrow(() -> new NotFoundException(
@@ -127,8 +125,8 @@ public class BalanceService {
         return toResponse(balance);
     }
 
-    public List<CompanyBalanceResponse> getBalancesByCompany() {
-        Long companyId = jwtUtils.getCompanyIdFromToken();
+    public List<CompanyBalanceResponse> getBalancesByCompany(CallerContext callerContext) {
+        Long companyId = callerContext.companyId();
         return balanceRepository.findByCompanyId(companyId)
                 .stream()
                 .map(this::toResponse)
@@ -145,8 +143,8 @@ public class BalanceService {
     }
 
     @Transactional(readOnly = true)
-    public ApiResponse<Map<String, Object>> getBalanceDetails(BalanceCodeType code, int page, int size) {
-        Long companyId = jwtUtils.getCompanyIdFromToken();
+    public ApiResponse<Map<String, Object>> getBalanceDetails(CallerContext callerContext, BalanceCodeType code, int page, int size) {
+        Long companyId = callerContext.companyId();
 
         CompanyBalance balance = balanceRepository.findByCompanyIdAndCode(companyId, code)
                 .orElseThrow(() -> new NotFoundException(

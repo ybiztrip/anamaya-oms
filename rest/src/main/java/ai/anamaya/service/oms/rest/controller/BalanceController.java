@@ -31,7 +31,8 @@ public class BalanceController {
 
         Long companyId = jwtUtils.getCompanyIdFromToken();
         Long userId = jwtUtils.getUserIdFromToken();
-        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
         var reqCore = mapper.toCore(reqRest);
         var result = balanceService.adjustBalance(userCallerContext, reqCore);
@@ -42,16 +43,25 @@ public class BalanceController {
     @PostMapping("/topup")
     public ApiResponse<CompanyBalanceResponseRest> topUp(
         @Valid @RequestBody BalanceTopUpRequestRest reqRest) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
         var reqCore = mapper.toCore(reqRest);
-        var result = balanceService.topUpBalance(reqCore);
+        var result = balanceService.topUpBalance(userCallerContext, reqCore);
 
         return ApiResponse.success(mapper.toRest(result));
     }
 
     @GetMapping
     public ApiResponse<List<CompanyBalanceResponseRest>> getAll() {
-        var list = balanceService.getBalancesByCompany()
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        var list = balanceService.getBalancesByCompany(userCallerContext)
             .stream()
             .map(mapper::toRest)
             .toList();
@@ -64,7 +74,11 @@ public class BalanceController {
         @PathVariable BalanceCodeType code,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
-        return balanceService.getBalanceDetails(code, page, size);
+        return balanceService.getBalanceDetails(userCallerContext, code, page, size);
     }
 }

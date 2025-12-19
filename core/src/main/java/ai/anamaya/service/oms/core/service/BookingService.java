@@ -9,7 +9,6 @@ import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.*;
-import ai.anamaya.service.oms.core.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,7 +30,6 @@ public class BookingService {
     private final BookingFlightRepository bookingFlightRepository;
     private final BookingHotelRepository bookingHotelRepository;
     private final CompanyConfigRepository companyConfigRepository;
-    private final JwtUtils jwtUtils;
 
 
     public Page<BookingResponse> getAll(int page, int size, String sort, BookingListFilter filter) {
@@ -98,8 +96,8 @@ public class BookingService {
         }
     }
 
-    public BookingResponse getBookingById(Long id) {
-        Long companyId = jwtUtils.getCompanyIdFromToken();
+    public BookingResponse getBookingById(CallerContext callerContext, Long id) {
+        Long companyId = callerContext.companyId();
 
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Booking not found"));

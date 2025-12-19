@@ -5,4 +5,5 @@ public sealed interface CallerContext
 
     Long companyId();
     Long userId();
+    String userEmail();
 }

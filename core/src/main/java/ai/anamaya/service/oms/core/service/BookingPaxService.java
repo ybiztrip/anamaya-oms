@@ -3,13 +3,8 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingPaxRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
-import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingPax;
-import ai.anamaya.service.oms.core.enums.BookingStatus;
-import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
-import ai.anamaya.service.oms.core.repository.BookingRepository;
-import ai.anamaya.service.oms.core.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookingPaxService {
 
-    private final BookingService bookingService;
-    private final BookingRepository bookingRepository;
     private final BookingPaxRepository bookingPaxRepository;
-    private final JwtUtils jwtUtils;
 
     @Transactional
     public Void submitBookingPax(

@@ -200,7 +200,7 @@ public class BookingHotelService {
     }
 
     public void retryApproveProcessBooking(CallerContext callerContext, Long bookingId, String bookingCode) {
-        Booking booking = bookingCommonService.getValidatedBookingById(true, bookingId);
+        Booking booking = bookingCommonService.getValidatedBookingById(callerContext, true, bookingId);
 
         BookingStatusMessage statusMessage = BookingStatusMessage.builder()
             .companyId(booking.getCompanyId())

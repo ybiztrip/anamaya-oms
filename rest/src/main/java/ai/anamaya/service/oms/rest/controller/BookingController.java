@@ -33,7 +33,8 @@ public class BookingController {
         @Valid @RequestBody BookingRequestRest reqRest) {
         Long companyId = jwtUtils.getCompanyIdFromToken();
         Long userId = jwtUtils.getUserIdFromToken();
-        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
         var reqCore = mapper.toCore(reqRest);
         var resultCore = bookingService.createBooking(userCallerContext, reqCore);
@@ -68,7 +69,12 @@ public class BookingController {
 
     @GetMapping("/{id}")
     public ApiResponse<BookingResponseRest> getBooking(@PathVariable Long id) {
-        var resultCore = bookingService.getBookingById(id);
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        var resultCore = bookingService.getBookingById(userCallerContext, id);
         return ApiResponse.success(mapper.toRest(resultCore));
     }
 
@@ -78,7 +84,8 @@ public class BookingController {
         @RequestBody BookingFlightSubmitRequestRest requestRest) {
         Long companyId = jwtUtils.getCompanyIdFromToken();
         Long userId = jwtUtils.getUserIdFromToken();
-        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
         var request = mapper.toCoreSubmitFlights(requestRest);
         var resultCore = bookingFlightService.submitBookingFlights(userCallerContext, id, request);
@@ -92,7 +99,8 @@ public class BookingController {
         @Valid @RequestBody BookingHotelSubmitRequestRest requestRest) {
         Long companyId = jwtUtils.getCompanyIdFromToken();
         Long userId = jwtUtils.getUserIdFromToken();
-        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
         var request = mapper.toCoreSubmitHotel(requestRest);
         var resultCore = bookingHotelService.submitBookingHotel(userCallerContext, id, request);
@@ -108,7 +116,8 @@ public class BookingController {
     ) {
         Long companyId = jwtUtils.getCompanyIdFromToken();
         Long userId = jwtUtils.getUserIdFromToken();
-        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId);
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
         var request = mapper.toCoreApprove(requestRest);
         return ApiResponse.success(

@@ -10,10 +10,8 @@ import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.BookingRepository;
-import ai.anamaya.service.oms.core.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Call;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,10 +27,9 @@ public class BookingCommonService {
 
     private final BalanceService balanceService;
     private final BookingRepository bookingRepository;
-    private final JwtUtils jwtUtils;
 
-    public Booking getValidatedBookingById(Boolean isSystem, Long id) {
-        Long companyId = jwtUtils.getCompanyIdFromToken();
+    public Booking getValidatedBookingById(CallerContext callerContext, Boolean isSystem, Long id) {
+        Long companyId = callerContext.companyId();
 
         Booking booking = bookingRepository.findById(id)
             .orElseThrow(() -> new NotFoundException("Booking not found"));
