@@ -21,7 +21,6 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final BookingApproveService bookingApproveService;
-    private final BookingSubmitService bookingSubmitService;
     private final BookingFlightService bookingFlightService;
     private final BookingHotelService bookingHotelService;
     private final BookingPaxService bookingPaxService;
@@ -66,7 +65,6 @@ public class BookingController {
             pageResult.getNumber()
         );
     }
-
 
     @GetMapping("/{id}")
     public ApiResponse<BookingResponseRest> getBooking(@PathVariable Long id) {
@@ -117,4 +115,5 @@ public class BookingController {
             bookingApproveService.approveBooking(userCallerContext, id, request)
         );
     }
+
 }
