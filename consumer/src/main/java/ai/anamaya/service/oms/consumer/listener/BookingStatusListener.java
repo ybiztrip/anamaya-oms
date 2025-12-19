@@ -39,7 +39,7 @@ public class BookingStatusListener {
     }
 
     private void handleMessage(BasicAcknowledgeablePubsubMessage message) {
-        Long bookingId = null;
+        String bookingCode = "";
 
         try {
             String data = message.getPubsubMessage().getData().toStringUtf8();
@@ -48,10 +48,10 @@ public class BookingStatusListener {
             BookingStatusMessage bookingStatus =
                 objectMapper.readValue(data, BookingStatusMessage.class);
 
-            bookingId = bookingStatus.getBookingId();
-            String lockKey = redisLock.bookingLockKey(bookingId);
+            bookingCode = bookingStatus.getBookingCode();
+            String lockKey = redisLock.bookingLockKey(bookingCode);
             if (redisLock.acquireLock(lockKey, Duration.ofSeconds(30))) {
-                log.warn("Booking {} is already being processed. Skipping.", bookingId);
+                log.warn("Booking {} is already being processed. Skipping.", bookingCode);
                 message.ack();
                 return;
             }
@@ -73,8 +73,8 @@ public class BookingStatusListener {
             message.ack();
         } finally {
             try {
-                if (bookingId != null) {
-                    redisLock.releaseLock(redisLock.bookingLockKey(bookingId));
+                if (!bookingCode.isEmpty()) {
+                    redisLock.releaseLock(redisLock.bookingLockKey(bookingCode));
                 }
             } catch (Exception ignored) {}
         }

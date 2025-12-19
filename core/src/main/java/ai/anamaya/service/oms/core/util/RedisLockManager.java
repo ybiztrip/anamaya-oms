@@ -26,8 +26,8 @@ public class RedisLockManager {
         redisTemplate.delete(key);
     }
 
-    public String bookingLockKey(Long bookingId) {
-        return "booking:lock:" + bookingId;
+    public String bookingLockKey(String bookingCode) {
+        return "booking:lock:" + bookingCode;
     }
 }
 

@@ -34,6 +34,7 @@ public class BookingApproveService {
     private final BookingPaxRepository bookingPaxRepository;
     private final BookingPubSubPublisher bookingPubSubPublisher;
     private final BookingHotelService bookingHotelService;
+    private final BookingFlightService bookingFlightService;
 
 
     private final Map<String, FlightProvider> flightProviders;
@@ -159,87 +160,12 @@ public class BookingApproveService {
 
         switch (request.getBookingType()) {
             case FLIGHT -> {
-                ApproveConfirmFlightBooking(callerContext, booking, request);
+                bookingFlightService.approveProcessBooking(callerContext, booking, request);
             }
             case HOTEL -> {
                 bookingHotelService.approveProcessBooking(callerContext, booking, request);
             }
         }
     }
-
-    public void ApproveConfirmFlightBooking(CallerContext callerContext, Booking booking, BookingStatusMessage request) {
-        Long userId = callerContext.userId();
-
-        List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
-        bookingCommonService.bookingDebitBalance(callerContext, booking, bookingFlights, null);
-        processFlights(callerContext, booking, bookingFlights);
-
-        bookingFlights.forEach(h -> {
-            h.setStatus(BookingFlightStatus.ISSUED);
-            h.setUpdatedBy(userId);
-        });
-        bookingFlightRepository.saveAll(bookingFlights);
-    }
-
-    @Transactional
-    public void approveConfirmBooking(CallerContext callerContext, Long bookingId) {
-        Booking booking = bookingCommonService.getValidatedBookingById(callerContext, true, bookingId);
-
-        if(booking.getStatus() != BookingStatus.APPROVED) {
-            throw new IllegalArgumentException("Wrong status");
-        }
-
-        List<BookingPax> bookingPaxes = bookingPaxRepository.findByBookingId(bookingId);
-        List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingId(bookingId);
-        List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingId(bookingId);
-
-        bookingCommonService.bookingDebitBalance(callerContext, booking, bookingFlights, null);
-
-        if (!bookingFlights.isEmpty()) {
-            processFlights(callerContext, booking, bookingFlights);
-        }
-
-        if (!bookingHotels.isEmpty()) {
-//            processHotels(callerContext, booking, bookingPaxes, bookingHotels);
-        }
-
-        booking.setStatus(BookingStatus.ISSUED);
-    }
-
-    private void processFlights(
-        CallerContext callerContext,
-        Booking booking,
-        List<BookingFlight> bookingFlights
-    ) {
-        FlightProvider provider = getFlightProvider("biztrip");
-
-        BookingFlightSubmitResponse response = provider.payment(
-            callerContext,
-            FlightBookingPaymentRequest.builder()
-                .bookingId(bookingFlights.get(0).getBookingReference())
-                .paymentMethod("DEPOSIT")
-                .build()
-        );
-
-        BookingFlightStatus flightStatus =
-            BookingFlightStatus.fromPaymentPartnerStatus(
-                response.getBookingSubmissionStatus()
-            );
-
-        bookingFlightHistoryRepository.save(
-            BookingFlightHistory.builder()
-                .bookingId(booking.getId())
-                .status(flightStatus)
-                .data(response)
-                .build()
-        );
-
-        if (flightStatus != BookingFlightStatus.CREATED) {
-            throw new IllegalStateException(
-                "Flight payment failed: " + flightStatus
-            );
-        }
-    }
-
 
 }

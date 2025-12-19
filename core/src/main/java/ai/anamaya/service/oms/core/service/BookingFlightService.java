@@ -1,9 +1,11 @@
 package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.dto.pubsub.BookingStatusMessage;
 import ai.anamaya.service.oms.core.dto.request.BookingFlightListFilter;
 import ai.anamaya.service.oms.core.dto.request.BookingFlightRequest;
 import ai.anamaya.service.oms.core.dto.request.BookingFlightSubmitRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.payment.FlightBookingPaymentRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.*;
 import ai.anamaya.service.oms.core.dto.response.BookingFlightResponse;
 import ai.anamaya.service.oms.core.dto.response.BookingResponse;
@@ -12,6 +14,7 @@ import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubm
 import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
+import ai.anamaya.service.oms.core.enums.BookingType;
 import ai.anamaya.service.oms.core.enums.PaxType;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.repository.BookingFlightHistoryRepository;
@@ -37,6 +40,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BookingFlightService {
 
+    private final BookingCommonService bookingCommonService;
     private final BookingFlightRepository bookingFlightRepository;
     private final BookingFlightHistoryRepository bookingFlightHistoryRepository;
     private final BookingPaxRepository bookingPaxRepository;
@@ -163,6 +167,69 @@ public class BookingFlightService {
         createBookingFlight(callerContext, booking, bookingCode);
 
         return bookingService.toResponse(booking, true, true);
+    }
+
+    public void approveProcessBooking(CallerContext callerContext, Booking booking, BookingStatusMessage request) {
+        Long userId = callerContext.userId();
+
+        List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
+        bookingCommonService.bookingDebitBalance(callerContext, booking, bookingFlights, null);
+        processFlights(callerContext, booking, bookingFlights);
+
+        bookingFlights.forEach(h -> {
+            h.setStatus(BookingFlightStatus.ISSUED);
+            h.setUpdatedBy(userId);
+        });
+        bookingFlightRepository.saveAll(bookingFlights);
+    }
+
+    public void retryApproveProcessBooking(CallerContext callerContext, Long bookingId, String bookingCode) {
+        Booking booking = bookingCommonService.getValidatedBookingById(callerContext, true, bookingId);
+
+        BookingStatusMessage statusMessage = BookingStatusMessage.builder()
+            .companyId(booking.getCompanyId())
+            .bookingType(BookingType.FLIGHT)
+            .bookingId(booking.getId())
+            .bookingCode(bookingCode)
+            .status(BookingStatus.APPROVED)
+            .build();
+
+        approveProcessBooking(callerContext, booking, statusMessage);
+    }
+
+    private void processFlights(
+        CallerContext callerContext,
+        Booking booking,
+        List<BookingFlight> bookingFlights
+    ) {
+        FlightProvider provider = getProvider("biztrip");
+
+        BookingFlightSubmitResponse response = provider.payment(
+            callerContext,
+            FlightBookingPaymentRequest.builder()
+                .bookingId(bookingFlights.get(0).getBookingReference())
+                .paymentMethod("DEPOSIT")
+                .build()
+        );
+
+        BookingFlightStatus flightStatus =
+            BookingFlightStatus.fromPaymentPartnerStatus(
+                response.getBookingSubmissionStatus()
+            );
+
+        bookingFlightHistoryRepository.save(
+            BookingFlightHistory.builder()
+                .bookingId(booking.getId())
+                .status(flightStatus)
+                .data(response)
+                .build()
+        );
+
+        if (flightStatus != BookingFlightStatus.CREATED) {
+            throw new IllegalStateException(
+                "Flight payment failed: " + flightStatus
+            );
+        }
     }
 
     public void retryBookingCreatedFlights(CallerContext callerContext, BookingFlight bookingFlight) {

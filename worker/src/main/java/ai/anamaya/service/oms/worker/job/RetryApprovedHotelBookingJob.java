@@ -7,7 +7,6 @@ import ai.anamaya.service.oms.core.service.BookingHotelService;
 import ai.anamaya.service.oms.core.util.RedisLockManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -19,9 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RetryApprovedHotelBookingJob {
 
-    @Autowired
-    private RedisLockManager redisLock;
-
+    private final RedisLockManager redisLock;
     private final BookingHotelService bookingHotelService;
 
     @Scheduled(cron = "${cron.task.retry-approved-hotel-booking}")
@@ -39,12 +36,12 @@ public class RetryApprovedHotelBookingJob {
             var pageResult = bookingHotelService.getAll(page, size, "createdAt;asc", filter);
 
             pageResult.getContent().forEach(b -> {
-                Long bookingId = b.getId();
-                String lockKey = redisLock.bookingLockKey(bookingId);
+                String bookingCode = b.getBookingCode();
+                String lockKey = redisLock.bookingLockKey(bookingCode);
 
                 try {
                     if (redisLock.acquireLock(lockKey, Duration.ofSeconds(30))) {
-                        log.warn("Booking {} is already being processed. Skipping.", bookingId);
+                        log.info("Booking approved hotel booked{} is already being processed. Skipping.", bookingCode);
                         return;
                     }
 
@@ -52,7 +49,7 @@ public class RetryApprovedHotelBookingJob {
                     bookingHotelService.retryApproveProcessBooking(systemCallerContext, b.getBookingId(), b.getBookingCode());
 
                 } catch (Exception ex) {
-                    log.error("Error processing booking {}", bookingId, ex);
+                    log.error("Error processing approved flight booked {}", bookingCode, ex);
 
                 } finally {
                     try {
@@ -70,6 +67,5 @@ public class RetryApprovedHotelBookingJob {
 
         log.info("Retry approved hotel Booking scheduler completed.");
     }
-
 
 }

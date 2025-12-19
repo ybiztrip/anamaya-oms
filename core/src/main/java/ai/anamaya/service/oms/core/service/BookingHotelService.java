@@ -190,8 +190,6 @@ public class BookingHotelService {
     }
 
     public void approveProcessBooking(CallerContext callerContext, Booking booking, BookingStatusMessage request) {
-        Long userId = callerContext.userId();
-
         List<BookingPax> bookingPaxes = bookingPaxRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
         List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
         processHotels(callerContext, booking, bookingPaxes, bookingHotels);
