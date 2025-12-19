@@ -1,16 +1,15 @@
 package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.dto.request.BookingFlightListFilter;
 import ai.anamaya.service.oms.core.dto.request.BookingFlightRequest;
 import ai.anamaya.service.oms.core.dto.request.BookingFlightSubmitRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.*;
+import ai.anamaya.service.oms.core.dto.response.BookingFlightResponse;
 import ai.anamaya.service.oms.core.dto.response.BookingResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.data.BookingDataResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubmitResponse;
-import ai.anamaya.service.oms.core.entity.Booking;
-import ai.anamaya.service.oms.core.entity.BookingFlight;
-import ai.anamaya.service.oms.core.entity.BookingFlightHistory;
-import ai.anamaya.service.oms.core.entity.BookingPax;
+import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.enums.PaxType;
@@ -19,13 +18,17 @@ import ai.anamaya.service.oms.core.repository.BookingFlightHistoryRepository;
 import ai.anamaya.service.oms.core.repository.BookingFlightRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -55,10 +58,74 @@ public class BookingFlightService {
         return provider;
     }
 
+    public Page<BookingFlightResponse> getAll(int page, int size, String sort, BookingFlightListFilter filter) {
+
+        // Sorting
+        Sort sorting = Sort.by("createdAt").descending();
+
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(";");
+            String field = parts[0];
+
+            Sort.Direction direction =
+                (parts.length > 1 && parts[1].equalsIgnoreCase("desc"))
+                    ? Sort.Direction.DESC
+                    : Sort.Direction.ASC;
+
+            sorting = Sort.by(direction, field);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sorting);
+
+        Specification<BookingFlight> spec = BookingFlightService.BookingSpecification.filter(filter);
+
+        Page<BookingFlight> bookingFlights = bookingFlightRepository.findAll(spec, pageable);
+
+        List<BookingFlightResponse> mapped = bookingFlights.getContent().stream()
+            .map(this::toResponse)
+            .toList();
+
+        return new PageImpl<>(mapped, pageable, bookingFlights.getTotalElements());
+    }
+
+    public static class BookingSpecification {
+
+        public static Specification<BookingFlight> filter(BookingFlightListFilter filter) {
+            return (root, query, cb) -> {
+
+                List<Predicate> predicates = new ArrayList<>();
+
+                if (filter.getStatuses() != null && !filter.getStatuses().isEmpty()) {
+                    predicates.add(root.get("status").in(filter.getStatuses()));
+                }
+
+                if (filter.getCompanyId() != null && filter.getCompanyId() != 0) {
+                    predicates.add(cb.equal(root.get("companyId"), filter.getCompanyId()));
+                }
+
+                if (filter.getDateFrom() != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(
+                        root.get("createdAt"),
+                        filter.getDateFrom().atStartOfDay()
+                    ));
+                }
+
+                if (filter.getDateTo() != null) {
+                    predicates.add(cb.lessThanOrEqualTo(
+                        root.get("createdAt"),
+                        filter.getDateTo().atTime(23, 59, 59)
+                    ));
+                }
+
+                return cb.and(predicates.toArray(new Predicate[0]));
+            };
+        }
+    }
+
     @Transactional(rollbackFor = Exception.class)
     public BookingResponse submitBookingFlights(CallerContext callerContext, Long bookingId, BookingFlightSubmitRequest request) {
         Long userId = callerContext.userId();
-        Booking booking = bookingService.getValidatedBooking(bookingId);
+        Booking booking = bookingService.getValidatedBooking(callerContext, bookingId);
 
         if (!booking.getStatus().equals(BookingStatus.APPROVED)) {
             throw new AccessDeniedException("This booking journey is not approved.");
@@ -98,10 +165,25 @@ public class BookingFlightService {
         return bookingService.toResponse(booking, true, true);
     }
 
+    public void retryBookingCreatedFlights(CallerContext callerContext, BookingFlight bookingFlight) {
+        Booking booking = bookingService.getValidatedBooking(callerContext, bookingFlight.getBookingId());
+
+        if (!booking.getStatus().equals(BookingStatus.APPROVED)) {
+            log.info("[retryBookingCreatedFlights] This booking journey is not approved.");
+            return;
+        }
+
+        createBookingFlight(callerContext, booking, bookingFlight.getBookingCode());
+    }
+
     private void createBookingFlight(CallerContext callerContext, Booking booking, String bookingCode) {
         List<BookingPax> pax = bookingPaxRepository.findByBookingIdAndBookingCode(booking.getId(), bookingCode);
         List<BookingFlight> flights = bookingFlightRepository.findByBookingIdAndBookingCode(booking.getId(), bookingCode);
         if(flights == null || flights.isEmpty()) {
+            return;
+        }
+
+        if (!flights.get(0).getStatus().equals(BookingFlightStatus.CREATED)) {
             return;
         }
 
@@ -252,6 +334,24 @@ public class BookingFlightService {
             .additionalData(booking.getAdditionalInfo() != null
                 ? booking.getAdditionalInfo().toString()
                 : "{}")
+            .build();
+    }
+
+
+    private BookingFlightResponse toResponse(BookingFlight f) {
+        return BookingFlightResponse.builder()
+            .id(f.getId())
+            .companyId(f.getCompanyId())
+            .bookingId(f.getBookingId())
+            .bookingCode(f.getBookingCode())
+            .type(f.getType())
+            .clientSource(f.getClientSource())
+            .itemId(f.getItemId())
+            .origin(f.getOrigin())
+            .destination(f.getDestination())
+            .departureDatetime(f.getDepartureDatetime())
+            .arrivalDatetime(f.getArrivalDatetime())
+            .status(f.getStatus())
             .build();
     }
 

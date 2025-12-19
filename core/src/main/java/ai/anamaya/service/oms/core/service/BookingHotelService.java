@@ -130,7 +130,7 @@ public class BookingHotelService {
     public BookingResponse submitBookingHotel(CallerContext callerContext, Long bookingId, BookingHotelSubmitRequest request) {
         Long userId = callerContext.userId();
         Long companyId = callerContext.companyId();
-        Booking booking = bookingService.getValidatedBooking(bookingId);
+        Booking booking = bookingService.getValidatedBooking(callerContext, bookingId);
 
         if (!booking.getStatus().equals(BookingStatus.APPROVED)) {
             throw new AccessDeniedException("This booking journey is not approved.");

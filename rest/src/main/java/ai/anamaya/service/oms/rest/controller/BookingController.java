@@ -42,17 +42,6 @@ public class BookingController {
         return ApiResponse.success(mapper.toRest(resultCore));
     }
 
-    @PutMapping("/{id}")
-    public ApiResponse<BookingResponseRest> updateBookingPax(
-        @PathVariable Long id,
-        @RequestBody List<BookingPaxRequestRest> paxRest) {
-
-        var paxCore = mapper.toCorePax(paxRest);
-
-        var resultCore = bookingPaxService.updateBookingPax(id, paxCore);
-        return ApiResponse.success(mapper.toRest(resultCore));
-    }
-
     @GetMapping
     public ApiResponse<List<BookingResponseRest>> getAll(
         @RequestParam(defaultValue = "0") int page,

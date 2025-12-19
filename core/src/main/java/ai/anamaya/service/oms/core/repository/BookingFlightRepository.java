@@ -4,12 +4,13 @@ import ai.anamaya.service.oms.core.entity.BookingFlight;
 import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface BookingFlightRepository extends JpaRepository<BookingFlight, Long> {
+public interface BookingFlightRepository extends JpaRepository<BookingFlight, Long>, JpaSpecificationExecutor<BookingFlight> {
     List<BookingFlight> findByBookingIdAndIdIn(Long bookingId, List<Long> ids);
     List<BookingFlight> findByBookingId(Long bookingId);
     List<BookingFlight> findByBookingIdAndBookingCode(Long bookingId, String bookingCode);

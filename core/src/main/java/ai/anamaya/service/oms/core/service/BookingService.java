@@ -111,8 +111,8 @@ public class BookingService {
         return toResponse(booking, true, true);
     }
 
-    public Booking getValidatedBooking(Long id) {
-        Long companyId = jwtUtils.getCompanyIdFromToken();
+    public Booking getValidatedBooking(CallerContext callerContext, Long id) {
+        Long companyId = callerContext.companyId();
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Booking not found"));
         if (!booking.getCompanyId().equals(companyId)) {
