@@ -42,6 +42,8 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private Short status;
 
+    private Boolean enableChatEngine;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UserRole> userRoles;
 }

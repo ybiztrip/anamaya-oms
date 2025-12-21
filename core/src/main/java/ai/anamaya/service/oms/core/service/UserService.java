@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.client.chatEngine.ChatEngineService;
 import ai.anamaya.service.oms.core.dto.request.UpdatePasswordRequest;
 import ai.anamaya.service.oms.core.dto.request.UserCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.UserUpdateRequest;
@@ -30,7 +31,9 @@ public class UserService {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final ChatEngineService chatEngineClient;
 
+    @Transactional
     public UserResponse create(UserCreateRequest request) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -60,13 +63,19 @@ public class UserService {
             .positionId(request.getPositionId())
             .phoneNo(request.getPhoneNo())
             .status(request.getStatus())
+            .enableChatEngine(request.getEnableChatEngine())
             .build();
+
+        if (Boolean.TRUE.equals(user.getEnableChatEngine())) {
+            chatEngineClient.registerUser(user);
+        }
 
         repository.save(user);
 
         return toResponse(user);
     }
 
+    @Transactional
     public UserResponse update(Long id, UserUpdateRequest request) {
 
         User user = repository.findById(id)
@@ -86,6 +95,7 @@ public class UserService {
         return toResponse(user);
     }
 
+    @Transactional
     public void updatePassword(UpdatePasswordRequest request) {
 
         User user = repository.findById(request.getUserId())
@@ -137,6 +147,7 @@ public class UserService {
         );
     }
 
+    @Transactional
     public void delete(Long id) {
         if (!repository.existsById(id)) {
             throw new NotFoundException("User not found");

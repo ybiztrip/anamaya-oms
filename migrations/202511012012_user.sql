@@ -9,6 +9,7 @@ CREATE TABLE user (
   position_id BIGINT NULL,
   phone_no VARCHAR(256) NULL,
   status SMALLINT NOT NULL,
+  enable_chat_engine TINYINT,
   created_by BIGINT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_by BIGINT NULL,

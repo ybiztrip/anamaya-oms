@@ -31,4 +31,6 @@ public class UserCreateRequestRest {
 
     @NotNull
     private Short status;
+
+    private Boolean enableChatEngine;
 }
