@@ -1,10 +1,7 @@
 package ai.anamaya.service.oms.core.client.biztrip;
 
 import ai.anamaya.service.oms.core.context.CallerContext;
-import ai.anamaya.service.oms.core.dto.request.HotelRateCheckRequest;
-import ai.anamaya.service.oms.core.dto.request.HotelRateRequest;
-import ai.anamaya.service.oms.core.dto.request.HotelRoomRequest;
-import ai.anamaya.service.oms.core.dto.request.HotelSearchRequest;
+import ai.anamaya.service.oms.core.dto.request.*;
 import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCheckRateRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCreateRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
@@ -20,12 +17,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BiztripHotelProvider implements HotelProvider {
 
+    private final BiztripHotelGeoListService biztripHotelGeoListService;
     private final BiztripHotelSearchService biztripHotelService;
     private final BiztripHotelRoomService biztripHotelRoomService;
     private final BiztripHotelCheckRateService biztripHotelCheckRateService;
     private final BiztripHotelRateService biztripHotelRateService;
     private final BiztripHotelBookingCheckRateService biztripHotelBookingCheckRateService;
     private final BiztripHotelBookingCreateService biztripHotelBookingCreateService;
+
+    @Override
+    public HotelGeoListResponse getGeoList(CallerContext callerContext, HotelGeoListRequest request) {
+        return biztripHotelGeoListService.getGeoList(callerContext, request);
+    }
 
     @Override
     public ApiResponse<List<HotelResponse>> searchHotels(HotelSearchRequest request) {

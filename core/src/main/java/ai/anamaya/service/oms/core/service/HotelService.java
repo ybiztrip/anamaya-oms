@@ -1,9 +1,7 @@
 package ai.anamaya.service.oms.core.service;
 
-import ai.anamaya.service.oms.core.dto.request.HotelRateCheckRequest;
-import ai.anamaya.service.oms.core.dto.request.HotelRateRequest;
-import ai.anamaya.service.oms.core.dto.request.HotelRoomRequest;
-import ai.anamaya.service.oms.core.dto.request.HotelSearchRequest;
+import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.dto.request.*;
 import ai.anamaya.service.oms.core.dto.response.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,6 +29,10 @@ public class HotelService {
         }
 
         return provider;
+    }
+
+    public HotelGeoListResponse getGeoList(CallerContext callerContext, String source, HotelGeoListRequest request) {
+        return getProvider(source).getGeoList(callerContext, request);
     }
 
     public ApiResponse<List<HotelResponse>> searchHotels(String source, HotelSearchRequest request) {

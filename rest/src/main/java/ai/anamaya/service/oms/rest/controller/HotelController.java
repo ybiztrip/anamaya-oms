@@ -1,24 +1,42 @@
 package ai.anamaya.service.oms.rest.controller;
 
-import ai.anamaya.service.oms.core.dto.request.HotelRateCheckRequest;
-import ai.anamaya.service.oms.core.dto.request.HotelRateRequest;
-import ai.anamaya.service.oms.core.dto.request.HotelRoomRequest;
-import ai.anamaya.service.oms.core.dto.request.HotelSearchRequest;
+import ai.anamaya.service.oms.core.context.UserCallerContext;
+import ai.anamaya.service.oms.core.dto.request.*;
 import ai.anamaya.service.oms.core.dto.response.*;
+import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.HotelService;
+import ai.anamaya.service.oms.rest.dto.request.HotelGeoListRequestRest;
+import ai.anamaya.service.oms.rest.dto.response.HotelGeoListResponseRest;
+import ai.anamaya.service.oms.rest.mapper.HotelMapper;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/hotel")
 public class HotelController {
 
     private final HotelService hotelService;
+    private final HotelMapper mapper;
+    private final JwtUtils jwtUtils;
 
-    public HotelController(HotelService hotelService) {
-        this.hotelService = hotelService;
+    @PostMapping("/geo/list")
+    public ApiResponse<HotelGeoListResponseRest> getGeoList(
+        @RequestParam(defaultValue = "biztrip") String source,
+        @Valid @RequestBody HotelGeoListRequestRest request
+    ) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        HotelGeoListRequest reqCore = mapper.toCore(request);
+        HotelGeoListResponse response = hotelService.getGeoList(userCallerContext, source, reqCore);
+
+        return ApiResponse.success(mapper.toRest(response));
     }
 
     @PostMapping("/search")
