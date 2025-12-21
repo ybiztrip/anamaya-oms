@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.dto.request.LoginExternalRequest;
 import ai.anamaya.service.oms.core.dto.request.LoginRequest;
 import ai.anamaya.service.oms.core.dto.response.LoginResponse;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
@@ -40,5 +41,21 @@ public class AuthService {
             .lastName(user.getLastName())
             .token(token)
             .build();
+    }
+
+    public LoginResponse loginByPhoneNo(LoginExternalRequest request) {
+        User user = userRepository.findByPhoneNo(request.getPhoneNo())
+            .orElseThrow(() -> new NotFoundException("Invalid phone no"));
+
+        String token = jwtTokenProvider.generateToken(user.getId(), user.getCompanyId(), user.getEmail());
+
+        return LoginResponse.builder()
+            .id(user.getId())
+            .email(user.getEmail())
+            .firstName(user.getFirstName())
+            .lastName(user.getLastName())
+            .token(token)
+            .build();
+
     }
 }
