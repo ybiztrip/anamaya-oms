@@ -24,7 +24,7 @@ public class HotelController {
     private final JwtUtils jwtUtils;
 
     @PostMapping("/geo/list")
-    public ApiResponse<HotelGeoListResponseRest> getGeoList(
+    public ApiResponse<List<HotelGeoListResponseRest.Geo>> getGeoList(
         @RequestParam(defaultValue = "biztrip") String source,
         @Valid @RequestBody HotelGeoListRequestRest request
     ) {
@@ -36,7 +36,9 @@ public class HotelController {
         HotelGeoListRequest reqCore = mapper.toCore(request);
         HotelGeoListResponse response = hotelService.getGeoList(userCallerContext, source, reqCore);
 
-        return ApiResponse.success(mapper.toRest(response));
+        return ApiResponse.success(
+            mapper.toRest(response).getGeoRegionList()
+        );
     }
 
     @PostMapping("/search")

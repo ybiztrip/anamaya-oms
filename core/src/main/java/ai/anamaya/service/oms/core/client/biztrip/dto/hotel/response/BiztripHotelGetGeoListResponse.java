@@ -25,7 +25,7 @@ public class BiztripHotelGetGeoListResponse {
         private String type;
         private String name;
         private String localeName;
-        private Centro centroId;
+        private Centro centroid;
     }
 
     @Data

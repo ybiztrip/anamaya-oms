@@ -34,7 +34,7 @@ public class BiztripHotelGeoListResponseMapper {
             .type(g.getType())
             .name(g.getName())
             .localeName(g.getLocaleName())
-            .centroId(mapCentro(g.getCentroId()))
+            .centroId(mapCentro(g.getCentroid()))
             .build();
     }
 
