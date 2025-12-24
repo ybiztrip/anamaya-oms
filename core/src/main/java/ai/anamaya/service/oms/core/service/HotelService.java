@@ -39,6 +39,10 @@ public class HotelService {
         return getProvider(source).searchHotels(request);
     }
 
+    public HotelDiscoveryResponse discoveryHotels(CallerContext callerContext, String source, HotelDiscoveryRequest request) {
+        return getProvider(source).discoveryHotels(callerContext, request);
+    }
+
     public ApiResponse<List<HotelRoomResponse>> getHotelRooms(String source, HotelRoomRequest request) {
         HotelProvider provider = getProvider(source);
         return provider.getHotelRooms(request);

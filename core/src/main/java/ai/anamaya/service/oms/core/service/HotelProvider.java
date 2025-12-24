@@ -13,6 +13,7 @@ import java.util.List;
 public interface HotelProvider {
     HotelGeoListResponse getGeoList(CallerContext callerContext, HotelGeoListRequest request);
     ApiResponse<List<HotelResponse>> searchHotels(HotelSearchRequest request);
+    HotelDiscoveryResponse discoveryHotels(CallerContext callerContext, HotelDiscoveryRequest request);
     ApiResponse<List<HotelRoomResponse>> getHotelRooms(HotelRoomRequest request);
     ApiResponse<List<HotelRateResponse>> getHotelRates(HotelRateRequest request);
     ApiResponse<HotelRateCheckResponse> checkHotelRate(HotelRateCheckRequest request);

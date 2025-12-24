@@ -19,6 +19,7 @@ public class BiztripHotelProvider implements HotelProvider {
 
     private final BiztripHotelGeoListService biztripHotelGeoListService;
     private final BiztripHotelSearchService biztripHotelService;
+    private final BiztripHotelDiscoveryService biztripHotelDiscoveryService;
     private final BiztripHotelRoomService biztripHotelRoomService;
     private final BiztripHotelCheckRateService biztripHotelCheckRateService;
     private final BiztripHotelRateService biztripHotelRateService;
@@ -33,6 +34,11 @@ public class BiztripHotelProvider implements HotelProvider {
     @Override
     public ApiResponse<List<HotelResponse>> searchHotels(HotelSearchRequest request) {
         return biztripHotelService.searchHotels(request);
+    }
+
+    @Override
+    public HotelDiscoveryResponse discoveryHotels(CallerContext callerContext, HotelDiscoveryRequest request) {
+        return biztripHotelDiscoveryService.discovery(callerContext, request);
     }
 
     @Override

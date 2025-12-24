@@ -5,6 +5,7 @@ import ai.anamaya.service.oms.core.dto.request.*;
 import ai.anamaya.service.oms.core.dto.response.*;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.HotelService;
+import ai.anamaya.service.oms.rest.dto.request.HotelDiscoveryRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.HotelGeoListRequestRest;
 import ai.anamaya.service.oms.rest.dto.response.HotelGeoListResponseRest;
 import ai.anamaya.service.oms.rest.mapper.HotelMapper;
@@ -49,6 +50,22 @@ public class HotelController {
         return hotelService.searchHotels(source, request);
     }
 
+    @PostMapping("/discovery")
+    public ApiResponse<HotelDiscoveryResponse> discoveryHotels(
+        @RequestParam(defaultValue = "biztrip") String source,
+        @Valid @RequestBody HotelDiscoveryRequestRest request
+    ) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        HotelDiscoveryRequest reqCore = mapper.toCore(request);
+        HotelDiscoveryResponse response = hotelService.discoveryHotels(userCallerContext, source, reqCore);
+
+        return ApiResponse.success(response);
+    }
+
     @PostMapping("/room")
     public ApiResponse<List<HotelRoomResponse>> getHotelRooms(
             @RequestParam(required = false) String source,
@@ -56,7 +73,6 @@ public class HotelController {
     ) {
         return hotelService.getHotelRooms(source, request);
     }
-
 
     @PostMapping("/rate")
     public ApiResponse<List<HotelRateResponse>> getHotelRates(
