@@ -3,9 +3,9 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.client.queue.BookingPubSubPublisher;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.pubsub.BookingStatusMessage;
+import ai.anamaya.service.oms.core.dto.request.BookingHotelListFilter;
 import ai.anamaya.service.oms.core.dto.request.BookingHotelRequest;
 import ai.anamaya.service.oms.core.dto.request.BookingHotelSubmitRequest;
-import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCheckRateRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCreateRequest;
 import ai.anamaya.service.oms.core.dto.response.BookingHotelResponse;
@@ -62,7 +62,7 @@ public class BookingHotelService {
         return provider;
     }
 
-    public Page<BookingHotelResponse> getAll(int page, int size, String sort, BookingListFilter filter) {
+    public Page<BookingHotelResponse> getAll(int page, int size, String sort, BookingHotelListFilter filter) {
 
         // Sorting
         Sort sorting = Sort.by("createdAt").descending();
@@ -94,7 +94,7 @@ public class BookingHotelService {
 
     public static class BookingSpecification {
 
-        public static Specification<BookingHotel> filter(BookingListFilter filter) {
+        public static Specification<BookingHotel> filter(BookingHotelListFilter filter) {
             return (root, query, cb) -> {
 
                 List<Predicate> predicates = new ArrayList<>();

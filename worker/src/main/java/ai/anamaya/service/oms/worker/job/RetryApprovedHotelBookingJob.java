@@ -1,8 +1,8 @@
 package ai.anamaya.service.oms.worker.job;
 
 import ai.anamaya.service.oms.core.context.SystemCallerContext;
-import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
-import ai.anamaya.service.oms.core.enums.BookingStatus;
+import ai.anamaya.service.oms.core.dto.request.BookingHotelListFilter;
+import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import ai.anamaya.service.oms.core.service.BookingHotelService;
 import ai.anamaya.service.oms.core.util.RedisLockManager;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +28,8 @@ public class RetryApprovedHotelBookingJob {
         int page = 0;
         int size = 50;
 
-        BookingListFilter filter = new BookingListFilter();
-        filter.setStatuses(List.of(BookingStatus.APPROVED));
+        BookingHotelListFilter filter = new BookingHotelListFilter();
+        filter.setStatuses(List.of(BookingHotelStatus.APPROVED));
 
         while (true) {
 
