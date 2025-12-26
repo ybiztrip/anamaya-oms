@@ -36,6 +36,9 @@ public class User extends BaseEntity {
     @Column(name = "position_id")
     private Long positionId;
 
+    @Column(name = "country_code", length = 10)
+    private String countryCode;
+
     @Column(name = "phone_no", length = 256)
     private String phoneNo;
 

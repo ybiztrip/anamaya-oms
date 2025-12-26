@@ -25,6 +25,7 @@ public class UserUpdateRequest {
     private String lastName;
     private String gender;
     private Long positionId;
+    private String countryCode;
     private String phoneNo;
 
     @NotNull

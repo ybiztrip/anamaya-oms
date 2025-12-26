@@ -61,6 +61,8 @@ public class UserService {
             .lastName(request.getLastName())
             .gender(request.getGender())
             .positionId(request.getPositionId())
+            .countryCode(request.getCountryCode())
+            .countryCode(request.getCountryCode())
             .phoneNo(request.getPhoneNo())
             .status(request.getStatus())
             .enableChatEngine(request.getEnableChatEngine())
@@ -87,6 +89,7 @@ public class UserService {
         user.setLastName(request.getLastName());
         user.setGender(request.getGender());
         user.setPositionId(request.getPositionId());
+        user.setCountryCode(request.getCountryCode());
         user.setPhoneNo(request.getPhoneNo());
         user.setStatus(request.getStatus());
 
@@ -164,6 +167,7 @@ public class UserService {
             .lastName(user.getLastName())
             .gender(user.getGender())
             .positionId(user.getPositionId())
+            .countryCode(user.getCountryCode())
             .phoneNo(user.getPhoneNo())
             .status(user.getStatus())
             .createdBy(user.getCreatedBy())

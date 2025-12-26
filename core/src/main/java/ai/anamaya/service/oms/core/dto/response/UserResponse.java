@@ -16,6 +16,7 @@ public class UserResponse {
     private String lastName;
     private String gender;
     private Long positionId;
+    private String countryCode;
     private String phoneNo;
     private Short status;
     private Long createdBy;

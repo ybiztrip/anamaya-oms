@@ -6,6 +6,7 @@ import ai.anamaya.service.oms.core.entity.User;
 public class ChatEngineUserRegisterMapper {
     public ChatEngineUserRegisterRequest map(User user) {
         ChatEngineUserRegisterRequest req = new ChatEngineUserRegisterRequest();
+        req.setCountryCode(user.getCountryCode());
         req.setPhoneNumber(user.getPhoneNo());
         req.setEmail(user.getEmail());
         req.setFirstName(user.getFirstName());
