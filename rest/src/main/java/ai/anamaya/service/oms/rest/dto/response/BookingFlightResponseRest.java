@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class BookingFlightResponseRest {
     private Long id;
+    private Long companyId;
     private Long bookingId;
     private Short type;
     private String clientSource;

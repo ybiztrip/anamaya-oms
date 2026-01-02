@@ -273,22 +273,17 @@ public class BookingFlightService {
             booking.setStatus(BookingStatus.ON_PROCESS_CREATE);
         }
 
-        List<String> bookingReferenceCodes = flights.stream()
-            .filter(f -> f.getStatus() == BookingFlightStatus.CREATED)
-            .map(BookingFlight::getBookingReference)
-            .toList();
-
         List<BookingDataResponse> bookingDataResponse = provider.searchData(callerContext, FlightBookingSearchDataRequest.builder()
             .count(100)
             .page(0)
-            .referenceCodes(bookingReferenceCodes)
+            .referenceCodes(List.of(response.getBookingId()))
             .build());
 
-        updateBookingFlightData(booking.getId(), bookingDataResponse);
+        updateBookingFlightData(booking.getId(), bookingCode, bookingDataResponse);
     }
 
-    private void updateBookingFlightData(Long bookingId, List<BookingDataResponse> responses) {
-        List<BookingFlight> flights = bookingFlightRepository.findByBookingId(bookingId);
+    private void updateBookingFlightData(Long bookingId, String bookingCode, List<BookingDataResponse> responses) {
+        List<BookingFlight> flights = bookingFlightRepository.findByBookingIdAndBookingCode(bookingId, bookingCode);
 
         for (BookingFlight f : flights) {
             if (f.getStatus().equals(BookingFlightStatus.BOOKED)) {
@@ -322,6 +317,7 @@ public class BookingFlightService {
 
                 BookingFlightStatus flightStatus = BookingFlightStatus.fromBookingPartnerStatus(data.getStatus());
                 f.setStatus(flightStatus);
+                f.setBookingReference(data.getBookingReference());
                 f.setOtaReference(data.getOtaReference());
 
                 bookingFlightRepository.save(f);
