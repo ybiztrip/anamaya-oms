@@ -34,6 +34,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -232,15 +233,32 @@ public class BookingFlightService {
         }
     }
 
-    public void retryBookingCreatedFlights(CallerContext callerContext, BookingFlight bookingFlight) {
-        Booking booking = bookingService.getValidatedBooking(callerContext, bookingFlight.getBookingId());
+    @Transactional(rollbackFor = Exception.class)
+    public void retryBookingCreatedFlights(CallerContext callerContext, Long bookingFlightId) {
+        Optional<BookingFlight> bookingFlightData = bookingFlightRepository.findById(bookingFlightId);
+        if (bookingFlightData.isEmpty()){
+            return;
+        }
 
+        BookingFlight bookingFlight = bookingFlightData.get();
+        if (!bookingFlight.getStatus().equals(BookingFlightStatus.CREATED)) {
+            return;
+        }
+
+        Booking booking = bookingService.getValidatedBooking(callerContext, bookingFlight.getBookingId());
         if (!booking.getStatus().equals(BookingStatus.APPROVED)) {
             log.info("[retryBookingCreatedFlights] This booking journey is not approved.");
             return;
         }
 
-        createBookingFlight(callerContext, booking, bookingFlight.getBookingCode());
+        FlightProvider provider = getProvider("biztrip");
+        List<BookingDataResponse> bookingDataResponse = provider.searchData(callerContext, FlightBookingSearchDataRequest.builder()
+            .count(100)
+            .page(0)
+            .referenceCodes(List.of(bookingFlight.getBookingReference()))
+            .build());
+
+        updateBookingFlightData(booking.getId(), bookingFlight.getBookingCode(), bookingDataResponse);
     }
 
     private void createBookingFlight(CallerContext callerContext, Booking booking, String bookingCode) {
@@ -258,7 +276,7 @@ public class BookingFlightService {
 
         FlightProvider provider = getProvider("biztrip");
 
-        BookingFlightSubmitResponse response = provider.submitBooking(request);
+        BookingFlightSubmitResponse response = provider.submitBooking(callerContext, request);
         BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromBookingPartnerStatus(response.getBookingSubmissionStatus());
         bookingFlightHistoryRepository.save(
             BookingFlightHistory.builder()
@@ -268,10 +286,6 @@ public class BookingFlightService {
                 .data(response)
                 .build()
         );
-
-        if(bookingFlightStatus == BookingFlightStatus.CREATED) {
-            booking.setStatus(BookingStatus.ON_PROCESS_CREATE);
-        }
 
         List<BookingDataResponse> bookingDataResponse = provider.searchData(callerContext, FlightBookingSearchDataRequest.builder()
             .count(100)

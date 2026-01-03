@@ -49,13 +49,7 @@ public class RetryPendingFlightBookingJob {
                     }
 
                     CallerContext systemContext = new SystemCallerContext(b.getCompanyId());
-                    BookingFlight bookingFlight = BookingFlight.builder()
-                        .id(b.getId())
-                        .bookingId(b.getBookingId())
-                        .bookingCode(b.getBookingCode())
-                        .companyId(b.getCompanyId())
-                        .build();
-                    bookingFlightService.retryBookingCreatedFlights(systemContext, bookingFlight);
+                    bookingFlightService.retryBookingCreatedFlights(systemContext, b.getId());
 
                 } catch (Exception ex) {
                     log.error("Error processing pending flight booked  {}", b.getBookingCode(), ex);
