@@ -22,7 +22,7 @@ public class BookingRequestRest {
         if (startDate == null || endDate == null) {
             return true;
         }
-        return startDate.isBefore(endDate);
+        return !startDate.isAfter(endDate);
     }
 
     private String contactEmail;

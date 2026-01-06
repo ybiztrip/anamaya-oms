@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -140,8 +141,9 @@ public class BookingFlightService {
         String bookingCode = "ANMF:"+ Instant.now().toEpochMilli();
 
         for (BookingFlightRequest req : requestFlights) {
-            if (req.getDepartureDatetime().isBefore(booking.getStartDate().atStartOfDay())
-                || req.getDepartureDatetime().isAfter(booking.getEndDate().atStartOfDay())
+            LocalDate departureDate = req.getDepartureDatetime().toLocalDate();
+            if (departureDate.isBefore(booking.getStartDate())
+                || departureDate.isAfter(booking.getEndDate())
             ) {
                 throw new IllegalArgumentException("Booking date flight is outside journey date");
             }
