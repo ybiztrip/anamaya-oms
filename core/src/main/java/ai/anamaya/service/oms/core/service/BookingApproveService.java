@@ -17,9 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 @Slf4j
@@ -27,12 +25,11 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BookingApproveService {
 
+    private final UserRepository userRepository;
     private final BookingCommonService bookingCommonService;
     private final BookingRepository bookingRepository;
     private final BookingFlightRepository bookingFlightRepository;
-    private final BookingFlightHistoryRepository bookingFlightHistoryRepository;
     private final BookingHotelRepository bookingHotelRepository;
-    private final BookingPaxRepository bookingPaxRepository;
     private final BookingPubSubPublisher bookingPubSubPublisher;
     private final BookingHotelService bookingHotelService;
     private final BookingFlightService bookingFlightService;
@@ -189,8 +186,9 @@ public class BookingApproveService {
             bookingRepository.save(booking);
         }
 
+        List<BookingFlight> bookingFlights = Collections.emptyList();
         if (request.getFlightIds() != null && !request.getFlightIds().isEmpty()) {
-            List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndIdIn(bookingId, request.getFlightIds());
+            bookingFlights = bookingFlightRepository.findByBookingIdAndIdIn(bookingId, request.getFlightIds());
             List<BookingFlight> notValidFlights = bookingFlights.stream()
                 .filter(f -> f.getStatus() != BookingFlightStatus.CREATED)
                 .toList();
@@ -211,8 +209,9 @@ public class BookingApproveService {
             bookingFlightRepository.saveAll(bookingFlights);
         }
 
+        List<BookingHotel> bookingHotels = Collections.emptyList();;
         if (request.getHotelIds() != null && !request.getHotelIds().isEmpty()) {
-            List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingIdAndIdIn(bookingId, request.getHotelIds());
+            bookingHotels = bookingHotelRepository.findByBookingIdAndIdIn(bookingId, request.getHotelIds());
             List<BookingHotel> notValidHotels = bookingHotels.stream()
                 .filter(f -> f.getStatus() != BookingHotelStatus.BOOKED)
                 .toList();
@@ -231,6 +230,11 @@ public class BookingApproveService {
                 h.setUpdatedBy(userId);
             });
             bookingHotelRepository.saveAll(bookingHotels);
+        }
+
+        Optional<User> user = userRepository.findByEmail(booking.getContactEmail());
+        if(user.isPresent() && user.get().getEnableChatEngine()) {
+            bookingCommonService.sendNotificationToUser(user.get(), bookingId, bookingFlights, bookingHotels);
         }
 
         return "Booking rejected";

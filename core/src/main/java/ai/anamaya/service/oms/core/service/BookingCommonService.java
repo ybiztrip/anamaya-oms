@@ -1,11 +1,9 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.client.apricode.AppricodeService;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.BalanceAdjustRequest;
-import ai.anamaya.service.oms.core.entity.Booking;
-import ai.anamaya.service.oms.core.entity.BookingFlight;
-import ai.anamaya.service.oms.core.entity.BookingHotel;
-import ai.anamaya.service.oms.core.entity.CompanyBalanceDetail;
+import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
@@ -19,7 +17,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -27,6 +24,7 @@ public class BookingCommonService {
 
     private final BalanceService balanceService;
     private final BookingRepository bookingRepository;
+    private final AppricodeService appricodeClient;
 
     public Booking getValidatedBookingById(CallerContext callerContext, Boolean isSystem, Long id) {
         Long companyId = callerContext.companyId();
@@ -112,4 +110,14 @@ public class BookingCommonService {
             .multiply(BigDecimal.valueOf(h.getNumRoom()))
             .multiply(BigDecimal.valueOf(nights));
     }
+
+    public void sendNotificationToUser(
+        User user,
+        Long bookingId,
+        List<BookingFlight> bookingFlights,
+        List<BookingHotel> bookingHotels
+    ) {
+        appricodeClient.approvalResponse(user, bookingId, bookingFlights, bookingHotels);
+    }
+
 }
