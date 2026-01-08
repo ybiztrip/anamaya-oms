@@ -4,6 +4,7 @@ public enum BookingFlightStatus {
     CREATED,
     BOOKED,
     APPROVED,
+    REJECTED,
     CANCELLED,
     ISSUING,
     ISSUED,

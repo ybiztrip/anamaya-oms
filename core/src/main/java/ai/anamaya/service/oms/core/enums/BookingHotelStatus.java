@@ -2,8 +2,9 @@ package ai.anamaya.service.oms.core.enums;
 
 public enum BookingHotelStatus {
     CREATED,
-    BOOKED,
+    REJECTED,
     APPROVED,
+    BOOKED,
     ISSUED,
     CANCELLED;
 

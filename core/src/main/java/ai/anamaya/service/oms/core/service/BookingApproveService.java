@@ -4,6 +4,7 @@ import ai.anamaya.service.oms.core.client.queue.BookingPubSubPublisher;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.pubsub.BookingStatusMessage;
 import ai.anamaya.service.oms.core.dto.request.BookingApproveRequest;
+import ai.anamaya.service.oms.core.dto.request.BookingRejectRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.payment.FlightBookingPaymentRequest;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubmitResponse;
 import ai.anamaya.service.oms.core.entity.*;
@@ -166,6 +167,73 @@ public class BookingApproveService {
                 bookingHotelService.approveProcessBooking(callerContext, booking, request);
             }
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public String rejectBooking(CallerContext callerContext, Long bookingId, BookingRejectRequest request) {
+        Long companyId = callerContext.companyId();
+        Long userId = callerContext.userId();
+        String userEmail = callerContext.userEmail();
+
+        Booking booking = bookingRepository.findById(bookingId)
+            .orElseThrow(() -> new NotFoundException("Booking not found"));
+
+        if (!booking.getCompanyId().equals(companyId)) {
+            throw new AccessDeniedException("You are not authorized to modify this booking");
+        }
+
+        if (booking.getStatus() == BookingStatus.CREATED){
+            booking.setStatus(BookingStatus.REJECTED);
+            booking.setRejectedBy(userId);
+            booking.setRejectedByName(userEmail);
+            bookingRepository.save(booking);
+        }
+
+        if (request.getFlightIds() != null && !request.getFlightIds().isEmpty()) {
+            List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndIdIn(bookingId, request.getFlightIds());
+            List<BookingFlight> notValidFlights = bookingFlights.stream()
+                .filter(f -> f.getStatus() != BookingFlightStatus.CREATED)
+                .toList();
+
+            if (!notValidFlights.isEmpty()) {
+                throw new IllegalStateException(
+                    "Some booking flights are not valid to APPROVED: " +
+                        notValidFlights.stream()
+                            .map(BookingFlight::getId)
+                            .toList()
+                );
+            }
+
+            bookingFlights.forEach(h -> {
+                h.setStatus(BookingFlightStatus.REJECTED);
+                h.setUpdatedBy(userId);
+            });
+            bookingFlightRepository.saveAll(bookingFlights);
+        }
+
+        if (request.getHotelIds() != null && !request.getHotelIds().isEmpty()) {
+            List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingIdAndIdIn(bookingId, request.getHotelIds());
+            List<BookingHotel> notValidHotels = bookingHotels.stream()
+                .filter(f -> f.getStatus() != BookingHotelStatus.BOOKED)
+                .toList();
+
+            if (!notValidHotels.isEmpty()) {
+                throw new IllegalStateException(
+                    "Some booking hotels are not valid to APPROVED: " +
+                        notValidHotels.stream()
+                            .map(BookingHotel::getId)
+                            .toList()
+                );
+            }
+
+            bookingHotels.forEach(h -> {
+                h.setStatus(BookingHotelStatus.REJECTED);
+                h.setUpdatedBy(userId);
+            });
+            bookingHotelRepository.saveAll(bookingHotels);
+        }
+
+        return "Booking rejected";
     }
 
 }

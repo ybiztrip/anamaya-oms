@@ -19,6 +19,7 @@ public interface BookingMapper {
 
     BookingRequest toCore(BookingRequestRest rest);
     BookingApproveRequest toCoreApprove(BookingApproveRequestRest rest);
+    BookingRejectRequest toCoreReject(BookingRejectRequestRest rest);
 
     BookingPaxRequest toCore(BookingPaxRequestRest rest);
     List<BookingPaxRequest> toCorePax(List<BookingPaxRequestRest> list);

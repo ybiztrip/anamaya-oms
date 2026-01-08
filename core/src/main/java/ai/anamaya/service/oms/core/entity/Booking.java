@@ -82,4 +82,10 @@ public class Booking extends BaseEntity {
 
     @Column(name = "approved_by_name")
     private String approvedByName;
+
+    @Column(name = "rejected_by")
+    private Long rejectedBy;
+
+    @Column(name = "rejected_by_name")
+    private String rejectedByName;
 }

@@ -205,4 +205,21 @@ public class BookingController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('COMPANY_ADMIN')")
+    @PutMapping("/{id}/reject")
+    public ApiResponse<String> reject(
+        @PathVariable Long id,
+        @Valid @RequestBody BookingRejectRequestRest requestRest
+    ) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        var request = mapper.toCoreReject(requestRest);
+        return ApiResponse.success(
+            bookingApproveService.rejectBooking(userCallerContext, id, request)
+        );
+    }
+
 }
