@@ -8,6 +8,7 @@ import ai.anamaya.service.oms.core.dto.request.booking.submit.Passengers;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 public class BiztripFlightBookingSubmitRequestMapper {
 
@@ -29,15 +30,22 @@ public class BiztripFlightBookingSubmitRequestMapper {
         dto.setAdditionalData(convertAdditionalData(request.getAdditionalData()));
 
         // CONTACT DETAIL
+        String phoneNumber = request.getContactDetail().getPhoneNumber();
+        String countryCode = request.getContactDetail().getPhoneNumberCountryCode();
+
+        if (phoneNumber != null && countryCode != null && phoneNumber.startsWith(countryCode)) {
+            phoneNumber = phoneNumber.substring(countryCode.length());
+        }
+
         dto.setContactDetail(BiztripBookingContactDetail.builder()
             .email(request.getContactDetail().getEmail())
             .customerEmail(request.getContactDetail().getEmail())
             .firstName(request.getContactDetail().getFirstName())
             .lastName(request.getContactDetail().getLastName())
-            .phoneNumber(request.getContactDetail().getPhoneNumber())
-            .phoneNumberCountryCode(request.getContactDetail().getPhoneNumberCountryCode())
-            .customerPhoneNumber(request.getContactDetail().getPhoneNumber())
-            .customerPhoneNumberCountryCode(request.getContactDetail().getPhoneNumberCountryCode())
+            .phoneNumber(phoneNumber)
+            .phoneNumberCountryCode(countryCode)
+            .customerPhoneNumber(phoneNumber)
+            .customerPhoneNumberCountryCode(countryCode)
             .title(request.getContactDetail().getTitle())
             .dateOfBirth(convertDateFormat(request.getContactDetail().getDateOfBirth()))
             .build()
@@ -79,7 +87,7 @@ public class BiztripFlightBookingSubmitRequestMapper {
                     .expirationDate(convertDateFormat(p.getDocumentDetail().getExpirationDate()))
                     .build()
             )
-            .addOns(p.getAddOns())
+            .addOns(Optional.ofNullable(p.getAddOns()).orElseGet(List::of))
             .build();
     }
 
