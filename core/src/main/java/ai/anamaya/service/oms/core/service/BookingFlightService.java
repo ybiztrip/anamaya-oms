@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.client.queue.BookingPubSubPublisher;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.pubsub.BookingStatusMessage;
 import ai.anamaya.service.oms.core.dto.request.BookingFlightListFilter;
@@ -12,14 +13,12 @@ import ai.anamaya.service.oms.core.dto.response.BookingResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.data.BookingDataResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubmitResponse;
 import ai.anamaya.service.oms.core.entity.*;
-import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
-import ai.anamaya.service.oms.core.enums.BookingStatus;
-import ai.anamaya.service.oms.core.enums.BookingType;
-import ai.anamaya.service.oms.core.enums.PaxType;
+import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.repository.BookingFlightHistoryRepository;
 import ai.anamaya.service.oms.core.repository.BookingFlightRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
+import ai.anamaya.service.oms.core.repository.CompanyConfigRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +47,8 @@ public class BookingFlightService {
     private final BookingPaxRepository bookingPaxRepository;
     private final BookingService bookingService;
     private final BookingPaxService bookingPaxService;
+    private final BookingPubSubPublisher bookingPubSubPublisher;
+    private final CompanyConfigRepository companyConfigRepository;
 
     private final Map<String, FlightProvider> flightProviders;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -131,6 +132,7 @@ public class BookingFlightService {
     @Transactional(rollbackFor = Exception.class)
     public BookingResponse submitBookingFlights(CallerContext callerContext, Long bookingId, BookingFlightSubmitRequest request) {
         Long userId = callerContext.userId();
+        Long companyId = callerContext.companyId();
         Booking booking = bookingService.getValidatedBooking(callerContext, bookingId);
 
         if (!booking.getStatus().equals(BookingStatus.APPROVED)) {
@@ -168,8 +170,32 @@ public class BookingFlightService {
         bookingPaxService.submitBookingPax(callerContext, bookingId, bookingCode, request.getPaxs());
 
         createBookingFlight(callerContext, booking, bookingCode);
+        handleBookingFlightApprovalFlow(callerContext, booking, bookingCode);
 
         return bookingService.toResponse(booking, true, true);
+    }
+
+    public void handleBookingFlightApprovalFlow(CallerContext callerContext, Booking booking, String bookingCode) {
+        Optional<CompanyConfig> isAutoApproveBookingFlight = companyConfigRepository.findByCompanyIdAndCode(callerContext.companyId(), "IS_AUTO_APPROVE_BOOKING_FLIGHT");
+        BookingStatusMessage message = null;
+
+        if (isAutoApproveBookingFlight.isPresent() && Boolean.TRUE.equals(isAutoApproveBookingFlight.get().getValueBool())) {
+            message = BookingStatusMessage.builder()
+                .companyId(booking.getCompanyId())
+                .bookingType(BookingType.FLIGHT)
+                .bookingId(booking.getId())
+                .bookingCode(bookingCode)
+                .status(BookingStatus.APPROVED)
+                .build();
+        }
+
+        if (message != null) {
+            bookingPubSubPublisher.publishBookingStatus(message);
+        } else {
+            List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndBookingCode(booking.getId(), bookingCode);
+            bookingCommonService.sendNotificationToApprover(callerContext, booking.getId() ,bookingFlights, null);
+        }
+
     }
 
     public void approveProcessBooking(CallerContext callerContext, Booking booking, BookingStatusMessage request) {
