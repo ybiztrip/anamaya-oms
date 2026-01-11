@@ -74,43 +74,35 @@ public class BookingCommonService {
             return;
         }
 
-        balanceService.adjustBalance(
-            callerContext,
-            BalanceAdjustRequest.builder()
-            .companyId(booking.getCompanyId())
-            .code(BalanceCodeType.WALLET_FLIGHT)
-            .sourceType(BalanceSourceType.BOOKING)
-            .type(BalanceTransactionType.DEBIT)
-            .amount(flightTotalAmount)
-            .referenceId(booking.getId())
-            .referenceCode(referenceCode)
-            .remarks("Buying flight ticket approved by"+booking.getApprovedByName())
-            .build());
-
-        balanceService.adjustBalance(
-            callerContext,
-            BalanceAdjustRequest.builder()
-            .companyId(booking.getCompanyId())
-            .code(BalanceCodeType.WALLET_HOTEL)
-            .sourceType(BalanceSourceType.BOOKING)
-            .type(BalanceTransactionType.DEBIT)
-            .amount(hotelTotalAmount)
-            .referenceId(booking.getId())
-            .referenceCode(referenceCode)
-            .remarks("Buying hotel ticket approved by"+booking.getApprovedByName())
-            .build());
-    }
-
-    private BigDecimal calculateHotelAmount(BookingHotel h) {
-        long nights = ChronoUnit.DAYS.between(h.getCheckInDate(), h.getCheckOutDate());
-
-        if (nights <= 0 || h.getPartnerSellAmount() == null || h.getNumRoom() == null) {
-            return BigDecimal.ZERO;
+        if (bookingFlights != null) {
+            balanceService.adjustBalance(
+                callerContext,
+                BalanceAdjustRequest.builder()
+                    .companyId(booking.getCompanyId())
+                    .code(BalanceCodeType.WALLET_FLIGHT)
+                    .sourceType(BalanceSourceType.BOOKING)
+                    .type(BalanceTransactionType.DEBIT)
+                    .amount(flightTotalAmount)
+                    .referenceId(booking.getId())
+                    .referenceCode(referenceCode)
+                    .remarks("Buying flight ticket approved by" + booking.getApprovedByName())
+                    .build());
         }
 
-        return BigDecimal.valueOf(h.getPartnerSellAmount())
-            .multiply(BigDecimal.valueOf(h.getNumRoom()))
-            .multiply(BigDecimal.valueOf(nights));
+        if (bookingHotel != null) {
+            balanceService.adjustBalance(
+                callerContext,
+                BalanceAdjustRequest.builder()
+                    .companyId(booking.getCompanyId())
+                    .code(BalanceCodeType.WALLET_HOTEL)
+                    .sourceType(BalanceSourceType.BOOKING)
+                    .type(BalanceTransactionType.DEBIT)
+                    .amount(hotelTotalAmount)
+                    .referenceId(booking.getId())
+                    .referenceCode(referenceCode)
+                    .remarks("Buying hotel ticket approved by" + booking.getApprovedByName())
+                    .build());
+        }
     }
 
     public void sendNotificationToApprover(
