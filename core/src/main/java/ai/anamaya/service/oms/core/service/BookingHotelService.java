@@ -184,6 +184,8 @@ public class BookingHotelService {
 
         if (message != null) {
             bookingPubSubPublisher.publishBookingStatus(message);
+        } else {
+            bookingCommonService.sendNotificationToApprover(callerContext, bookingId,null, List.of(newHotel));
         }
 
         return bookingService.toResponse(booking, true, true);

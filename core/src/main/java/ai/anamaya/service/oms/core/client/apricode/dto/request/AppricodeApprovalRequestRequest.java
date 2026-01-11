@@ -17,7 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 public class AppricodeApprovalRequestRequest {
     private Booking booking;
-    private List<UserApprover> usersApprover;
+    private User userRequester;
+    private List<User> usersApprovers;
 
     @Data
     public static class Booking {
@@ -45,7 +46,7 @@ public class AppricodeApprovalRequestRequest {
     }
 
     @Data
-    public static class UserApprover {
+    public static class User {
         private String email;
         private String firstName;
         private String lastName;

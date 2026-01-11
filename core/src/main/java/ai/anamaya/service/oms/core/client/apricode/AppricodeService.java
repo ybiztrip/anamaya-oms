@@ -25,8 +25,8 @@ public class AppricodeService {
     private final ApricodeApprovalRequestMapper requestApprovalRequestMapper = new ApricodeApprovalRequestMapper();
     private final ApricodeApprovalResponseMapper requestApprovalResponseMapper = new ApricodeApprovalResponseMapper();
 
-    public void approvalRequest(User request) {
-        AppricodeApprovalRequestRequest reqExternal = requestApprovalRequestMapper.map(request);
+    public void approvalRequest(User user, List<User> userApprovers, Long bookingId, List<BookingFlight> bookingFlights, List<BookingHotel> bookingHotels) {
+        AppricodeApprovalRequestRequest reqExternal = requestApprovalRequestMapper.map(user, userApprovers, bookingId, bookingFlights, bookingHotels);
         String rawResponse = webClientBuilder.build()
             .post()
             .uri(properties.getBaseUrl() + "/webhook/approval-request")

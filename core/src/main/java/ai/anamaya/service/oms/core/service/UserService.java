@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.client.chatEngine.ChatEngineService;
+import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.UpdatePasswordRequest;
 import ai.anamaya.service.oms.core.dto.request.UserCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.UserUpdateRequest;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -148,6 +150,14 @@ public class UserService {
             pageable,
             users.getTotalElements()
         );
+    }
+
+    public List<User> getListUserApprover(CallerContext callerContext) {
+       return repository.findUserApprover(callerContext.companyId());
+    }
+
+    public Optional<User> getByEmail(CallerContext callerContext, String email) {
+        return repository.findByEmail(email);
     }
 
     @Transactional

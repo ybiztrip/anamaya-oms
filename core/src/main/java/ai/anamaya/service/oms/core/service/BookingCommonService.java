@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -25,6 +26,7 @@ public class BookingCommonService {
     private final BalanceService balanceService;
     private final BookingRepository bookingRepository;
     private final AppricodeService appricodeClient;
+    private final UserService userService;
 
     public Booking getValidatedBookingById(CallerContext callerContext, Boolean isSystem, Long id) {
         Long companyId = callerContext.companyId();
@@ -109,6 +111,31 @@ public class BookingCommonService {
         return BigDecimal.valueOf(h.getPartnerSellAmount())
             .multiply(BigDecimal.valueOf(h.getNumRoom()))
             .multiply(BigDecimal.valueOf(nights));
+    }
+
+    public void sendNotificationToApprover(
+        CallerContext callerContext,
+        Long bookingId,
+        List<BookingFlight> bookingFlights,
+        List<BookingHotel> bookingHotels
+    ) {
+        Booking booking = bookingRepository.findById(bookingId)
+            .orElseThrow(() -> new NotFoundException("Booking not found"));
+
+        Optional<User> user = userService.getByEmail(callerContext, booking.getContactEmail());
+        if (user.isEmpty()
+            || !Boolean.TRUE.equals(user.get().getEnableChatEngine())) {
+            return;
+        }
+
+        List<User> userApprover = userService.getListUserApprover(callerContext);
+        List<User> userApproverNotification =
+            Optional.ofNullable(userApprover)
+                .orElse(List.of())
+                .stream()
+                .filter(u -> Boolean.TRUE.equals(u.getEnableChatEngine()))
+                .toList();
+        appricodeClient.approvalRequest(user.get(), userApproverNotification, bookingId, bookingFlights, bookingHotels);
     }
 
     public void sendNotificationToUser(
