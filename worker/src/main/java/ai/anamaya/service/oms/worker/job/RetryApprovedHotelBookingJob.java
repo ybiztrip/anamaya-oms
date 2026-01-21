@@ -40,7 +40,7 @@ public class RetryApprovedHotelBookingJob {
                 String lockKey = redisLock.bookingLockKey(bookingCode);
 
                 try {
-                    if (redisLock.acquireLock(lockKey, Duration.ofSeconds(30))) {
+                    if (redisLock.acquireLock(lockKey, Duration.ofSeconds(300))) {
                         log.info("Booking approved hotel booked{} is already being processed. Skipping.", bookingCode);
                         return;
                     }

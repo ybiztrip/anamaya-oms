@@ -252,7 +252,7 @@ public class BookingHotelService {
                     buildHotelBookingCreateRequest(booking, bookingPaxes, hotel)
                 );
 
-            if(createResponse.getIsCancel()) {
+            if (Boolean.TRUE.equals(createResponse.getIsCancel())) {
                 hotel.setStatus(BookingHotelStatus.CANCELLED);
                 continue;
             }
