@@ -36,21 +36,22 @@ public class ApricodeApprovalRequestMapper {
         );
 
         // ---- Hotels ----
-        booking.setHotels(
-            bookingHotels
-                .stream()
-                .map(h -> {
-                    AppricodeApprovalRequestRequest.Hotel hotel =
-                        new AppricodeApprovalRequestRequest.Hotel();
-                    hotel.setId(h.getId());
-                    hotel.setTotalAmount(BigDecimal.valueOf(h.getPartnerSellAmount()));
-                    hotel.setCheckInDate(h.getCheckInDate());
-                    hotel.setCheckOutDate(h.getCheckOutDate());
-                    return hotel;
-                })
-                .toList()
-        );
-
+        if(bookingHotels != null && !bookingHotels.isEmpty()) {
+            booking.setHotels(
+                bookingHotels
+                    .stream()
+                    .map(h -> {
+                        AppricodeApprovalRequestRequest.Hotel hotel =
+                            new AppricodeApprovalRequestRequest.Hotel();
+                        hotel.setId(h.getId());
+                        hotel.setTotalAmount(BigDecimal.valueOf(h.getPartnerSellAmount()));
+                        hotel.setCheckInDate(h.getCheckInDate());
+                        hotel.setCheckOutDate(h.getCheckOutDate());
+                        return hotel;
+                    })
+                    .toList()
+            );
+        }
         req.setBooking(booking);
 
         AppricodeApprovalRequestRequest.User userRequester = new AppricodeApprovalRequestRequest.User();
