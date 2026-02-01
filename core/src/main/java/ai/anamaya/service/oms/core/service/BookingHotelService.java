@@ -8,10 +8,12 @@ import ai.anamaya.service.oms.core.dto.request.BookingHotelRequest;
 import ai.anamaya.service.oms.core.dto.request.BookingHotelSubmitRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCheckRateRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCreateRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingGetDetailRequest;
 import ai.anamaya.service.oms.core.dto.response.BookingHotelResponse;
 import ai.anamaya.service.oms.core.dto.response.BookingResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingCheckRateResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingCreateResponse;
+import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingDetailResponse;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingHotel;
 import ai.anamaya.service.oms.core.entity.BookingPax;
@@ -223,6 +225,25 @@ public class BookingHotelService {
 
         for (BookingHotel hotel : bookingHotels) {
 
+            HotelBookingDetailResponse bookingDetail = provider.getBookingDetail(callerContext, HotelBookingGetDetailRequest
+                .builder()
+                    .bookingId(hotel.getBookingReference())
+                    .partnerBookingId(hotel.getBookingCode())
+                .build());
+
+            BookingHotelStatus hotelStatus =
+                BookingHotelStatus.fromBookingPartnerStatus(
+                    bookingDetail.getStatus()
+                );
+
+            if(hotelStatus == BookingHotelStatus.ISSUED) {
+                hotel.setPartnerNettAmount(Double.valueOf(bookingDetail.getTotalAmount()));
+                hotel.setPartnerSellAmount(Double.valueOf(bookingDetail.getTotalAmount()));
+                hotel.setStatus(hotelStatus);
+                bookingCommonService.bookingDebitBalance(callerContext, booking, null, hotel);
+                continue;
+            }
+
             HotelBookingCheckRateResponse rateResponse =
                 provider.checkRate(
                     callerContext,
@@ -257,7 +278,7 @@ public class BookingHotelService {
                 continue;
             }
 
-            BookingHotelStatus hotelStatus =
+            hotelStatus =
                 BookingHotelStatus.fromBookingPartnerStatus(
                     createResponse.getStatus()
                 );
