@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.client.biztrip.dto.submit.response;
 
+import ai.anamaya.service.oms.core.client.biztrip.dto.flight.response.BiztripFlightAddOnDataResponse;
 import lombok.Data;
 
 import java.util.List;
@@ -14,5 +15,5 @@ public class BiztripPassenger {
     private BiztripDocumentDetail documentDetail;
     private String nationality;
     private String birthLocation;
-    private List<BiztripAddOn> addOns;
+    private List<BiztripFlightAddOnDataResponse> addOns;
 }

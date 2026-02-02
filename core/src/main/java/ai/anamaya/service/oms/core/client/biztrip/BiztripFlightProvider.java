@@ -46,8 +46,8 @@ public class BiztripFlightProvider implements FlightProvider {
     }
 
     @Override
-    public ApiResponse<FlightAddOnsResponse> getAddOns(FlightAddOnsRequest request) {
-        return addOnsService.getAddOns(request);
+    public FlightAddOnsResponse getAddOns(CallerContext callerContext, FlightAddOnsRequest request) {
+        return addOnsService.getAddOns(callerContext, request);
     }
 
     @Override

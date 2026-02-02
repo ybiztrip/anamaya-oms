@@ -17,7 +17,7 @@ public interface FlightProvider {
     ApiResponse<List<FlightAirportResponse>> getAirports();
     ApiResponse<List<FlightAirlineResponse>> getAirlines();
     ApiResponse<FlightBookingRuleResponse> getBookingRules(String airlineCode);
-    ApiResponse<FlightAddOnsResponse> getAddOns(FlightAddOnsRequest request);
+    FlightAddOnsResponse getAddOns(CallerContext callerContext, FlightAddOnsRequest request);
     ApiResponse<FlightOneWaySearchResponse> searchOneWay(FlightOneWaySearchRequest request);
 
     BookingFlightSubmitResponse submitBooking(CallerContext callerContext, FlightBookingSubmitRequest request);

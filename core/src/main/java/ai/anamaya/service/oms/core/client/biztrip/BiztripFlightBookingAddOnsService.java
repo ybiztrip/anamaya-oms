@@ -1,75 +1,62 @@
 package ai.anamaya.service.oms.core.client.biztrip;
 
 
+import ai.anamaya.service.oms.core.client.biztrip.dto.flight.response.BiztripFlightAddOnDataResponse;
+import ai.anamaya.service.oms.core.client.biztrip.dto.flight.response.BiztripFlightAddOnsResponse;
+import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripFlightAddOnsResponseMapper;
+import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.FlightAddOnsRequest;
-import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.dto.response.FlightAddOnsResponse;
-import ai.anamaya.service.oms.core.security.JwtUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.Duration;
-import java.util.Map;
 
 @Slf4j
+@RequiredArgsConstructor
 @Service
 public class BiztripFlightBookingAddOnsService {
 
     private final WebClient webClient;
     private final BiztripAuthService authService;
-    private final JwtUtils jwtUtils;
+    private final ObjectMapper mapper;
+    private final BiztripFlightAddOnsResponseMapper responseMapper = new BiztripFlightAddOnsResponseMapper();
 
-    public BiztripFlightBookingAddOnsService(
-            @Qualifier("biztripWebClient") WebClient webClient,
-            BiztripAuthService authService,
-            JwtUtils jwtUtils
-    ) {
-        this.webClient = webClient;
-        this.authService = authService;
-        this.jwtUtils = jwtUtils;
-    }
-
-    public ApiResponse<FlightAddOnsResponse> getAddOns(FlightAddOnsRequest request) {
+    public FlightAddOnsResponse getAddOns(CallerContext callerContext, FlightAddOnsRequest request) {
         try {
-            Long companyId = jwtUtils.getCompanyIdFromToken();
-            String accessToken = authService.getAccessToken(companyId);
+            String token = authService.getAccessToken(callerContext.companyId());
 
-            Map<String, Object> response = webClient.post()
+            String rawResponse = webClient.post()
                     .uri("/flight/booking/add-ons")
-                    .header(HttpHeaders.AUTHORIZATION, accessToken)
+                    .header(HttpHeaders.AUTHORIZATION, token)
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
                     .bodyValue(request)
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                    .bodyToMono(String.class)
                     .timeout(Duration.ofSeconds(15))
                     .block();
 
-            if (response == null || response.get("data") == null) {
-                return ApiResponse.error("No add-ons data found");
-            }
+            log.info("Biztrip raw response: {}", rawResponse);
 
-            FlightAddOnsResponse mapped = mapToResponse((Map<String, Object>) response.get("data"));
-            return ApiResponse.success(mapped);
+            JsonNode root = mapper.readTree(rawResponse);
+            boolean success = root.path("success").asBoolean(false);
+            JsonNode dataNode = root.get("data");
+            BiztripFlightAddOnsResponse biztripResponse =
+                mapper.treeToValue(dataNode, BiztripFlightAddOnsResponse.class);
 
-        } catch (WebClientResponseException e) {
-            log.error("BizTrip API error: {} - {}", e.getStatusCode().value(), e.getResponseBodyAsString());
-            return ApiResponse.error("External API error: " + e.getMessage());
+            return responseMapper.map(success, biztripResponse);
+
         } catch (Exception e) {
-            log.error("Unexpected error fetching add-ons", e);
-            return ApiResponse.error("Unexpected error: " + e.getMessage());
+            log.error("Search add ons to Biztrip failed", e);
+            throw new RuntimeException("Search add ons failed: " + e.getMessage());
         }
     }
 
-    private FlightAddOnsResponse mapToResponse(Map<String, Object> data) {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.convertValue(data, FlightAddOnsResponse.class);
-    }
 }

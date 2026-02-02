@@ -5,6 +5,6 @@ import java.util.List;
 
 @Data
 public class AvailableAddOnsOptionsResponse {
-    private List<BaggageOptionResponse> baggageOptionResponses;
+    private List<BaggageOptionResponse> baggageOptions;
     private List<Object> mealOptions;
 }

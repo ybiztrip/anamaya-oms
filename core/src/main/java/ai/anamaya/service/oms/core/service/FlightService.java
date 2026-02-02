@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.core.dto.request.FlightOneWaySearchRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
@@ -43,8 +44,8 @@ public class FlightService {
         return getProvider(source).getBookingRules(airline);
     }
 
-    public ApiResponse<FlightAddOnsResponse> getAddOns(String source, FlightAddOnsRequest request) {
-        return getProvider(source).getAddOns(request);
+    public FlightAddOnsResponse getAddOns(CallerContext callerContext, String source, FlightAddOnsRequest request) {
+        return getProvider(source).getAddOns(callerContext, request);
     }
 
 

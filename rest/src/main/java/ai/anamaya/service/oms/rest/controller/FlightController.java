@@ -1,25 +1,24 @@
 package ai.anamaya.service.oms.rest.controller;
 
+import ai.anamaya.service.oms.core.context.UserCallerContext;
 import ai.anamaya.service.oms.core.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.core.dto.request.FlightOneWaySearchRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
+import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.FlightService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/flight")
+@RequiredArgsConstructor
 public class FlightController {
 
     private final FlightService flightService;
-
-    public FlightController(
-            FlightService flightService
-            ) {
-        this.flightService = flightService;
-    }
+    private final JwtUtils jwtUtils;
 
     @GetMapping("/airports")
     public ApiResponse<List<FlightAirportResponse>> getAllAirports(
@@ -48,7 +47,13 @@ public class FlightController {
             @RequestParam(defaultValue = "biztrip") String source,
             @RequestBody FlightAddOnsRequest request
     ) {
-        return flightService.getAddOns(source, request);
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+        var result = flightService.getAddOns(userCallerContext, source, request);
+
+        return ApiResponse.success(result);
     }
 
     @PostMapping("/search/one-way")

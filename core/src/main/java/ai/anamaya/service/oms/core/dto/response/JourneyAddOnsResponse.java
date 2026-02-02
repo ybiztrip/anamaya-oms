@@ -6,5 +6,5 @@ import java.util.List;
 @Data
 public class JourneyAddOnsResponse {
     private List<Object> segmentsWithAvailableAddOns;
-    private AvailableAddOnsOptionsResponse availableAddOnsOptionsResponse;
+    private AvailableAddOnsOptionsResponse availableAddOnsOptions;
 }
