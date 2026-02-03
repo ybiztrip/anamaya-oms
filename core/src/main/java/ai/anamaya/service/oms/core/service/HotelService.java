@@ -57,4 +57,9 @@ public class HotelService {
         return provider.checkHotelRate(request);
     }
 
+    public List<HotelRoomRateResponse> getHotelRoomRate(CallerContext callerContext, String source, HotelRoomRateRequest request) {
+        HotelProvider provider = getProvider(source);
+        return provider.getHotelRoomRate(callerContext, request);
+    }
+
 }

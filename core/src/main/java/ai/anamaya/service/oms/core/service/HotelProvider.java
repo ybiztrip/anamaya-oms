@@ -18,6 +18,8 @@ public interface HotelProvider {
     HotelDiscoveryResponse discoveryHotels(CallerContext callerContext, HotelDiscoveryRequest request);
     ApiResponse<List<HotelRoomResponse>> getHotelRooms(HotelRoomRequest request);
     ApiResponse<List<HotelRateResponse>> getHotelRates(HotelRateRequest request);
+    List<HotelRoomRateResponse> getHotelRoomRate(CallerContext callerContext, HotelRoomRateRequest request);
+
     ApiResponse<HotelRateCheckResponse> checkHotelRate(HotelRateCheckRequest request);
     HotelBookingCheckRateResponse checkRate(CallerContext callerContext, HotelBookingCheckRateRequest request);
     HotelBookingCreateResponse create(CallerContext callerContext, HotelBookingCreateRequest request);

@@ -90,4 +90,18 @@ public class HotelController {
         return hotelService.checkHotelRate(source, request);
     }
 
+    @PostMapping("/room-rate")
+    public ApiResponse<List<HotelRoomRateResponse>> getHotelRoomRate(
+        @RequestParam(required = false) String source,
+        @Valid @RequestBody HotelRoomRateRequest request
+    ) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        var result =  hotelService.getHotelRoomRate(userCallerContext, source, request);
+        return ApiResponse.success(result);
+    }
+
 }
