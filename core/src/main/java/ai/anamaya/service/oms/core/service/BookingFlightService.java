@@ -254,11 +254,6 @@ public class BookingFlightService {
                 .build()
         );
 
-        if (flightStatus != BookingFlightStatus.CREATED) {
-            throw new IllegalStateException(
-                "Flight payment failed: " + flightStatus
-            );
-        }
     }
 
     @Transactional(rollbackFor = Exception.class)
