@@ -28,6 +28,7 @@ public class ApricodeApprovalResponseMapper {
                     flight.setDestination(f.getDestination());
                     flight.setDepartureDatetime(f.getDepartureDatetime());
                     flight.setArrivalDatetime(f.getArrivalDatetime());
+                    flight.setStatus(f.getStatus());
                     return flight;
                 })
                 .toList()
@@ -43,6 +44,7 @@ public class ApricodeApprovalResponseMapper {
                     hotel.setTotalAmount(BigDecimal.valueOf(h.getPartnerSellAmount()));
                     hotel.setCheckInDate(h.getCheckInDate());
                     hotel.setCheckOutDate(h.getCheckOutDate());
+                    hotel.setStatus(h.getStatus());
                     return hotel;
                 })
                 .toList()
