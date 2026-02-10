@@ -127,7 +127,16 @@ public class BookingCommonService {
                 .stream()
                 .filter(u -> Boolean.TRUE.equals(u.getEnableChatEngine()))
                 .toList();
-        appricodeClient.approvalRequest(user.get(), userApproverNotification, bookingId, bookingFlights, bookingHotels);
+
+        userApproverNotification.forEach(approver ->
+            appricodeClient.approvalRequest(
+                user.get(),
+                List.of(approver),
+                bookingId,
+                bookingFlights,
+                bookingHotels
+            )
+        );
     }
 
     public void sendNotificationToUser(

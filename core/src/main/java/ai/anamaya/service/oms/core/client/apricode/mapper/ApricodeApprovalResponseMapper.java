@@ -16,39 +16,42 @@ public class ApricodeApprovalResponseMapper {
         AppricodeApprovalResponseRequest.Booking booking = new AppricodeApprovalResponseRequest.Booking();
 
         booking.setBookingId(bookingId);
-
-        booking.setFlights(
-            bookingFlights.stream()
-                .map(f -> {
-                    AppricodeApprovalResponseRequest.Flight flight =
-                        new AppricodeApprovalResponseRequest.Flight();
-                    flight.setId(f.getId());
-                    flight.setOrigin(f.getOrigin());
-                    flight.setTotalAmount(f.getTotalAmount());
-                    flight.setDestination(f.getDestination());
-                    flight.setDepartureDatetime(f.getDepartureDatetime());
-                    flight.setArrivalDatetime(f.getArrivalDatetime());
-                    flight.setStatus(f.getStatus());
-                    return flight;
-                })
-                .toList()
-        );
+        if (bookingFlights != null) {
+            booking.setFlights(
+                bookingFlights.stream()
+                    .map(f -> {
+                        AppricodeApprovalResponseRequest.Flight flight =
+                            new AppricodeApprovalResponseRequest.Flight();
+                        flight.setId(f.getId());
+                        flight.setOrigin(f.getOrigin());
+                        flight.setTotalAmount(f.getTotalAmount());
+                        flight.setDestination(f.getDestination());
+                        flight.setDepartureDatetime(f.getDepartureDatetime());
+                        flight.setArrivalDatetime(f.getArrivalDatetime());
+                        flight.setStatus(f.getStatus());
+                        return flight;
+                    })
+                    .toList()
+            );
+        }
 
         // ---- Hotels ----
-        booking.setHotels(
-            bookingHotels.stream()
-                .map(h -> {
-                    AppricodeApprovalResponseRequest.Hotel hotel =
-                        new AppricodeApprovalResponseRequest.Hotel();
-                    hotel.setId(h.getId());
-                    hotel.setTotalAmount(BigDecimal.valueOf(h.getPartnerSellAmount()));
-                    hotel.setCheckInDate(h.getCheckInDate());
-                    hotel.setCheckOutDate(h.getCheckOutDate());
-                    hotel.setStatus(h.getStatus());
-                    return hotel;
-                })
-                .toList()
-        );
+        if (bookingHotels != null) {
+            booking.setHotels(
+                bookingHotels.stream()
+                    .map(h -> {
+                        AppricodeApprovalResponseRequest.Hotel hotel =
+                            new AppricodeApprovalResponseRequest.Hotel();
+                        hotel.setId(h.getId());
+                        hotel.setTotalAmount(BigDecimal.valueOf(h.getPartnerSellAmount()));
+                        hotel.setCheckInDate(h.getCheckInDate());
+                        hotel.setCheckOutDate(h.getCheckOutDate());
+                        hotel.setStatus(h.getStatus());
+                        return hotel;
+                    })
+                    .toList()
+            );
+        }
 
         req.setBooking(booking);
 

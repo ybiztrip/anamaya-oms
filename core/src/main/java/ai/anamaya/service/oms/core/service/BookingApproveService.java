@@ -104,6 +104,11 @@ public class BookingApproveService {
                     .toList()
             );
 
+            Optional<User> user = userRepository.findByEmail(booking.getContactEmail());
+            if(user.isPresent() && user.get().getEnableChatEngine()) {
+                bookingCommonService.sendNotificationToUser(user.get(), bookingId, bookingFlights, null);
+            }
+
         }
 
         if (request.getHotelIds() != null && !request.getHotelIds().isEmpty()) {
