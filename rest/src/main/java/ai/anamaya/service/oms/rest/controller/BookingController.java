@@ -189,7 +189,7 @@ public class BookingController {
     }
 
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN')")
-    @PutMapping("/{id}/approve")
+    @PutMapping("/approve/{id}")
     public ApiResponse<String> approve(
         @PathVariable Long id,
         @Valid @RequestBody BookingApproveRequestRest requestRest
@@ -206,7 +206,7 @@ public class BookingController {
     }
 
     @PreAuthorize("hasAnyRole('COMPANY_ADMIN')")
-    @PutMapping("/{id}/reject")
+    @PutMapping("/reject/{id}")
     public ApiResponse<String> reject(
         @PathVariable Long id,
         @Valid @RequestBody BookingRejectRequestRest requestRest
