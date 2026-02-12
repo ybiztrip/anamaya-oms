@@ -193,17 +193,24 @@ public class BookingApproveService {
 
         List<BookingFlight> bookingFlights = Collections.emptyList();
         if (request.getFlightIds() != null && !request.getFlightIds().isEmpty()) {
-            bookingFlights = bookingFlightRepository.findByBookingIdAndIdIn(bookingId, request.getFlightIds());
-            List<BookingFlight> notValidFlights = bookingFlights.stream()
-                .filter(f -> f.getStatus() != BookingFlightStatus.CREATED)
+            bookingFlights = bookingFlightRepository
+                .findByBookingIdAndIdIn(bookingId, request.getFlightIds());
+
+            Set<BookingFlightStatus> allowedStatuses =
+                EnumSet.of(BookingFlightStatus.CREATED, BookingFlightStatus.BOOKED);
+
+            List<Long> invalidFlightIds = bookingFlights.stream()
+                .filter(f -> !allowedStatuses.contains(f.getStatus()))
+                .map(BookingFlight::getId)
                 .toList();
 
-            if (!notValidFlights.isEmpty()) {
+            if (!invalidFlightIds.isEmpty()) {
                 throw new IllegalStateException(
-                    "Some booking flights are not valid to APPROVED: " +
-                        notValidFlights.stream()
-                            .map(BookingFlight::getId)
-                            .toList()
+                    String.format(
+                        "Cannot reject booking flights. Invalid status found for flight IDs: %s. Allowed statuses: %s",
+                        invalidFlightIds,
+                        allowedStatuses
+                    )
                 );
             }
 
