@@ -111,6 +111,12 @@ public class BookingCommonService {
         List<BookingFlight> bookingFlights,
         List<BookingHotel> bookingHotels
     ) {
+        if (bookingFlights != null &&
+            bookingFlights.stream()
+                .anyMatch(flight -> flight.getStatus() != BookingFlightStatus.BOOKED)) {
+            return;
+        }
+
         Booking booking = bookingRepository.findById(bookingId)
             .orElseThrow(() -> new NotFoundException("Booking not found"));
 

@@ -282,6 +282,7 @@ public class BookingFlightService {
             .build());
 
         updateBookingFlightData(booking.getId(), bookingFlight.getBookingCode(), bookingDataResponse);
+        handleBookingFlightApprovalFlow(callerContext, booking, bookingFlight.getBookingCode());
     }
 
     private void createBookingFlight(CallerContext callerContext, Booking booking, String bookingCode) {
