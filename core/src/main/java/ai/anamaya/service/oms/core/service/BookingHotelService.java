@@ -201,6 +201,7 @@ public class BookingHotelService {
         bookingHotelRepository.saveAll(bookingHotels);
     }
 
+    @Transactional
     public void retryApproveProcessBooking(CallerContext callerContext, Long bookingId, String bookingCode) {
         Booking booking = bookingCommonService.getValidatedBookingById(callerContext, true, bookingId);
 
@@ -244,6 +245,12 @@ public class BookingHotelService {
                 continue;
             }
 
+            if(hotelStatus == BookingHotelStatus.CANCELLED) {
+                hotel.setStatus(hotelStatus);
+                bookingCommonService.bookingRollbackBalance(callerContext, booking, null, hotel);
+                continue;
+            }
+
             HotelBookingCheckRateResponse rateResponse =
                 provider.checkRate(
                     callerContext,
@@ -252,6 +259,7 @@ public class BookingHotelService {
 
             if(rateResponse.getIsCancel()) {
                 hotel.setStatus(BookingHotelStatus.CANCELLED);
+                bookingCommonService.bookingRollbackBalance(callerContext, booking, null, hotel);
                 continue;
             }
 
@@ -275,6 +283,7 @@ public class BookingHotelService {
 
             if (Boolean.TRUE.equals(createResponse.getIsCancel())) {
                 hotel.setStatus(BookingHotelStatus.CANCELLED);
+                bookingCommonService.bookingRollbackBalance(callerContext, booking, null, hotel);
                 continue;
             }
 

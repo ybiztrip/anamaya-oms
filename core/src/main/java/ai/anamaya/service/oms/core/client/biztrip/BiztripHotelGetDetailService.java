@@ -2,7 +2,6 @@ package ai.anamaya.service.oms.core.client.biztrip;
 
 import ai.anamaya.service.oms.core.client.biztrip.dto.hotel.request.BiztripHotelBookingDetailRequest;
 import ai.anamaya.service.oms.core.client.biztrip.dto.hotel.response.BiztripHotelBookingDetailResponse;
-import ai.anamaya.service.oms.core.client.biztrip.dto.hotel.response.BiztripHotelRateCheckResponse;
 import ai.anamaya.service.oms.core.client.biztrip.mapper.request.BiztripHotelBookingDetailRequestMapper;
 import ai.anamaya.service.oms.core.client.biztrip.mapper.response.BiztripHotelBookingDetailResponseMapper;
 import ai.anamaya.service.oms.core.context.CallerContext;
@@ -81,7 +80,7 @@ public class BiztripHotelGetDetailService {
                 "-H \"Content-Type: application/json\" \\\n" +
                 "-d '" + json + "'";
 
-            log.error("Biztrip RateCheck Request as cURL:\n{}", curl);
+            log.info("Biztrip RateCheck Request as cURL:\n{}", curl);
         } catch (Exception e) {
             log.error("Failed to log rate check cURL", e);
         }

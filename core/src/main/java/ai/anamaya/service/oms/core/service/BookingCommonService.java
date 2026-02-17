@@ -13,10 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -85,7 +86,7 @@ public class BookingCommonService {
                     .amount(flightTotalAmount)
                     .referenceId(booking.getId())
                     .referenceCode(referenceCode)
-                    .remarks("Buying flight ticket approved by" + booking.getApprovedByName())
+                    .remarks("Buying flight ticket approved by " + booking.getApprovedByName())
                     .build());
         }
 
@@ -100,7 +101,54 @@ public class BookingCommonService {
                     .amount(hotelTotalAmount)
                     .referenceId(booking.getId())
                     .referenceCode(referenceCode)
-                    .remarks("Buying hotel ticket approved by" + booking.getApprovedByName())
+                    .remarks("Buying hotel ticket approved by " + booking.getApprovedByName())
+                    .build());
+        }
+    }
+
+    public void bookingRollbackBalance(
+        CallerContext callerContext,
+        Booking booking,
+        List<BookingFlight> bookingFlights,
+        BookingHotel bookingHotel
+    ) {
+        String referenceCode = "";
+        if (bookingFlights != null) {
+            referenceCode = bookingFlights.get(0).getBookingCode();
+        }
+
+        if (bookingHotel != null) {
+            referenceCode = bookingHotel.getBookingCode();
+        }
+
+        List<CompanyBalanceDetail> companyBalanceDetails = balanceService.getBalanceDetailByReferenceCode(
+            BalanceSourceType.BOOKING,
+            referenceCode
+        );
+
+
+        Set<String> creditedReferenceCodes = companyBalanceDetails.stream()
+            .filter(detail -> detail.getType() == BalanceTransactionType.CREDIT)
+            .map(CompanyBalanceDetail::getReferenceCode)
+            .collect(Collectors.toSet());
+
+        List<CompanyBalanceDetail> balanceNeedRollback = companyBalanceDetails.stream()
+            .filter(detail -> detail.getType() == BalanceTransactionType.DEBIT)
+            .filter(detail -> !creditedReferenceCodes.contains(detail.getReferenceCode()))
+            .toList();
+
+        for(CompanyBalanceDetail detail: balanceNeedRollback) {
+            balanceService.adjustBalance(
+                callerContext,
+                BalanceAdjustRequest.builder()
+                    .companyId(booking.getCompanyId())
+                    .code(detail.getBalance().getCode())
+                    .sourceType(detail.getSourceType())
+                    .type(BalanceTransactionType.CREDIT)
+                    .amount(detail.getAmount())
+                    .referenceId(detail.getReferenceId())
+                    .referenceCode(detail.getReferenceCode())
+                    .remarks("Rollback by system")
                     .build());
         }
     }

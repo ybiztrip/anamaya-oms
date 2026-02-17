@@ -49,7 +49,7 @@ public class RetryApprovedHotelBookingJob {
                     bookingHotelService.retryApproveProcessBooking(systemCallerContext, b.getBookingId(), b.getBookingCode());
 
                 } catch (Exception ex) {
-                    log.error("Error processing approved flight booked {}", bookingCode, ex);
+                    log.error("Error processing approved hotel booked {}", bookingCode, ex);
 
                 } finally {
                     try {

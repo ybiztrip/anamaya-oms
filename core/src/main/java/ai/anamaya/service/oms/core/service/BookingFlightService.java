@@ -212,6 +212,7 @@ public class BookingFlightService {
         bookingFlightRepository.saveAll(bookingFlights);
     }
 
+    @Transactional
     public void retryApproveProcessBooking(CallerContext callerContext, Long bookingId, String bookingCode) {
         Booking booking = bookingCommonService.getValidatedBookingById(callerContext, true, bookingId);
 
