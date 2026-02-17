@@ -52,7 +52,7 @@ public class BookingCommonService {
         BigDecimal flightTotalAmount = BigDecimal.ZERO;
         if (bookingFlights != null) {
             flightTotalAmount = bookingFlights.stream()
-                .filter(f -> f.getStatus() == BookingFlightStatus.CREATED)
+                .filter(f -> f.getStatus() == BookingFlightStatus.APPROVED)
                 .map(BookingFlight::getTotalAmount)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
