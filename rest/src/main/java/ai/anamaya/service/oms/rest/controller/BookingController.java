@@ -188,7 +188,7 @@ public class BookingController {
         return ApiResponse.success(resultCore);
     }
 
-    @PreAuthorize("hasAnyRole('COMPANY_ADMIN')")
+    @PreAuthorize("hasAnyRole('APPROVER')")
     @PutMapping("/approve/{id}")
     public ApiResponse<String> approve(
         @PathVariable Long id,
@@ -205,7 +205,7 @@ public class BookingController {
         );
     }
 
-    @PreAuthorize("hasAnyRole('COMPANY_ADMIN')")
+    @PreAuthorize("hasAnyRole('APPROVER')")
     @PutMapping("/reject/{id}")
     public ApiResponse<String> reject(
         @PathVariable Long id,
