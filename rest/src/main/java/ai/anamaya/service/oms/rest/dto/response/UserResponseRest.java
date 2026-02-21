@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,6 +22,11 @@ public class UserResponseRest {
     private String gender;
     private Long positionId;
     private String phoneNo;
+    private String title;
+    private String identityNo;
+    private String passportNo;
+    private Date passportExpiry;
+    private Date dateOfBirth;
     private Short status;
     private Long createdBy;
     private String createdAt;

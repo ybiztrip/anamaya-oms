@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,8 +35,22 @@ public class GlobalExceptionHandler {
         Throwable root = ex.getRootCause();
         String message = "Invalid request format";
 
-        if (root instanceof DateTimeParseException dtpe) {
+        if (root instanceof DateTimeParseException) {
             message = "Invalid date value. Use format yyyy-MM-dd";
+        }
+
+        else if (root instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException ife) {
+
+            String fieldName = ife.getPath() != null && !ife.getPath().isEmpty()
+                ? ife.getPath().get(0).getFieldName()
+                : "Unknown field";
+
+            if (ife.getTargetType().isEnum()) {
+                Object[] allowedValues = ife.getTargetType().getEnumConstants();
+                message = fieldName + " is invalid. Allowed values: " + Arrays.toString(allowedValues);
+            } else {
+                message = fieldName + " has invalid value";
+            }
         }
 
         return ResponseEntity.badRequest().body(

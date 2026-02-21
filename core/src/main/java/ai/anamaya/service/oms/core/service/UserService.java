@@ -66,6 +66,11 @@ public class UserService {
             .countryCode(request.getCountryCode())
             .countryCode(request.getCountryCode())
             .phoneNo(request.getPhoneNo())
+            .title(request.getTitle())
+            .identityNo(request.getIdentityNo())
+            .passportNo(request.getPassportNo())
+            .passportExpiry(request.getPassportExpiry())
+            .dateOfBirth(request.getDateOfBirth())
             .status(request.getStatus())
             .enableChatEngine(request.getEnableChatEngine())
             .build();
@@ -93,6 +98,11 @@ public class UserService {
         user.setPositionId(request.getPositionId());
         user.setCountryCode(request.getCountryCode());
         user.setPhoneNo(request.getPhoneNo());
+        user.setTitle(request.getTitle());
+        user.setIdentityNo(request.getIdentityNo());
+        user.setPassportNo(request.getPassportNo());
+        user.setPassportExpiry(request.getPassportExpiry());
+        user.setDateOfBirth(request.getDateOfBirth());
         user.setStatus(request.getStatus());
 
         repository.save(user);
@@ -179,6 +189,11 @@ public class UserService {
             .positionId(user.getPositionId())
             .countryCode(user.getCountryCode())
             .phoneNo(user.getPhoneNo())
+            .title(user.getTitle())
+            .identityNo(user.getIdentityNo())
+            .passportNo(user.getPassportNo())
+            .passportExpiry(user.getPassportExpiry())
+            .dateOfBirth(user.getDateOfBirth())
             .status(user.getStatus())
             .createdBy(user.getCreatedBy())
             .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)

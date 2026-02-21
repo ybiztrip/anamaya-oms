@@ -1,7 +1,10 @@
 package ai.anamaya.service.oms.core.dto.response;
 
+import ai.anamaya.service.oms.core.enums.PaxTitle;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
+
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -18,6 +21,11 @@ public class UserResponse {
     private Long positionId;
     private String countryCode;
     private String phoneNo;
+    private PaxTitle title;
+    private String identityNo;
+    private String passportNo;
+    private Date passportExpiry;
+    private Date dateOfBirth;
     private Short status;
     private Long createdBy;
     private String createdAt;

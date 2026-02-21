@@ -56,7 +56,7 @@ public class BookingService {
         Page<Booking> bookings = bookingRepository.findAll(spec, pageable);
 
         List<BookingResponse> mapped = bookings.getContent().stream()
-            .map(b -> toResponse(b, false, false))
+            .map(b -> toResponse(b, true, true))
             .toList();
 
         return new PageImpl<>(mapped, pageable, bookings.getTotalElements());
@@ -75,6 +75,10 @@ public class BookingService {
 
                 if (filter.getCompanyId() != null && filter.getCompanyId() != 0) {
                     predicates.add(cb.equal(root.get("companyId"), filter.getCompanyId()));
+                }
+
+                if (filter.getUserId() != null && filter.getUserId() != 0) {
+                    predicates.add(cb.equal(root.get("userId"), filter.getUserId()));
                 }
 
                 if (filter.getDateFrom() != null) {
