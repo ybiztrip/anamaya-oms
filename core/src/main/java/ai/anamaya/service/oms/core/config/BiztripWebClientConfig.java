@@ -22,10 +22,10 @@ public class BiztripWebClientConfig {
     public WebClient biztripWebClient() {
         HttpClient httpClient = HttpClient.create()
                 .followRedirect(false)
-                .responseTimeout(java.time.Duration.ofSeconds(10))
+                .responseTimeout(java.time.Duration.ofSeconds(180))
                 .doOnConnected(conn -> conn
-                        .addHandlerLast(new ReadTimeoutHandler(10, TimeUnit.SECONDS))
-                        .addHandlerLast(new WriteTimeoutHandler(10, TimeUnit.SECONDS)));
+                        .addHandlerLast(new ReadTimeoutHandler(180, TimeUnit.SECONDS))
+                        .addHandlerLast(new WriteTimeoutHandler(180, TimeUnit.SECONDS)));
 
         return WebClient.builder()
                 .baseUrl(baseUrl)
