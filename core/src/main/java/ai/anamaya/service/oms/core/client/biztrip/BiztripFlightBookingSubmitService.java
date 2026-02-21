@@ -16,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Duration;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -42,6 +44,7 @@ public class BiztripFlightBookingSubmitService {
                 .bodyValue(biztripReq)
                 .retrieve()
                 .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(120))
                 .block();
 
             log.info("Biztrip raw response: {}", rawResponse);
