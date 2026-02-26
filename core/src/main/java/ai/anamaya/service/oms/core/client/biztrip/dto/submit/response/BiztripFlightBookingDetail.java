@@ -17,7 +17,7 @@ public class BiztripFlightBookingDetail {
 
     private BiztripPrice grandTotalFareWithCurrency;
 
-    private Long bookingTime;
+    private String bookingTime;
 
     private String status;
 

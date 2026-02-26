@@ -7,6 +7,7 @@ import ai.anamaya.service.oms.core.dto.request.BookingFlightListFilter;
 import ai.anamaya.service.oms.core.dto.request.BookingFlightRequest;
 import ai.anamaya.service.oms.core.dto.request.BookingFlightSubmitRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.payment.FlightBookingPaymentRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.status.FlightBookingStatusCheckRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.*;
 import ai.anamaya.service.oms.core.dto.response.BookingFlightResponse;
 import ai.anamaya.service.oms.core.dto.response.BookingResponse;
@@ -31,10 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -206,7 +204,7 @@ public class BookingFlightService {
         processFlights(callerContext, booking, bookingFlights);
 
         bookingFlights.forEach(h -> {
-            h.setStatus(BookingFlightStatus.ISSUED);
+            h.setStatus(BookingFlightStatus.ISSUING);
             h.setUpdatedBy(userId);
         });
         bookingFlightRepository.saveAll(bookingFlights);
@@ -225,6 +223,38 @@ public class BookingFlightService {
             .build();
 
         approveProcessBooking(callerContext, booking, statusMessage);
+    }
+
+    @Transactional
+    public void retryIssuingProcessBooking(CallerContext callerContext, Long bookingId, String bookingCode) {
+        Booking booking = bookingCommonService.getValidatedBookingById(callerContext, true, bookingId);
+        List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndBookingCode(bookingId, bookingCode);
+        List<String> bookingReferenceIds = bookingFlights.stream()
+            .map(BookingFlight::getBookingReference)
+            .filter(Objects::nonNull)
+            .toList();
+        if (bookingReferenceIds.isEmpty()) {
+            throw new IllegalStateException("No booking reference found for bookingId: " + bookingId);
+        }
+
+        FlightProvider provider = getProvider("biztrip");
+        BookingFlightSubmitResponse response = provider.checkStatus(
+            callerContext,
+            FlightBookingStatusCheckRequest
+                .builder()
+                .bookingReferenceIds(bookingReferenceIds)
+                .build()
+        );
+
+        BookingFlightStatus status = BookingFlightStatus.fromBookingPartnerStatus(response.getBookingSubmissionStatus());
+        if(status == BookingFlightStatus.ISSUED) {
+            bookingFlightRepository.updateStatusByBookingReferences(bookingId, bookingReferenceIds, BookingFlightStatus.ISSUED);
+        }
+
+        if(status == BookingFlightStatus.CANCELLED) {
+            bookingFlightRepository.updateStatusByBookingReferences(bookingId, bookingReferenceIds, BookingFlightStatus.CANCELLED);
+            bookingCommonService.bookingRollbackBalance(callerContext, booking, bookingFlights, null);
+        }
     }
 
     private void processFlights(
