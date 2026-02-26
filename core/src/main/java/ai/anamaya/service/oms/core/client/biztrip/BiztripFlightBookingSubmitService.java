@@ -44,6 +44,7 @@ public class BiztripFlightBookingSubmitService {
                 .bodyValue(biztripReq)
                 .retrieve()
                 .bodyToMono(String.class)
+                .timeout(Duration.ofSeconds(120))
                 .block();
 
             log.info("Biztrip raw response: {}", rawResponse);
