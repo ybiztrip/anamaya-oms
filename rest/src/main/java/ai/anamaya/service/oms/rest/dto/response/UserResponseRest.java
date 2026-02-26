@@ -1,5 +1,7 @@
 package ai.anamaya.service.oms.rest.dto.response;
 
+import ai.anamaya.service.oms.core.enums.PaxTitle;
+import ai.anamaya.service.oms.core.enums.PaxType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,12 +23,15 @@ public class UserResponseRest {
     private String lastName;
     private String gender;
     private Long positionId;
+    private String countryCode;
+    private PaxType type;
     private String phoneNo;
-    private String title;
+    private PaxTitle title;
     private String identityNo;
     private String passportNo;
     private Date passportExpiry;
     private Date dateOfBirth;
+    private String nationalityCode;
     private Short status;
     private Long createdBy;
     private String createdAt;

@@ -64,13 +64,14 @@ public class UserService {
             .gender(request.getGender())
             .positionId(request.getPositionId())
             .countryCode(request.getCountryCode())
-            .countryCode(request.getCountryCode())
-            .phoneNo(request.getPhoneNo())
+            .type(request.getType())
             .title(request.getTitle())
             .identityNo(request.getIdentityNo())
+            .phoneNo(request.getPhoneNo())
             .passportNo(request.getPassportNo())
             .passportExpiry(request.getPassportExpiry())
             .dateOfBirth(request.getDateOfBirth())
+            .nationalityCode(request.getNationalityCode())
             .status(request.getStatus())
             .enableChatEngine(request.getEnableChatEngine())
             .build();
@@ -97,12 +98,14 @@ public class UserService {
         user.setGender(request.getGender());
         user.setPositionId(request.getPositionId());
         user.setCountryCode(request.getCountryCode());
-        user.setPhoneNo(request.getPhoneNo());
+        user.setType(request.getType());
         user.setTitle(request.getTitle());
         user.setIdentityNo(request.getIdentityNo());
+        user.setPhoneNo(request.getPhoneNo());
         user.setPassportNo(request.getPassportNo());
         user.setPassportExpiry(request.getPassportExpiry());
         user.setDateOfBirth(request.getDateOfBirth());
+        user.setNationalityCode(request.getNationalityCode());
         user.setStatus(request.getStatus());
 
         repository.save(user);
@@ -188,12 +191,14 @@ public class UserService {
             .gender(user.getGender())
             .positionId(user.getPositionId())
             .countryCode(user.getCountryCode())
+            .type(user.getType())
             .phoneNo(user.getPhoneNo())
             .title(user.getTitle())
             .identityNo(user.getIdentityNo())
             .passportNo(user.getPassportNo())
             .passportExpiry(user.getPassportExpiry())
             .dateOfBirth(user.getDateOfBirth())
+            .nationalityCode(user.getNationalityCode())
             .status(user.getStatus())
             .createdBy(user.getCreatedBy())
             .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)

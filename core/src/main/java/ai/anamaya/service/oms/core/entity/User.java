@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.entity;
 
 import ai.anamaya.service.oms.core.enums.PaxTitle;
+import ai.anamaya.service.oms.core.enums.PaxType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -41,6 +42,10 @@ public class User extends BaseEntity {
     @Column(name = "country_code", length = 10)
     private String countryCode;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", length = 50)
+    private PaxType type;
+
     @Column(name = "phone_no", length = 256)
     private String phoneNo;
 
@@ -59,6 +64,9 @@ public class User extends BaseEntity {
 
     @Column(name = "date_of_birth")
     private Date dateOfBirth;
+
+    @Column(name = "nationality_code")
+    private String nationalityCode;
 
     @Column(nullable = false)
     private Short status;
