@@ -52,6 +52,10 @@ public class HotelService {
         return getProvider(source).getHotelRates(request);
     }
 
+    public HotelDiscoveryResponse getHotelPropertyRate(CallerContext callerContext, String source, HotelPropertyRateRequest request) {
+        return getProvider(source).getHotelPropertyRates(callerContext, request);
+    }
+
     public ApiResponse<HotelRateCheckResponse> checkHotelRate(String source, HotelRateCheckRequest request) {
         HotelProvider provider = getProvider(source);
         return provider.checkHotelRate(request);
