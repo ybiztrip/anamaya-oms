@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.entity;
 
 import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -62,6 +63,16 @@ public class BookingFlight extends BaseEntity {
 
     @Column(name = "total_amount", precision = 18, scale = 2)
     private BigDecimal totalAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    private BookingPaymentMethod paymentMethod;
+
+    @Column(name = "payment_reference_1")
+    private String paymentReference1;
+
+    @Column(name = "payment_reference_2")
+    private String paymentReference2;
 
     @Column(name = "booking_reference", length = 256)
     private String bookingReference;

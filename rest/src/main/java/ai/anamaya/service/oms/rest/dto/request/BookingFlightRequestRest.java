@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.rest.dto.request;
 
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.Data;
 
@@ -17,6 +18,9 @@ public class BookingFlightRequestRest {
     private String destination;
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
+    private BookingPaymentMethod paymentMethod;
+    private String paymentReference1;
+    private String paymentReference2;
 
     @AssertTrue(message = "departureDatetime must be less than arrivalDatetime")
     public boolean isDateValid() {

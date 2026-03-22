@@ -1,6 +1,6 @@
 package ai.anamaya.service.oms.core.dto.request;
 
-import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -20,4 +20,7 @@ public class BookingFlightRequest {
     private String destination;
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
+    private BookingPaymentMethod paymentMethod;
+    private String paymentReference1;
+    private String paymentReference2;
 }

@@ -130,11 +130,14 @@ public class BookingFlightService {
     @Transactional(rollbackFor = Exception.class)
     public BookingResponse submitBookingFlights(CallerContext callerContext, Long bookingId, BookingFlightSubmitRequest request) {
         Long userId = callerContext.userId();
-        Long companyId = callerContext.companyId();
         Booking booking = bookingService.getValidatedBooking(callerContext, bookingId);
 
         if (!booking.getStatus().equals(BookingStatus.APPROVED)) {
             throw new AccessDeniedException("This booking journey is not approved.");
+        }
+
+        if(!bookingCommonService.validateBookingPaymentMethod(callerContext, request.getFlights().get(0).getPaymentMethod())) {
+            throw new IllegalArgumentException("Invalid payment method");
         }
 
         List<BookingFlightRequest> requestFlights = request.getFlights();
@@ -158,6 +161,9 @@ public class BookingFlightService {
                 .destination(req.getDestination())
                 .departureDatetime(req.getDepartureDatetime())
                 .arrivalDatetime(req.getArrivalDatetime())
+                .paymentMethod(req.getPaymentMethod())
+                .paymentReference1(req.getPaymentReference1())
+                .paymentReference2(req.getPaymentReference2())
                 .status(BookingFlightStatus.CREATED)
                 .createdBy(userId)
                 .updatedBy(userId)

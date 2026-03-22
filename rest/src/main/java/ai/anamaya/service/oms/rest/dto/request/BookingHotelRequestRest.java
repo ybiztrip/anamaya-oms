@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.rest.dto.request;
 
 import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.Data;
 
@@ -15,6 +16,9 @@ public class BookingHotelRequestRest {
     private String itemId;
     private String roomId;
     private String rateKey;
+    private BookingPaymentMethod paymentMethod;
+    private String paymentReference1;
+    private String paymentReference2;
     private Integer numRoom;
     private LocalDate checkInDate;
     private LocalDate checkOutDate;

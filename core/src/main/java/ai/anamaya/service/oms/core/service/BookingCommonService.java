@@ -8,15 +8,12 @@ import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.BookingRepository;
+import ai.anamaya.service.oms.core.repository.CompanyConfigRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -26,8 +23,19 @@ public class BookingCommonService {
 
     private final BalanceService balanceService;
     private final BookingRepository bookingRepository;
+    private final CompanyConfigRepository companyConfigRepository;
     private final AppricodeService appricodeClient;
     private final UserService userService;
+
+    public boolean validateBookingPaymentMethod(CallerContext callerContext, BookingPaymentMethod paymentMethod) {
+        return companyConfigRepository
+            .findByCompanyIdAndCode(callerContext.companyId(), "PAYMENT_METHOD")
+            .map(config -> Arrays.stream(config.getValueStr().split(","))
+                .map(String::trim)
+                .anyMatch(method -> method.equals(paymentMethod.name()))
+            )
+            .orElse(false);
+    }
 
     public Booking getValidatedBookingById(CallerContext callerContext, Boolean isSystem, Long id) {
         Long companyId = callerContext.companyId();

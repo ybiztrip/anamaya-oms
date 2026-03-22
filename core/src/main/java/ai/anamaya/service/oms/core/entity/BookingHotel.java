@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.entity;
 
 import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -58,6 +59,16 @@ public class BookingHotel extends BaseEntity {
 
     @Column(name = "partner_nett_amount")
     private Double partnerNettAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    private BookingPaymentMethod paymentMethod;
+
+    @Column(name = "payment_reference_1")
+    private String paymentReference1;
+
+    @Column(name = "payment_reference_2")
+    private String paymentReference2;
 
     @Column(name = "currency", length = 4)
     private String currency;

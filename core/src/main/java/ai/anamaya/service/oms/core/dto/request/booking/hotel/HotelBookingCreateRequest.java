@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.dto.request.booking.hotel;
 
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,6 +33,10 @@ public class HotelBookingCreateRequest {
 
     private String specialRequest;
     private String displayCurrency;
+
+    private BookingPaymentMethod paymentMethod;
+    private String paymentReference1;
+    private String paymentReference2;
 
     /**
      * JSON String (kept as string to stay provider-agnostic)
@@ -97,6 +102,16 @@ public class HotelBookingCreateRequest {
     @AllArgsConstructor
     @Builder
     public static class UserPayment {
-        private String userPayment; // CREDIT_CARD, VA, etc
+        private BookingPaymentMethod userPayment;
+        private CreditCardDetail creditCardDetail;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CreditCardDetail {
+        private String lastSixDigitNumber;
+        private String cardName;
     }
 }

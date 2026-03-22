@@ -18,10 +18,7 @@ import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingHotel;
 import ai.anamaya.service.oms.core.entity.BookingPax;
 import ai.anamaya.service.oms.core.entity.CompanyConfig;
-import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
-import ai.anamaya.service.oms.core.enums.BookingStatus;
-import ai.anamaya.service.oms.core.enums.BookingType;
-import ai.anamaya.service.oms.core.enums.PaxType;
+import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.repository.BookingHotelRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
@@ -138,6 +135,10 @@ public class BookingHotelService {
             throw new AccessDeniedException("This booking journey is not approved.");
         }
 
+        if(!bookingCommonService.validateBookingPaymentMethod(callerContext, request.getHotel().getPaymentMethod())) {
+            throw new IllegalArgumentException("Invalid payment method");
+        }
+
         BookingHotelRequest reqHotel = request.getHotel();
         String bookingCode = "ANMH:"+Instant.now().toEpochMilli();
 
@@ -169,6 +170,9 @@ public class BookingHotelService {
             .itemId(reqHotel.getItemId())
             .roomId(reqHotel.getRoomId())
             .rateKey(reqHotel.getRateKey())
+            .paymentMethod(reqHotel.getPaymentMethod())
+            .paymentReference1(reqHotel.getPaymentReference1())
+            .paymentReference2(reqHotel.getPaymentReference2())
             .numRoom(reqHotel.getNumRoom())
             .checkInDate(reqHotel.getCheckInDate())
             .checkOutDate(reqHotel.getCheckOutDate())
@@ -273,7 +277,9 @@ public class BookingHotelService {
             hotel.setPartnerSellAmount(Double.valueOf(rateResponse.getSellAmount()));
             hotel.setPaymentKey(rateResponse.getPaymentKey());
 
-            bookingCommonService.bookingDebitBalance(callerContext, booking, null, hotel);
+            if (hotel.getPaymentMethod() == BookingPaymentMethod.DEPOSIT) {
+                bookingCommonService.bookingDebitBalance(callerContext, booking, null, hotel);
+            }
 
             HotelBookingCreateResponse createResponse =
                 provider.create(
@@ -287,8 +293,7 @@ public class BookingHotelService {
                 continue;
             }
 
-            hotelStatus =
-                BookingHotelStatus.fromBookingPartnerStatus(
+            hotelStatus = BookingHotelStatus.fromBookingPartnerStatus(
                     createResponse.getStatus()
                 );
 
@@ -330,40 +335,55 @@ public class BookingHotelService {
         BookingHotel hotel
     ) {
 
-        List<HotelBookingCreateRequest.GuestInfo> guests =
-            bookingPaxes.stream()
-                .filter(pax -> pax.getType() == PaxType.ADULT)
-                .map(pax ->
-                    HotelBookingCreateRequest.GuestInfo.builder()
-                        .title(pax.getTitle() != null
-                            ? pax.getTitle().name()
-                            : null)
-                        .firstName(pax.getFirstName())
-                        .lastName(pax.getLastName())
-                        .email(pax.getEmail())
-                        .gender(pax.getGender() != null
-                            ? pax.getGender().name()
-                            : null)
-                        .idtype(pax.getDocumentType())
-                        .idnumber(pax.getDocumentNo())
-                        .build()
-                )
-                .toList();
+        // --- Pre-calculate commonly used values ---
+        BookingPaymentMethod paymentMethod = hotel.getPaymentMethod();
+        if (paymentMethod == null) {
+            paymentMethod = BookingPaymentMethod.DEPOSIT;
+        }
 
-        long numAdults =
-            bookingPaxes.stream()
-                .filter(p -> p.getType() == PaxType.ADULT)
-                .count();
+        List<BookingPax> adultPaxes = bookingPaxes.stream()
+            .filter(p -> p.getType() == PaxType.ADULT)
+            .toList();
 
-        List<Integer> childrenAges =
-            bookingPaxes.stream()
-                .filter(p -> p.getType() == PaxType.CHILD)
-                .map(p -> p.getDob() != null
-                    ? LocalDate.now().getYear() - p.getDob().getYear()
-                    : null)
-                .filter(Objects::nonNull)
-                .toList();
+        List<HotelBookingCreateRequest.GuestInfo> guests = adultPaxes.stream()
+            .map(pax -> HotelBookingCreateRequest.GuestInfo.builder()
+                .title(pax.getTitle() != null ? pax.getTitle().name() : null)
+                .firstName(pax.getFirstName())
+                .lastName(pax.getLastName())
+                .email(pax.getEmail())
+                .gender(pax.getGender() != null ? pax.getGender().name() : null)
+                .idtype(pax.getDocumentType())
+                .idnumber(pax.getDocumentNo())
+                .build()
+            )
+            .toList();
 
+        int numAdults = adultPaxes.size();
+
+        List<Integer> childrenAges = bookingPaxes.stream()
+            .filter(p -> p.getType() == PaxType.CHILD)
+            .map(p -> p.getDob() != null
+                ? LocalDate.now().getYear() - p.getDob().getYear()
+                : null)
+            .filter(Objects::nonNull)
+            .toList();
+
+        HotelBookingCreateRequest.UserPayment userPayment =
+            HotelBookingCreateRequest.UserPayment.builder()
+                .userPayment(paymentMethod)
+                .build();
+
+        if (paymentMethod == BookingPaymentMethod.CUST_CREDIT_CARD) {
+            HotelBookingCreateRequest.CreditCardDetail creditCardDetail =
+                new HotelBookingCreateRequest.CreditCardDetail();
+
+            creditCardDetail.setCardName(hotel.getPaymentReference1());
+            creditCardDetail.setLastSixDigitNumber(hotel.getPaymentReference2());
+
+            userPayment.setCreditCardDetail(creditCardDetail);
+        }
+
+        // --- Build Request ---
         return HotelBookingCreateRequest.builder()
             .propertyId(hotel.getItemId())
             .partnerBookingId(hotel.getBookingCode())
@@ -377,7 +397,7 @@ public class BookingHotelService {
             .customerInfo(
                 HotelBookingCreateRequest.CustomerInfo.builder()
                     .title(booking.getContactTitle() != null
-                        ? booking.getContactFirstName()+ " " + booking.getContactLastName()
+                        ? booking.getContactFirstName() + " " + booking.getContactLastName()
                         : null)
                     .firstName(booking.getContactFirstName())
                     .lastName(booking.getContactLastName())
@@ -392,7 +412,7 @@ public class BookingHotelService {
                     .rateKey(hotel.getRateKey())
                     .paymentKey(hotel.getPaymentKey())
                     .numRooms(hotel.getNumRoom().intValue())
-                    .numAdults((int) numAdults)
+                    .numAdults(numAdults)
                     .numChild(childrenAges.size())
                     .childrenAges(childrenAges)
                     .guestInfo(guests)
@@ -401,20 +421,12 @@ public class BookingHotelService {
 
             .totalRates(
                 HotelBookingCreateRequest.TotalRates.builder()
-                    .partnerSellAmount(
-                        String.valueOf(hotel.getPartnerSellAmount())
-                    )
-                    .partnerNettAmount(
-                        String.valueOf(hotel.getPartnerNettAmount())
-                    )
+                    .partnerSellAmount(String.valueOf(hotel.getPartnerSellAmount()))
+                    .partnerNettAmount(String.valueOf(hotel.getPartnerNettAmount()))
                     .build()
             )
 
-            .userPayment(
-                HotelBookingCreateRequest.UserPayment.builder()
-                    .userPayment("DEPOSIT")
-                    .build()
-            )
+            .userPayment(userPayment)
 
             .additionalData(
                 booking.getAdditionalInfo() != null

@@ -1,8 +1,8 @@
 package ai.anamaya.service.oms.core.client.biztrip.mapper.request;
 
-
 import ai.anamaya.service.oms.core.client.biztrip.dto.hotel.request.BiztripHotelBookingCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.hotel.HotelBookingCreateRequest;
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 
 import java.util.stream.Collectors;
 
@@ -76,11 +76,24 @@ public class BiztripHotelBookingSubmitRequestMapper {
         target.setCustomerInfo(customer);
 
         // Payment
-        BiztripHotelBookingCreateRequest.UserPayment payment =
-            new BiztripHotelBookingCreateRequest.UserPayment();
-        payment.setUserPayment(source.getUserPayment().getUserPayment());
+        BiztripHotelBookingCreateRequest.UserPayment payment = getPayment(source);
         target.setUserPayment(payment);
 
         return target;
+    }
+
+    private static BiztripHotelBookingCreateRequest.UserPayment getPayment(HotelBookingCreateRequest source) {
+        BiztripHotelBookingCreateRequest.UserPayment payment =
+            new BiztripHotelBookingCreateRequest.UserPayment();
+        payment.setUserPayment(source.getUserPayment().getUserPayment());
+        if(payment.getUserPayment() == BookingPaymentMethod.CUST_CREDIT_CARD) {
+            BiztripHotelBookingCreateRequest.CreditCardDetail creditCardDetail =
+                new BiztripHotelBookingCreateRequest.CreditCardDetail();
+            creditCardDetail.setCardName(source.getPaymentReference1());
+            creditCardDetail.setLastSixDigitNumber(source.getPaymentReference2());
+            payment.setCreditCardDetail(creditCardDetail);
+        }
+
+        return payment;
     }
 }

@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.client.biztrip.dto.hotel.request;
 
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import lombok.Data;
 import java.util.List;
 
@@ -59,6 +60,13 @@ public class BiztripHotelBookingCreateRequest {
 
     @Data
     public static class UserPayment {
-        private String userPayment;
+        private BookingPaymentMethod userPayment;
+        private CreditCardDetail creditCardDetail;
+    }
+
+    @Data
+    public static class CreditCardDetail {
+        private String lastSixDigitNumber;
+        private String cardName;
     }
 }
