@@ -206,7 +206,9 @@ public class BookingFlightService {
         Long userId = callerContext.userId();
 
         List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
-        bookingCommonService.bookingDebitBalance(callerContext, booking, bookingFlights, null);
+        if (bookingFlights.get(0).getPaymentMethod() == BookingPaymentMethod.DEPOSIT) {
+            bookingCommonService.bookingDebitBalance(callerContext, booking, bookingFlights, null);
+        }
         processFlights(callerContext, booking, bookingFlights);
 
         bookingFlights.forEach(h -> {
@@ -270,6 +272,10 @@ public class BookingFlightService {
     ) {
         FlightProvider provider = getProvider("biztrip");
         BookingPaymentMethod paymentMethod = bookingFlights.get(0).getPaymentMethod();
+        if(paymentMethod == null) {
+            paymentMethod = BookingPaymentMethod.DEPOSIT;
+        }
+
         FlightBookingPaymentRequest.FlightBookingPaymentRequestBuilder builder =
             FlightBookingPaymentRequest.builder()
                 .bookingId(bookingFlights.get(0).getBookingReference())
