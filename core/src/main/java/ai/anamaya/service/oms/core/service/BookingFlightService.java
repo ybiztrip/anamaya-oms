@@ -269,13 +269,24 @@ public class BookingFlightService {
         List<BookingFlight> bookingFlights
     ) {
         FlightProvider provider = getProvider("biztrip");
+        BookingPaymentMethod paymentMethod = bookingFlights.get(0).getPaymentMethod();
+        FlightBookingPaymentRequest.FlightBookingPaymentRequestBuilder builder =
+            FlightBookingPaymentRequest.builder()
+                .bookingId(bookingFlights.get(0).getBookingReference())
+                .paymentMethod(paymentMethod);
+
+        if (paymentMethod == BookingPaymentMethod.CUST_CREDIT_CARD) {
+            builder.creditCardDetail(
+                FlightBookingPaymentRequest.CreditCardDetail.builder()
+                    .cardName(bookingFlights.get(0).getPaymentReference1())
+                    .lastSixDigitNumber(bookingFlights.get(0).getPaymentReference2())
+                    .build()
+            );
+        }
 
         BookingFlightSubmitResponse response = provider.payment(
             callerContext,
-            FlightBookingPaymentRequest.builder()
-                .bookingId(bookingFlights.get(0).getBookingReference())
-                .paymentMethod("DEPOSIT")
-                .build()
+            builder.build()
         );
 
         BookingFlightStatus flightStatus =
