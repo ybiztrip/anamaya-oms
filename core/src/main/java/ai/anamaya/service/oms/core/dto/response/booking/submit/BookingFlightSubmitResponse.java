@@ -6,6 +6,7 @@ import lombok.Data;
 public class BookingFlightSubmitResponse {
     private boolean isError;
     private String bookingSubmissionStatus;
+    private String paymentUrl;
     private String bookingId;
     private String partnerBookingId;
     private Long paymentExpirationTime;

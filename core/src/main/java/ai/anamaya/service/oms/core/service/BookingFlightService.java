@@ -206,13 +206,19 @@ public class BookingFlightService {
         Long userId = callerContext.userId();
 
         List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
+
+        BookingFlightStatus flightStatus;
         if (bookingFlights.get(0).getPaymentMethod() == BookingPaymentMethod.DEPOSIT) {
+            flightStatus = BookingFlightStatus.ISSUING;
             bookingCommonService.bookingDebitBalance(callerContext, booking, bookingFlights, null);
+        } else {
+            flightStatus = BookingFlightStatus.WAITING_PAYMENT;
         }
-        processFlights(callerContext, booking, bookingFlights);
+        BookingFlightSubmitResponse bookingFlightSubmitResponse = processFlights(callerContext, booking, bookingFlights);
 
         bookingFlights.forEach(h -> {
-            h.setStatus(BookingFlightStatus.ISSUING);
+            h.setStatus(flightStatus);
+            h.setPaymentUrl(bookingFlightSubmitResponse.getPaymentUrl());
             h.setUpdatedBy(userId);
         });
         bookingFlightRepository.saveAll(bookingFlights);
@@ -265,7 +271,7 @@ public class BookingFlightService {
         }
     }
 
-    private void processFlights(
+    private BookingFlightSubmitResponse processFlights(
         CallerContext callerContext,
         Booking booking,
         List<BookingFlight> bookingFlights
@@ -308,6 +314,7 @@ public class BookingFlightService {
                 .build()
         );
 
+        return response;
     }
 
     @Transactional(rollbackFor = Exception.class)

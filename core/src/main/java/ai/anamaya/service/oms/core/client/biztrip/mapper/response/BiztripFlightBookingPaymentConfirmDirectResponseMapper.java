@@ -10,6 +10,10 @@ public class BiztripFlightBookingPaymentConfirmDirectResponseMapper {
 
         res.setBookingSubmissionStatus(b.getPaymentConfirmationStatus());
         res.setBookingId(b.getBookingId());
+        if(b.getCcChargeDetail() != null) {
+            res.setPaymentUrl(b.getCcChargeDetail().getCcPaymentUrl());
+        }
+
         return res;
     }
 

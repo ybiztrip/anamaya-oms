@@ -70,6 +70,9 @@ public class BookingHotel extends BaseEntity {
     @Column(name = "payment_reference_2")
     private String paymentReference2;
 
+    @Column(name = "payment_url")
+    private String paymentUrl;
+
     @Column(name = "currency", length = 4)
     private String currency;
 

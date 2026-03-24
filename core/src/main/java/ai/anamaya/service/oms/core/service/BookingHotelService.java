@@ -294,11 +294,12 @@ public class BookingHotelService {
             }
 
             hotelStatus = BookingHotelStatus.fromBookingPartnerStatus(
-                    createResponse.getStatus()
-                );
+                createResponse.getStatus()
+            );
 
             hotel.setStatus(hotelStatus);
             hotel.setBookingReference(createResponse.getBookingReference());
+            hotel.setPaymentUrl(createResponse.getPaymentUrl());
             hotel.setPartnerSellAmount(
                 Double.valueOf(createResponse.getTotalAmount())
             );

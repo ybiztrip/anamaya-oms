@@ -15,13 +15,34 @@ public class BiztripHotelBookingCreateResponseMapper {
                 .build();
         }
 
+        Long totalAmount = null;
+        String paymentUrl = null;
+
+        if (source.getCcChargeDetail() != null) {
+            BiztripHotelBookingCreateResponse.CCChargeDetail cc = source.getCcChargeDetail();
+
+            paymentUrl = cc.getCcPaymentUrl();
+
+            if (cc.getTotalTransactionAmount() != null) {
+                totalAmount = new BigDecimal(cc.getTotalTransactionAmount()).longValue();
+            }
+        }
+        else if (source.getTotalChargeableRate() != null) {
+            if (source.getTotalChargeableRate().getAmount() != null) {
+                totalAmount = new BigDecimal(source.getTotalChargeableRate().getAmount()).longValue();
+            }
+        }
+
         return HotelBookingCreateResponse.builder()
             .bookingReference(source.getBookingId())
             .status(source.getBookingStatus())
-            .currency(source.getTotalChargeableRate().getCurrencyCode())
-            .totalAmount(
-                new BigDecimal(source.getTotalChargeableRate().getAmount()).longValue()
+            .currency(
+                source.getTotalChargeableRate() != null
+                    ? source.getTotalChargeableRate().getCurrencyCode()
+                    : null
             )
+            .totalAmount(totalAmount)
+            .paymentUrl(paymentUrl)
             .build();
     }
 }

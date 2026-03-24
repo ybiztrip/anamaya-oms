@@ -12,11 +12,20 @@ public class BiztripHotelBookingCreateResponse {
     private String checkInDate;
     private String checkOutDate;
     private TotalRates totalChargeableRate;
+    private CCChargeDetail ccChargeDetail;
 
     @Data
     public static class TotalRates {
         private String currencyCode;
         private String amount;
+    }
+
+    @Data
+    public static class CCChargeDetail {
+        private String ccPaymentUrl;
+        private String baseTransactionAmount;
+        private String transactionFee;
+        private String totalTransactionAmount;
     }
 }
 

@@ -6,6 +6,7 @@ public enum BookingFlightStatus {
     APPROVED,
     REJECTED,
     CANCELLED,
+    WAITING_PAYMENT,
     ISSUING,
     ISSUED,
     ISSUANCE_FAILED;
