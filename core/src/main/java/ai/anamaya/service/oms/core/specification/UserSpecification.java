@@ -14,6 +14,20 @@ public class UserSpecification {
 
             List<Predicate> predicates = new ArrayList<>();
 
+            if (filter.getCompanyId() != null && filter.getCompanyId() != 0) {
+                predicates.add(
+                    cb.equal(root.get("companyId"), filter.getCompanyId()
+                    )
+                );
+            }
+
+            if (filter.getUserId() != null) {
+                predicates.add(
+                    cb.equal(root.get("id"), filter.getUserId()
+                    )
+                );
+            }
+
             if (filter.getEmail() != null && !filter.getEmail().isBlank()) {
                 predicates.add(
                     cb.like(

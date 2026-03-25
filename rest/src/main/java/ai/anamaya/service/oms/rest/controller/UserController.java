@@ -5,6 +5,7 @@ import ai.anamaya.service.oms.core.dto.request.UserCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.UserGetListRequest;
 import ai.anamaya.service.oms.core.dto.request.UserUpdateRequest;
 import ai.anamaya.service.oms.core.dto.response.UserResponse;
+import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.UserService;
 
 import ai.anamaya.service.oms.rest.dto.request.*;
@@ -16,9 +17,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/v1/users")
@@ -27,6 +33,7 @@ public class UserController {
 
     private final UserService service;
     private final UserMapper mapper;
+    private final JwtUtils jwtUtils;
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','COMPANY_ADMIN')")
     @PostMapping
@@ -64,6 +71,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ApiResponse<UserResponseRest> getById(@PathVariable Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         UserResponse result = service.getById(id);
 
@@ -77,6 +85,26 @@ public class UserController {
         @RequestParam(required = false) String sort,
         @ModelAttribute UserGetListRequestRest requestRest
     ) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        Set<String> roles = auth.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toSet());
+
+        Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
+        Long userIdFromToken = jwtUtils.getUserIdFromToken();
+
+        if (roles.contains("USER")) {
+            requestRest.setUserId(userIdFromToken);
+            requestRest.setCompanyId(companyIdFromToken);
+        }
+
+        boolean isAdmin = roles.contains("ROLE_COMPANY_ADMIN");
+        boolean isApprover = roles.contains("ROLE_APPROVER");
+        if (!isAdmin || !isApprover) {
+            requestRest.setCompanyId(companyIdFromToken);
+        }
+
         UserGetListRequest request = mapper.toCore(requestRest);
         var pageResult = service.getAll(page, size, sort, request);
 

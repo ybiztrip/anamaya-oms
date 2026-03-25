@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/bookings")
 @RequiredArgsConstructor
