@@ -1,11 +1,13 @@
 package ai.anamaya.service.oms.rest.mapper;
 
 import ai.anamaya.service.oms.core.dto.request.UserCreateRequest;
+import ai.anamaya.service.oms.core.dto.request.UserGetListRequest;
 import ai.anamaya.service.oms.core.dto.request.UserUpdateRequest;
 import ai.anamaya.service.oms.core.dto.request.UpdatePasswordRequest;
 import ai.anamaya.service.oms.core.dto.response.UserResponse;
 
 import ai.anamaya.service.oms.rest.dto.request.UserCreateRequestRest;
+import ai.anamaya.service.oms.rest.dto.request.UserGetListRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.UserUpdateRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.UpdatePasswordRequestRest;
 import ai.anamaya.service.oms.rest.dto.response.UserResponseRest;
@@ -21,5 +23,6 @@ public interface UserMapper {
 
     UpdatePasswordRequest toCore(UpdatePasswordRequestRest dto);
 
+    UserGetListRequest toCore(UserGetListRequestRest dto);
     UserResponseRest toRest(UserResponse core);
 }

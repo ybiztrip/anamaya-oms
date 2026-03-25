@@ -2,13 +2,12 @@ package ai.anamaya.service.oms.rest.controller;
 
 import ai.anamaya.service.oms.core.dto.request.UpdatePasswordRequest;
 import ai.anamaya.service.oms.core.dto.request.UserCreateRequest;
+import ai.anamaya.service.oms.core.dto.request.UserGetListRequest;
 import ai.anamaya.service.oms.core.dto.request.UserUpdateRequest;
 import ai.anamaya.service.oms.core.dto.response.UserResponse;
 import ai.anamaya.service.oms.core.service.UserService;
 
-import ai.anamaya.service.oms.rest.dto.request.UserCreateRequestRest;
-import ai.anamaya.service.oms.rest.dto.request.UserUpdateRequestRest;
-import ai.anamaya.service.oms.rest.dto.request.UpdatePasswordRequestRest;
+import ai.anamaya.service.oms.rest.dto.request.*;
 import ai.anamaya.service.oms.rest.dto.response.UserResponseRest;
 import ai.anamaya.service.oms.rest.dto.response.ApiResponse;
 import ai.anamaya.service.oms.rest.mapper.UserMapper;
@@ -75,9 +74,11 @@ public class UserController {
     public ApiResponse<List<UserResponseRest>> getAll(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(required = false) String sort
+        @RequestParam(required = false) String sort,
+        @ModelAttribute UserGetListRequestRest requestRest
     ) {
-        var pageResult = service.getAll(page, size, sort);
+        UserGetListRequest request = mapper.toCore(requestRest);
+        var pageResult = service.getAll(page, size, sort, request);
 
         List<UserResponseRest> listRest = pageResult
             .getContent()

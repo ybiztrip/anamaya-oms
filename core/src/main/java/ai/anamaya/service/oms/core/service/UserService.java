@@ -4,6 +4,7 @@ import ai.anamaya.service.oms.core.client.chatEngine.ChatEngineService;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.UpdatePasswordRequest;
 import ai.anamaya.service.oms.core.dto.request.UserCreateRequest;
+import ai.anamaya.service.oms.core.dto.request.UserGetListRequest;
 import ai.anamaya.service.oms.core.dto.request.UserUpdateRequest;
 import ai.anamaya.service.oms.core.dto.response.UserResponse;
 import ai.anamaya.service.oms.core.entity.User;
@@ -11,6 +12,7 @@ import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.UserRepository;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 
+import ai.anamaya.service.oms.core.specification.UserSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
@@ -134,9 +136,9 @@ public class UserService {
         return toResponse(user);
     }
 
-    public Page<UserResponse> getAll(int page, int size, String sort) {
+    public Page<UserResponse> getAll(int page, int size, String sort, UserGetListRequest filter) {
 
-        Sort sorting = Sort.by("createdAt").descending(); // fix: createdAt in entity
+        Sort sorting = Sort.by("createdAt").descending();
 
         if (sort != null && !sort.isBlank()) {
             String[] parts = sort.split(";");
@@ -151,18 +153,16 @@ public class UserService {
 
         Pageable pageable = PageRequest.of(page, size, sorting);
 
-        Page<User> users = repository.findAll(pageable);
-
-        List<UserResponse> mapped =
-            users.getContent().stream()
-                .map(this::toResponse)
-                .toList();
-
-        return new PageImpl<>(
-            mapped,
-            pageable,
-            users.getTotalElements()
+        Page<User> users = repository.findAll(
+            UserSpecification.filter(filter),
+            pageable
         );
+
+        List<UserResponse> mapped = users.getContent().stream()
+            .map(this::toResponse)
+            .toList();
+
+        return new PageImpl<>(mapped, pageable, users.getTotalElements());
     }
 
     public List<User> getListUserApprover(CallerContext callerContext) {
