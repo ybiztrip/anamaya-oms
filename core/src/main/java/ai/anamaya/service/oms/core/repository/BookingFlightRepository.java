@@ -27,4 +27,15 @@ public interface BookingFlightRepository extends JpaRepository<BookingFlight, Lo
         @Param("bookingReferenceIds") List<String> bookingReferenceIds,
         @Param("status") BookingFlightStatus status
     );
+
+    @Modifying
+    @Query("""
+        UPDATE BookingFlight bf
+        SET bf.status = :status
+        WHERE bf.otaReference = :otaReference
+    """)
+    int updateStatusByOtaReference(
+        @Param("otaReference") String otaReference,
+        @Param("status") BookingFlightStatus status
+    );
 }

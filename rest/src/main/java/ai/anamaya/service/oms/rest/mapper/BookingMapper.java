@@ -17,6 +17,8 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface BookingMapper {
 
+    BookingUpdateStatusRequest toCore(BookingUpdateStatusRequestRest rest);
+
     BookingRequest toCore(BookingRequestRest rest);
     BookingApproveRequest toCoreApprove(BookingApproveRequestRest rest);
     BookingRejectRequest toCoreReject(BookingRejectRequestRest rest);

@@ -3,13 +3,18 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.dto.request.BookingRequest;
+import ai.anamaya.service.oms.core.dto.request.BookingUpdateStatusRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
 import ai.anamaya.service.oms.core.entity.*;
+import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
+import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
+import ai.anamaya.service.oms.core.enums.BookingType;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.*;
 import ai.anamaya.service.oms.core.specification.BookingSpecification;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -119,6 +124,54 @@ public class BookingService {
         bookingRepository.save(booking);
 
         return toResponse(booking, false, false);
+    }
+
+    @Transactional
+    public String updateBookingStatus(CallerContext callerContext, BookingUpdateStatusRequest request) {
+
+        String status = request.getStatus();
+        if (status == null || status.isBlank()) {
+            throw new IllegalArgumentException("Status is required");
+        }
+
+        int updatedRows = 0;
+
+        switch (request.getType()) {
+
+            case FLIGHT -> {
+                BookingFlightStatus statusEnum = BookingFlightStatus.fromString(status);
+                if (statusEnum == null) {
+                    throw new IllegalArgumentException("Invalid flight status");
+                }
+
+                updatedRows = bookingFlightRepository.updateStatusByOtaReference(
+                    request.getOtaReference(),
+                    statusEnum
+                );
+            }
+
+            case HOTEL -> {
+                BookingHotelStatus statusEnum = BookingHotelStatus.fromString(status);
+                if (statusEnum == null) {
+                    throw new IllegalArgumentException("Invalid hotel status");
+                }
+
+                updatedRows = bookingHotelRepository.updateStatusByOtaReference(
+                    request.getOtaReference(),
+                    statusEnum
+                );
+            }
+
+            default -> {
+                throw new IllegalArgumentException("Invalid type");
+            }
+        }
+
+        if(updatedRows == 0) {
+            throw new IllegalArgumentException("No data updated");
+        }
+
+        return "Success";
     }
 
     public BookingResponse toResponse(Booking booking, boolean pax, boolean detail) {

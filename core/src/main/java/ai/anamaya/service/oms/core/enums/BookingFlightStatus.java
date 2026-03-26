@@ -37,14 +37,14 @@ public enum BookingFlightStatus {
         };
     }
 
-    public static Boolean isSuccessBook(String status) {
-        if (status == null) {
-            return false;
-        }
+    public static BookingFlightStatus fromString(String value) {
+        if (value == null || value.isBlank()) return null;
 
-        return switch (status.toUpperCase()) {
-            case "OK", "BOOK", "BOOKED", "BOOKED_DETAIL_CHANGED" -> true;
-            default -> false;
-        };
+        try {
+            return BookingFlightStatus.valueOf(value.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
+
 }

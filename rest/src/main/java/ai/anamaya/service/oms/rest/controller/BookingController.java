@@ -37,6 +37,21 @@ public class BookingController {
     private final BookingMapper mapper;
     private final JwtUtils jwtUtils;
 
+    @PreAuthorize("hasAnyRole('SYSTEM')")
+    @PutMapping("status")
+    public ApiResponse<String> updateBookingStatus(
+        @Valid @RequestBody BookingUpdateStatusRequestRest reqRest) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        var reqCore = mapper.toCore(reqRest);
+        var resultCore = bookingService.updateBookingStatus(userCallerContext, reqCore);
+
+        return ApiResponse.success(resultCore);
+    }
+
     @PostMapping
     public ApiResponse<BookingResponseRest> createBooking(
         @Valid @RequestBody BookingRequestRest reqRest) {

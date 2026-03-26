@@ -21,4 +21,15 @@ public enum BookingHotelStatus {
             default -> CREATED;
         };
     }
+
+    public static BookingHotelStatus fromString(String value) {
+        if (value == null || value.isBlank()) return null;
+
+        try {
+            return BookingHotelStatus.valueOf(value.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
 }

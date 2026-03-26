@@ -82,6 +82,9 @@ public class BookingHotel extends BaseEntity {
     @Column(name = "booking_reference", length = 256)
     private String bookingReference;
 
+    @Column(name = "ota_reference", length = 256)
+    private String otaReference;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private BookingHotelStatus status;
