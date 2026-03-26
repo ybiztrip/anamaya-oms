@@ -14,6 +14,7 @@ public interface BookingFlightRepository extends JpaRepository<BookingFlight, Lo
     List<BookingFlight> findByBookingIdAndIdIn(Long bookingId, List<Long> ids);
     List<BookingFlight> findByBookingId(Long bookingId);
     List<BookingFlight> findByBookingIdAndBookingCode(Long bookingId, String bookingCode);
+    List<BookingFlight> findByBookingCode(String bookingCode);
 
     @Modifying
     @Query("""
@@ -32,10 +33,10 @@ public interface BookingFlightRepository extends JpaRepository<BookingFlight, Lo
     @Query("""
         UPDATE BookingFlight bf
         SET bf.status = :status
-        WHERE bf.otaReference = :otaReference
+        WHERE bf.bookingCode = :bookingCode
     """)
-    int updateStatusByOtaReference(
-        @Param("otaReference") String otaReference,
+    int updateStatusByBookingCode(
+        @Param("bookingCode") String bookingCode,
         @Param("status") BookingFlightStatus status
     );
 }

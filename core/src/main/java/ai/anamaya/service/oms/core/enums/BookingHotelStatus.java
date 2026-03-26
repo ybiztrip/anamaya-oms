@@ -32,4 +32,24 @@ public enum BookingHotelStatus {
         }
     }
 
+    public static boolean isValidToUpdate(BookingHotelStatus newStatus, BookingHotelStatus oldStatus) {
+        switch (newStatus) {
+            case CANCELLED ->  {
+                return true;
+            }
+            case ISSUED -> {
+                if(oldStatus == CANCELLED) {
+                    return false;
+                }
+            }
+            case BOOKED -> {
+                if(oldStatus == CREATED || oldStatus == APPROVED) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 }

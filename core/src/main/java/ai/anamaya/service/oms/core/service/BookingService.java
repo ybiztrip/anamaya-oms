@@ -144,8 +144,14 @@ public class BookingService {
                     throw new IllegalArgumentException("Invalid flight status");
                 }
 
-                updatedRows = bookingFlightRepository.updateStatusByOtaReference(
-                    request.getOtaReference(),
+                List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingCode(request.getPartnerBookingId());
+
+                if(!BookingFlightStatus.isValidToUpdate(statusEnum, bookingFlights.get(0).getStatus())) {
+                    throw new IllegalArgumentException("Invalid new status");
+                }
+
+                updatedRows = bookingFlightRepository.updateStatusByBookingCode(
+                    request.getPartnerBookingId(),
                     statusEnum
                 );
             }
@@ -156,8 +162,14 @@ public class BookingService {
                     throw new IllegalArgumentException("Invalid hotel status");
                 }
 
-                updatedRows = bookingHotelRepository.updateStatusByOtaReference(
-                    request.getOtaReference(),
+                List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingCode(request.getPartnerBookingId());
+
+                if(!BookingHotelStatus.isValidToUpdate(statusEnum, bookingHotels.get(0).getStatus())) {
+                    throw new IllegalArgumentException("Invalid new status");
+                }
+
+                updatedRows = bookingHotelRepository.updateStatusByBookingCode(
+                    request.getPartnerBookingId(),
                     statusEnum
                 );
             }

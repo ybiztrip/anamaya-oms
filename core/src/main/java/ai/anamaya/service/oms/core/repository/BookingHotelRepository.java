@@ -14,15 +14,16 @@ public interface BookingHotelRepository extends JpaRepository<BookingHotel, Long
     List<BookingHotel> findByBookingIdAndIdIn(Long bookingId, List<Long> ids);
     List<BookingHotel> findByBookingId(Long bookingId);
     List<BookingHotel> findByBookingIdAndBookingCode(Long bookingId, String bookingCode);
+    List<BookingHotel> findByBookingCode(String bookingCode);
 
     @Modifying
     @Query("""
         UPDATE BookingHotel bh
         SET bh.status = :status
-        WHERE bh.otaReference = :otaReference
+        WHERE bh.bookingCode = :bookingCode
     """)
-    int updateStatusByOtaReference(
-        @Param("otaReference") String otaReference,
+    int updateStatusByBookingCode(
+        @Param("bookingCode") String bookingCode,
         @Param("status") BookingHotelStatus status
     );
 

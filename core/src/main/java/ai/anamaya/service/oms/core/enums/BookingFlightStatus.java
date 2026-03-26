@@ -47,4 +47,24 @@ public enum BookingFlightStatus {
         }
     }
 
+    public static boolean isValidToUpdate(BookingFlightStatus newStatus, BookingFlightStatus oldStatus) {
+        switch (newStatus) {
+            case CANCELLED ->  {
+                return true;
+            }
+            case ISSUED -> {
+                if(oldStatus == CANCELLED) {
+                    return false;
+                }
+            }
+            case BOOKED -> {
+                if(oldStatus == APPROVED) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
 }

@@ -10,6 +10,6 @@ import lombok.Setter;
 @Getter
 public class BookingUpdateStatusRequest {
     BookingType type;
-    String otaReference;
+    String partnerBookingId;
     String status;
 }
