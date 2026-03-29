@@ -160,7 +160,7 @@ public class BookingHotelService {
             bookingCommonService.sendNotificationToApprover(callerContext, bookingId,null, List.of(newHotel));
         }
 
-        return bookingService.toResponse(booking, true, true);
+        return bookingService.toResponse(booking, true, false);
     }
 
     public void approveProcessBooking(CallerContext callerContext, Booking booking, BookingStatusMessage request) {

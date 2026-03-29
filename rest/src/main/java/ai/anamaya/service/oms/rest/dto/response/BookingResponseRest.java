@@ -1,5 +1,7 @@
 package ai.anamaya.service.oms.rest.dto.response;
 
+import ai.anamaya.service.oms.core.dto.response.BookingAttachmentResponse;
+import ai.anamaya.service.oms.rest.dto.request.BookingAttachmentRequestRest;
 import lombok.Builder;
 import lombok.Data;
 
@@ -30,6 +32,7 @@ public class BookingResponseRest {
     private Map<String, Object> clientAdditionalInfo;
     private String status;
 
+    private List<BookingAttachmentResponseRest> attachments;
     private List<BookingFlightResponseRest> flights;
     private List<BookingHotelResponseRest> hotels;
 }

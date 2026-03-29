@@ -24,7 +24,7 @@ public class BookingSpecification {
             }
 
             if (filter.getUserId() != null && filter.getUserId() != 0) {
-                predicates.add(cb.equal(root.get("userId"), filter.getUserId()));
+                predicates.add(cb.equal(root.get("createdBy"), filter.getUserId()));
             }
 
             if (filter.getDateFrom() != null) {

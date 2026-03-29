@@ -20,4 +20,5 @@ public class BookingListFilter {
     private Long userId;
     private LocalDate dateFrom;
     private LocalDate dateTo;
+    private Boolean needAttachment = false;;
 }

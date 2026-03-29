@@ -57,14 +57,14 @@ public class BookingAttachmentService {
         return this.toResponse(bookingAttachment);
     }
 
-    private BookingAttachmentResponse toResponse(BookingAttachment f) {
+    private BookingAttachmentResponse toResponse(BookingAttachment data) {
         return BookingAttachmentResponse.builder()
-            .id(f.getId())
-            .companyId(f.getCompanyId())
-            .bookingId(f.getBookingId())
-            .bookingCode(f.getBookingCode())
-            .type(f.getType())
-            .file(f.getFile())
+            .id(data.getId())
+            .companyId(data.getCompanyId())
+            .bookingId(data.getBookingId())
+            .bookingCode(data.getBookingCode())
+            .type(data.getType())
+            .file(data.getFile())
             .build();
     }
 

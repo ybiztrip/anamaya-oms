@@ -137,7 +137,7 @@ public class BookingFlightService {
         createBookingFlight(callerContext, booking, bookingCode);
         handleBookingFlightApprovalFlow(callerContext, booking, bookingCode);
 
-        return bookingService.toResponse(booking, true, true);
+        return bookingService.toResponse(booking, true, false);
     }
 
     public void handleBookingFlightApprovalFlow(CallerContext callerContext, Booking booking, String bookingCode) {

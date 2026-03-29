@@ -27,6 +27,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BookingService {
 
+    private final BookingAttachmentRepository bookingAttachmentRepository;
     private final BookingRepository bookingRepository;
     private final BookingPaxRepository bookingPaxRepository;
     private final BookingFlightRepository bookingFlightRepository;
@@ -57,7 +58,7 @@ public class BookingService {
         Page<Booking> bookings = bookingRepository.findAll(spec, pageable);
 
         List<BookingResponse> mapped = bookings.getContent().stream()
-            .map(b -> toResponse(b, true, true))
+            .map(b -> toResponse(b, true, filter.getNeedAttachment()))
             .toList();
 
         return new PageImpl<>(mapped, pageable, bookings.getTotalElements());
@@ -73,7 +74,7 @@ public class BookingService {
         Page<Booking> bookings = bookingRepository.findAll(spec, pageable);
 
         List<BookingResponse> mapped = bookings.getContent().stream()
-            .map(b -> toResponse(b, true, true))
+            .map(b -> toResponse(b, true, filter.getNeedAttachment()))
             .toList();
 
         return new PageImpl<>(mapped, pageable, bookings.getTotalElements());
@@ -199,7 +200,7 @@ public class BookingService {
         return "Success";
     }
 
-    public BookingResponse toResponse(Booking booking, boolean pax, boolean detail) {
+    public BookingResponse toResponse(Booking booking, boolean detail, boolean needAttachment) {
         BookingResponse.BookingResponseBuilder builder = BookingResponse.builder()
                 .id(booking.getId())
                 .companyId(booking.getCompanyId())
@@ -230,6 +231,15 @@ public class BookingService {
                 bookingHotelRepository.findByBookingId(booking.getId())
                     .stream()
                     .map(this::toHotelResponse)
+                    .toList()
+            );
+        }
+
+        if (needAttachment) {
+            builder.attachments(
+                bookingAttachmentRepository.findByBookingId(booking.getId())
+                    .stream()
+                    .map(this::toAttachmentResponse)
                     .toList()
             );
         }
@@ -308,4 +318,16 @@ public class BookingService {
             )
             .build();
     }
+
+    private BookingAttachmentResponse toAttachmentResponse(BookingAttachment data) {
+        return BookingAttachmentResponse.builder()
+            .id(data.getId())
+            .companyId(data.getCompanyId())
+            .bookingId(data.getBookingId())
+            .bookingCode(data.getBookingCode())
+            .type(data.getType())
+            .file(data.getFile())
+            .build();
+    }
+
 }
