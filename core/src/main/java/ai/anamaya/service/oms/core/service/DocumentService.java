@@ -72,6 +72,10 @@ public class DocumentService {
             throw new IllegalArgumentException("File is empty");
         }
 
+        if (file.getSize() > 5 * 1024 * 1024) {
+            throw new IllegalArgumentException("File too large (max 5MB)");
+        }
+
         String contentType = file.getContentType();
 
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
