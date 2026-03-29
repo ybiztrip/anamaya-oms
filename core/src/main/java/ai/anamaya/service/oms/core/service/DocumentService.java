@@ -6,6 +6,7 @@ import ai.anamaya.service.oms.core.enums.DocumentBucketType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -15,6 +16,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +28,19 @@ public class DocumentService {
     private final S3Presigner s3Presigner;
     private final S3Client s3Client;
 
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
+        "image/jpeg",
+        "image/png",
+        "application/pdf",
+        "text/csv",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    );
+
     public String uploadFile(CallerContext callerContext, DocumentUploadRequest request) throws IOException {
+        validateFile(request.getFile());
         String filename = generateFileName(request.getType());
         String key = request.getType().getPath()+"/"+filename;
 
@@ -39,6 +53,35 @@ public class DocumentService {
         s3Client.putObject(objectRequest, RequestBody.fromBytes(request.getFile().getBytes()));
 
         return key;
+    }
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
+        "jpg", "jpeg", "png",
+        "pdf",
+        "csv",
+        "xls", "xlsx",
+        "doc", "docx"
+    );
+
+    private boolean isValidExtension(String filename) {
+        String ext = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+        return ALLOWED_EXTENSIONS.contains(ext);
+    }
+
+    private void validateFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
+        }
+
+        String contentType = file.getContentType();
+
+        if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("Unsupported file type: " + contentType);
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename == null || !isValidExtension(filename)) {
+            throw new IllegalArgumentException("Invalid file extension");
+        }
     }
 
     public String generateDownloadUrl(String key) {
