@@ -1,18 +1,12 @@
-package ai.anamaya.service.oms.core.dto.request;
+package ai.anamaya.service.oms.rest.dto.request;
 
 import ai.anamaya.service.oms.core.enums.DocumentBucketType;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class DocumentUploadRequest {
+public class BookingAttachmentRequestRest {
     @NotNull
     DocumentBucketType type;
 

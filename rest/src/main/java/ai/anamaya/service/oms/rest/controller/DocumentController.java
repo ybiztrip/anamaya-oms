@@ -5,10 +5,10 @@ import ai.anamaya.service.oms.core.dto.request.DocumentUploadRequest;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.DocumentService;
 import ai.anamaya.service.oms.rest.dto.request.DocumentUploadRequestRest;
+import ai.anamaya.service.oms.rest.dto.response.ApiResponse;
 import ai.anamaya.service.oms.rest.mapper.DocumentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,7 +21,7 @@ public class DocumentController {
     private final JwtUtils jwtUtils;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> upload(
+    public ApiResponse<String> upload(
         @ModelAttribute DocumentUploadRequestRest requestRest
     ) throws Exception {
         Long companyId = jwtUtils.getCompanyIdFromToken();
@@ -31,11 +31,12 @@ public class DocumentController {
 
         DocumentUploadRequest request = documentMapper.toCore(requestRest);
         String key = documentService.uploadFile(userCallerContext, request);
-        return ResponseEntity.ok(key);
+        return ApiResponse.success(key);
     }
+
     @GetMapping("/url")
-    public ResponseEntity<String> getUrl(@RequestParam String key) {
-        return ResponseEntity.ok(documentService.generateDownloadUrl(key));
+    public ApiResponse<String> getUrl(@RequestParam String key) {
+        return ApiResponse.success(documentService.generateDownloadUrl(key));
     }
 
 }

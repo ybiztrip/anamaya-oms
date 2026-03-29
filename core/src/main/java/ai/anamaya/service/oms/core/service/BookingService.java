@@ -9,7 +9,6 @@ import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
-import ai.anamaya.service.oms.core.enums.BookingType;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.*;
@@ -33,7 +32,6 @@ public class BookingService {
     private final BookingFlightRepository bookingFlightRepository;
     private final BookingHotelRepository bookingHotelRepository;
     private final CompanyConfigRepository companyConfigRepository;
-
 
     public Page<BookingResponse> getAll(int page, int size, String sort, BookingListFilter filter) {
 
@@ -65,6 +63,21 @@ public class BookingService {
         return new PageImpl<>(mapped, pageable, bookings.getTotalElements());
     }
 
+    public Page<BookingResponse> getNeedApproved(int page, int size, String sort, BookingListFilter filter) {
+        // Sorting
+        Sort sorting = Sort.by("createdAt").descending();
+        Pageable pageable = PageRequest.of(page, size, sorting);
+
+        Specification<Booking> spec = BookingSpecification.filter(filter);
+
+        Page<Booking> bookings = bookingRepository.findAll(spec, pageable);
+
+        List<BookingResponse> mapped = bookings.getContent().stream()
+            .map(b -> toResponse(b, true, true))
+            .toList();
+
+        return new PageImpl<>(mapped, pageable, bookings.getTotalElements());
+    }
 
     public BookingResponse getBookingById(CallerContext callerContext, Long id) {
         Long companyId = callerContext.companyId();

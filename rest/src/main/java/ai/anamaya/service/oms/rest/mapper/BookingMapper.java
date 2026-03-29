@@ -19,6 +19,8 @@ public interface BookingMapper {
 
     BookingUpdateStatusRequest toCore(BookingUpdateStatusRequestRest rest);
 
+    BookingAttachmentRequest toCore(BookingAttachmentRequestRest rest);
+
     BookingRequest toCore(BookingRequestRest rest);
     BookingApproveRequest toCoreApprove(BookingApproveRequestRest rest);
     BookingRejectRequest toCoreReject(BookingRejectRequestRest rest);

@@ -20,6 +20,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
@@ -30,9 +31,9 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final BookingApproveService bookingApproveService;
+    private final BookingAttachmentService bookingAttachmentService;
     private final BookingFlightService bookingFlightService;
     private final BookingHotelService bookingHotelService;
-    private final BookingPaxService bookingPaxService;
 
     private final BookingMapper mapper;
     private final JwtUtils jwtUtils;
@@ -100,6 +101,21 @@ public class BookingController {
 
         var resultCore = bookingService.getBookingById(userCallerContext, id);
         return ApiResponse.success(mapper.toRest(resultCore));
+    }
+
+    @PostMapping("/{id}/attachments")
+    public ApiResponse<?> submitBookingAttachment(
+        @PathVariable Long id,
+        @ModelAttribute BookingAttachmentRequestRest requestRest) throws IOException {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        var request = mapper.toCore(requestRest);
+        var resultCore = bookingAttachmentService.submitBookingAttachments(userCallerContext, id, request);
+
+        return ApiResponse.success(resultCore);
     }
 
     @GetMapping("/flights")
