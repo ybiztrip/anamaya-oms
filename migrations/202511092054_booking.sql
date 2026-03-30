@@ -116,3 +116,7 @@ CREATE TABLE booking_hotel (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_booking_hotel_booking_id (booking_id)
 );
+
+CREATE INDEX idx_booking_status ON booking(status);
+CREATE INDEX idx_booking_flight_status ON booking_flight(status);
+CREATE INDEX idx_booking_hotel_status ON booking_hotel(status);

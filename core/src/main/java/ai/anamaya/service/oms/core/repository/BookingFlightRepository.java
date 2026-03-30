@@ -12,6 +12,7 @@ import java.util.List;
 
 public interface BookingFlightRepository extends JpaRepository<BookingFlight, Long>, JpaSpecificationExecutor<BookingFlight> {
     List<BookingFlight> findByBookingIdAndIdIn(Long bookingId, List<Long> ids);
+    List<BookingFlight> findByBookingIdIn(List<Long> bookingId);
     List<BookingFlight> findByBookingId(Long bookingId);
     List<BookingFlight> findByBookingIdAndBookingCode(Long bookingId, String bookingCode);
     List<BookingFlight> findByBookingCode(String bookingCode);

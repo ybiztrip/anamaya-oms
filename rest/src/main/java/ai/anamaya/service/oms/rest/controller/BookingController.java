@@ -103,6 +103,31 @@ public class BookingController {
         return ApiResponse.success(mapper.toRest(resultCore));
     }
 
+    @PreAuthorize("hasAnyRole('APPROVER')")
+    @GetMapping("/need-approval")
+    public ApiResponse<List<BookingResponseRest>> getBookingsNeedApproval(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String sort
+    ) {
+        var pageResult = bookingService.getBookingsNeedApproval(page, size, sort);
+
+        List<BookingResponseRest> listRest = pageResult
+            .getContent()
+            .stream()
+            .map(mapper::toRest)
+            .toList();
+
+        return ApiResponse.paginatedSuccess(
+            listRest,
+            pageResult.getTotalElements(),
+            pageResult.getTotalPages(),
+            pageResult.isLast(),
+            pageResult.getSize(),
+            pageResult.getNumber()
+        );
+    }
+
     @PostMapping("/{id}/attachments")
     public ApiResponse<?> submitBookingAttachment(
         @PathVariable Long id,

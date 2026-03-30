@@ -20,8 +20,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,20 +64,60 @@ public class BookingService {
         return new PageImpl<>(mapped, pageable, bookings.getTotalElements());
     }
 
-    public Page<BookingResponse> getNeedApproved(int page, int size, String sort, BookingListFilter filter) {
+    public Page<BookingResponse> getBookingsNeedApproval(int page, int size, String sort) {
+
         // Sorting
         Sort sorting = Sort.by("createdAt").descending();
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(";");
+            String field = parts[0];
+
+            Sort.Direction direction =
+                (parts.length > 1 && parts[1].equalsIgnoreCase("desc"))
+                    ? Sort.Direction.DESC
+                    : Sort.Direction.ASC;
+
+            sorting = Sort.by(direction, field);
+        }
+
         Pageable pageable = PageRequest.of(page, size, sorting);
+        Page<Object[]> idPage = bookingRepository.findBookingIdsNeedApproval(pageable);
 
-        Specification<Booking> spec = BookingSpecification.filter(filter);
+        if (idPage.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
 
-        Page<Booking> bookings = bookingRepository.findAll(spec, pageable);
+        List<Long> bookingIds = idPage.getContent().stream()
+            .map(obj -> (Long) obj[0])
+            .toList();
+        List<Booking> bookings = bookingRepository.findAllById(bookingIds);
+        List<BookingFlight> flights = bookingFlightRepository.findByBookingIdIn(bookingIds);
+        List<BookingHotel> hotels = bookingHotelRepository.findByBookingIdIn(bookingIds);
 
-        List<BookingResponse> mapped = bookings.getContent().stream()
-            .map(b -> toResponse(b, true, filter.getNeedAttachment()))
+        Map<Long, List<BookingFlight>> flightMap =
+            flights.stream().collect(Collectors.groupingBy(BookingFlight::getBookingId));
+
+        Map<Long, List<BookingHotel>> hotelMap =
+            hotels.stream().collect(Collectors.groupingBy(BookingHotel::getBookingId));
+
+        Map<Long, Booking> bookingMap =
+            bookings.stream().collect(Collectors.toMap(Booking::getId, b -> b));
+
+        List<Booking> orderedBookings = bookingIds.stream()
+            .map(bookingMap::get)
+            .filter(Objects::nonNull)
             .toList();
 
-        return new PageImpl<>(mapped, pageable, bookings.getTotalElements());
+        List<BookingResponse> responses = orderedBookings.stream().map(b -> toResponse(
+                b,
+                flightMap.getOrDefault(b.getId(), List.of()),
+                hotelMap.getOrDefault(b.getId(), List.of()),
+                List.of(),
+                false
+            ))
+            .toList();
+
+        return new PageImpl<>(responses, pageable, idPage.getTotalElements());
     }
 
     public BookingResponse getBookingById(CallerContext callerContext, Long id) {
@@ -239,6 +279,55 @@ public class BookingService {
             builder.attachments(
                 bookingAttachmentRepository.findByBookingId(booking.getId())
                     .stream()
+                    .map(this::toAttachmentResponse)
+                    .toList()
+            );
+        }
+
+        return builder.build();
+    }
+
+    public BookingResponse toResponse(
+        Booking booking,
+        List<BookingFlight> flights,
+        List<BookingHotel> hotels,
+        List<BookingAttachment> attachments,
+        boolean needAttachment
+    ) {
+        BookingResponse.BookingResponseBuilder builder = BookingResponse.builder()
+            .id(booking.getId())
+            .companyId(booking.getCompanyId())
+            .code(booking.getCode())
+            .journeyCode(booking.getJourneyCode())
+            .startDate(booking.getStartDate())
+            .endDate(booking.getEndDate())
+            .contactEmail(booking.getContactEmail())
+            .contactFirstName(booking.getContactFirstName())
+            .contactLastName(booking.getContactLastName())
+            .contactTitle(booking.getContactTitle())
+            .contactNationality(booking.getContactNationality())
+            .contactPhoneCode(booking.getContactPhoneCode())
+            .contactPhoneNumber(booking.getContactPhoneNumber())
+            .contactDob(booking.getContactDob())
+            .additionalInfo(booking.getAdditionalInfo())
+            .clientAdditionalInfo(booking.getClientAdditionalInfo())
+            .status(booking.getStatus());
+
+        builder.flights(
+            flights.stream()
+                .map(this::toFlightResponse)
+                .toList()
+        );
+
+        builder.hotels(
+            hotels.stream()
+                .map(this::toHotelResponse)
+                .toList()
+        );
+
+        if (needAttachment) {
+            builder.attachments(
+                attachments.stream()
                     .map(this::toAttachmentResponse)
                     .toList()
             );
