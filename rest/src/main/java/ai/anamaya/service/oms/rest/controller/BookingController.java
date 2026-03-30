@@ -74,6 +74,32 @@ public class BookingController {
         @RequestParam(required = false) String sort,
         @ModelAttribute BookingListFilter filter
     ) {
+
+        Long userId = jwtUtils.getUserIdFromToken();
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isCompanyAdmin = auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_COMPANY_ADMIN"));
+
+        boolean isSuperAdmin = auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+
+        filter.setCompanyId(companyId);
+
+        if (!isSuperAdmin) {
+            filter.setCompanyId(companyId);
+        }
+
+        if (isCompanyAdmin || isSuperAdmin) {
+            if (filter.getUserId() == null || filter.getUserId() == 0) {
+                filter.setUserId(null);
+            }
+        } else {
+            filter.setUserId(userId);
+        }
+
         var pageResult = bookingService.getAll(page, size, sort, filter);
 
         List<BookingResponseRest> listRest = pageResult
@@ -110,7 +136,11 @@ public class BookingController {
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) String sort
     ) {
-        var pageResult = bookingService.getBookingsNeedApproval(page, size, sort);
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+        var pageResult = bookingService.getBookingsNeedApproval(userCallerContext, page, size, sort);
 
         List<BookingResponseRest> listRest = pageResult
             .getContent()

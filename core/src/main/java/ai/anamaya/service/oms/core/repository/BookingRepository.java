@@ -18,11 +18,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpec
         SELECT DISTINCT b.id, b.createdAt FROM Booking b
         LEFT JOIN BookingFlight bf ON bf.booking.id = b.id
         LEFT JOIN BookingHotel bh ON bh.booking.id = b.id
-        WHERE 
+        WHERE b.companyId = :companyId AND
+        (
             b.status = 'CREATE'
             OR bf.status = 'BOOKED'
             OR bh.status = 'BOOKED'
+        )
     """)
-    Page<Object[]> findBookingIdsNeedApproval(Pageable pageable);
+    Page<Object[]> findBookingIdsNeedApproval(Pageable pageable, Long companyId);
 
 }

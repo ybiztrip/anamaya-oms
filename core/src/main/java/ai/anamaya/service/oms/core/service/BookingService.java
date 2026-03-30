@@ -64,7 +64,9 @@ public class BookingService {
         return new PageImpl<>(mapped, pageable, bookings.getTotalElements());
     }
 
-    public Page<BookingResponse> getBookingsNeedApproval(int page, int size, String sort) {
+    public Page<BookingResponse> getBookingsNeedApproval(CallerContext callerContext, int page, int size, String sort) {
+
+        Long companyId = callerContext.companyId();
 
         // Sorting
         Sort sorting = Sort.by("createdAt").descending();
@@ -81,7 +83,7 @@ public class BookingService {
         }
 
         Pageable pageable = PageRequest.of(page, size, sorting);
-        Page<Object[]> idPage = bookingRepository.findBookingIdsNeedApproval(pageable);
+        Page<Object[]> idPage = bookingRepository.findBookingIdsNeedApproval(pageable, companyId);
 
         if (idPage.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
