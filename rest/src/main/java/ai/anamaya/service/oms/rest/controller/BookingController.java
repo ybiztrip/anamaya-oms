@@ -7,6 +7,7 @@ import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.*;
+import ai.anamaya.service.oms.core.util.SecurityUtil;
 import ai.anamaya.service.oms.rest.dto.request.*;
 import ai.anamaya.service.oms.rest.dto.response.BookingFlightResponseRest;
 import ai.anamaya.service.oms.rest.dto.response.BookingHotelResponseRest;
@@ -15,13 +16,9 @@ import ai.anamaya.service.oms.rest.mapper.BookingMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -78,13 +75,8 @@ public class BookingController {
         Long userId = jwtUtils.getUserIdFromToken();
         Long companyId = jwtUtils.getCompanyIdFromToken();
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        boolean isCompanyAdmin = auth.getAuthorities().stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_COMPANY_ADMIN"));
-
-        boolean isSuperAdmin = auth.getAuthorities().stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+        boolean isCompanyAdmin = SecurityUtil.hasRole("ROLE_COMPANY_ADMIN");
+        boolean isSuperAdmin = SecurityUtil.hasRole("ROLE_SUPER_ADMIN");
 
         filter.setCompanyId(companyId);
 
@@ -180,11 +172,7 @@ public class BookingController {
         @RequestParam(required = false) String sort,
         @ModelAttribute BookingFlightListFilter filter
     ) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-
-        boolean isSuperAdmin = authorities.stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+        boolean isSuperAdmin = SecurityUtil.hasRole("ROLE_SUPER_ADMIN");
 
         if (!isSuperAdmin) {
             Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
@@ -231,11 +219,7 @@ public class BookingController {
         @RequestParam(required = false) String sort,
         @ModelAttribute BookingHotelListFilter filter
     ) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-
-        boolean isSuperAdmin = authorities.stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_SUPER_ADMIN"));
+        boolean isSuperAdmin = SecurityUtil.hasRole("ROLE_SUPER_ADMIN");
 
         if (!isSuperAdmin) {
             Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
