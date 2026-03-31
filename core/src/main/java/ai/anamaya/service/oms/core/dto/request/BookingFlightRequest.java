@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.dto.request;
 
 import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -23,4 +24,5 @@ public class BookingFlightRequest {
     private BookingPaymentMethod paymentMethod;
     private String paymentReference1;
     private String paymentReference2;
+    private JsonNode metadata;
 }

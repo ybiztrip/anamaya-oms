@@ -2,6 +2,7 @@ package ai.anamaya.service.oms.core.dto.request;
 
 import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 import java.time.LocalDate;
 
@@ -28,4 +29,5 @@ public class BookingHotelRequest {
     private String currency;
     private String specialRequest;
     private BookingHotelStatus status;
+    private JsonNode metadata;
 }

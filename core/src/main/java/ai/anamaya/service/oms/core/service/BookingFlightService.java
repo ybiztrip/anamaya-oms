@@ -14,6 +14,7 @@ import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubm
 import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
+import ai.anamaya.service.oms.core.helper.json.JsonHelper;
 import ai.anamaya.service.oms.core.repository.*;
 import ai.anamaya.service.oms.core.specification.BookingFlightSpecification;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,7 +43,7 @@ public class BookingFlightService {
     private final BookingPaxService bookingPaxService;
     private final BookingPubSubPublisher bookingPubSubPublisher;
     private final CompanyConfigRepository companyConfigRepository;
-
+    private final JsonHelper jsonHelper;
     private final Map<String, FlightProvider> flightProviders;
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -126,6 +127,7 @@ public class BookingFlightService {
                 .paymentReference1(req.getPaymentReference1())
                 .paymentReference2(req.getPaymentReference2())
                 .status(BookingFlightStatus.CREATED)
+                .metadata(jsonHelper.toJson(req.getMetadata()))
                 .createdBy(userId)
                 .updatedBy(userId)
                 .build();
@@ -474,6 +476,11 @@ public class BookingFlightService {
             .departureDatetime(f.getDepartureDatetime())
             .arrivalDatetime(f.getArrivalDatetime())
             .status(f.getStatus())
+            .metadata(
+                f.getMetadata() != null
+                    ? jsonHelper.toJsonNode(f.getMetadata())
+                    : jsonHelper.emptyObject()
+            )
             .build();
     }
 

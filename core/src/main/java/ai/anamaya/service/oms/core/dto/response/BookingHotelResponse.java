@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.dto.response;
 
 import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,5 +27,6 @@ public class BookingHotelResponse {
     private String currency;
     private String specialRequest;
     private BookingHotelStatus status;
+    private JsonNode metadata;
     private List<BookingPaxResponse> paxs;
 }

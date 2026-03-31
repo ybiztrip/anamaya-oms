@@ -20,6 +20,7 @@ import ai.anamaya.service.oms.core.entity.BookingPax;
 import ai.anamaya.service.oms.core.entity.CompanyConfig;
 import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
+import ai.anamaya.service.oms.core.helper.json.JsonHelper;
 import ai.anamaya.service.oms.core.repository.BookingHotelRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
 import ai.anamaya.service.oms.core.repository.CompanyConfigRepository;
@@ -47,8 +48,10 @@ public class BookingHotelService {
     private final BookingCommonService bookingCommonService;
     private final BookingPaxService bookingPaxService;
     private final BookingPubSubPublisher bookingPubSubPublisher;
-
     private final Map<String, HotelProvider> hotelProviders;
+    private final JsonHelper jsonHelper;
+
+
     private HotelProvider getHotelProvider(String source) {
         String key = (source != null ? source.toLowerCase() : "biztrip") + "HotelProvider";
         HotelProvider provider = hotelProviders.get(key);
@@ -147,6 +150,7 @@ public class BookingHotelService {
             .currency(reqHotel.getCurrency())
             .specialRequest(reqHotel.getSpecialRequest())
             .status(status)
+            .metadata(jsonHelper.toJson(reqHotel.getMetadata()))
             .createdBy(userId)
             .updatedBy(userId)
             .build();
@@ -421,6 +425,11 @@ public class BookingHotelService {
             .currency(h.getCurrency())
             .specialRequest(h.getSpecialRequest())
             .status(h.getStatus())
+            .metadata(
+                h.getMetadata() != null
+                    ? jsonHelper.toJsonNode(h.getMetadata())
+                    : jsonHelper.emptyObject()
+            )
             .build();
     }
 }

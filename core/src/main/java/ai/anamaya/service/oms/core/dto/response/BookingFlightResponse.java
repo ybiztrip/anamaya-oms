@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.dto.response;
 
 import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -23,5 +24,6 @@ public class BookingFlightResponse {
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
     private BookingFlightStatus status;
+    private JsonNode metadata;
     private List<BookingPaxResponse> paxs;
 }

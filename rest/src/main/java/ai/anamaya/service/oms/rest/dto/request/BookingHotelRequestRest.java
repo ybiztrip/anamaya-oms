@@ -2,6 +2,7 @@ package ai.anamaya.service.oms.rest.dto.request;
 
 import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.Data;
 
@@ -36,4 +37,5 @@ public class BookingHotelRequestRest {
     private String currency;
     private String specialRequest;
     private BookingHotelStatus status;
+    private JsonNode metadata;
 }

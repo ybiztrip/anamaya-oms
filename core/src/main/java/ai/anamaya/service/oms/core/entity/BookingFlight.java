@@ -90,4 +90,7 @@ public class BookingFlight extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private BookingFlightStatus status;
+
+    @Column(columnDefinition = "json")
+    private String metadata;
 }

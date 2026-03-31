@@ -11,6 +11,7 @@ import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
+import ai.anamaya.service.oms.core.helper.json.JsonHelper;
 import ai.anamaya.service.oms.core.repository.*;
 import ai.anamaya.service.oms.core.specification.BookingSpecification;
 import jakarta.transaction.Transactional;
@@ -33,6 +34,7 @@ public class BookingService {
     private final BookingFlightRepository bookingFlightRepository;
     private final BookingHotelRepository bookingHotelRepository;
     private final CompanyConfigRepository companyConfigRepository;
+    private final JsonHelper jsonHelper;
 
     public Page<BookingResponse> getAll(int page, int size, String sort, BookingListFilter filter) {
 
@@ -374,6 +376,11 @@ public class BookingService {
             .departureDatetime(f.getDepartureDatetime())
             .arrivalDatetime(f.getArrivalDatetime())
             .status(f.getStatus())
+            .metadata(
+                f.getMetadata() != null
+                    ? jsonHelper.toJsonNode(f.getMetadata())
+                    : jsonHelper.emptyObject()
+            )
             .paxs(
                 bookingPaxRepository.findByBookingIdAndBookingCode(f.getBookingId(), f.getBookingCode())
                     .stream()
@@ -401,6 +408,11 @@ public class BookingService {
             .currency(h.getCurrency())
             .specialRequest(h.getSpecialRequest())
             .status(h.getStatus())
+            .metadata(
+                h.getMetadata() != null
+                    ? jsonHelper.toJsonNode(h.getMetadata())
+                    : jsonHelper.emptyObject()
+            )
             .paxs(
                 bookingPaxRepository.findByBookingIdAndBookingCode(h.getBookingId(), h.getBookingCode())
                     .stream()
