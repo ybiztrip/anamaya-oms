@@ -1,15 +1,12 @@
 package ai.anamaya.service.oms.core.dto.request;
 
-import ai.anamaya.service.oms.core.enums.DocumentBucketType;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Data
 public class BookingAttachmentRequest {
-    @NotNull
-    DocumentBucketType type;
-
-    @NotNull
-    MultipartFile file;
+    @NotEmpty
+    List<String> files;
 }

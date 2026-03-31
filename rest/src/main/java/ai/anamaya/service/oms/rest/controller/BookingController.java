@@ -153,7 +153,7 @@ public class BookingController {
     @PostMapping("/{id}/attachments")
     public ApiResponse<?> submitBookingAttachment(
         @PathVariable Long id,
-        @ModelAttribute BookingAttachmentRequestRest requestRest) throws IOException {
+        @RequestBody BookingAttachmentRequestRest requestRest) throws IOException {
         Long companyId = jwtUtils.getCompanyIdFromToken();
         Long userId = jwtUtils.getUserIdFromToken();
         String userEmail = jwtUtils.getEmailFromToken();
