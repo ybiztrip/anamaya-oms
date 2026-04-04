@@ -8,4 +8,5 @@ import java.util.List;
 public class BookingRejectRequest {
     private List<Long> flightIds;
     private List<Long> hotelIds;
+    private String notes;
 }

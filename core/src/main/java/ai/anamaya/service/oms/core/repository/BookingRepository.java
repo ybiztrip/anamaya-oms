@@ -14,6 +14,8 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpecificationExecutor<Booking> {
 
+    List<Booking> findByIdInAndCompanyId(List<Long> ids, Long companyId);
+
     @Query("""
         SELECT DISTINCT b.id, b.createdAt FROM Booking b
         LEFT JOIN BookingFlight bf ON bf.booking.id = b.id

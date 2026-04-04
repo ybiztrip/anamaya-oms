@@ -150,6 +150,39 @@ public class BookingController {
         );
     }
 
+    @GetMapping("/my-approved")
+    public ApiResponse<List<BookingResponseRest>> getMyApproved(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String sort
+    ) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        var pageResult = bookingService.getMyApproved(
+            userCallerContext,
+            page,
+            size,
+            sort
+        );
+
+        List<BookingResponseRest> listRest = pageResult.getContent()
+            .stream()
+            .map(mapper::toRest)
+            .toList();
+
+        return ApiResponse.paginatedSuccess(
+            listRest,
+            pageResult.getTotalElements(),
+            pageResult.getTotalPages(),
+            pageResult.isLast(),
+            pageResult.getSize(),
+            pageResult.getNumber()
+        );
+    }
+
     @PostMapping("/{id}/attachments")
     public ApiResponse<?> submitBookingAttachment(
         @PathVariable Long id,

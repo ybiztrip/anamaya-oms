@@ -210,4 +210,27 @@ public class BookingCommonService {
         appricodeClient.approvalResponse(user, bookingId, bookingFlights, bookingHotels);
     }
 
+    public List<BookingApproval> buildApprovals(
+        Long bookingId,
+        BookingType type,
+        List<Long> bookingChildIds,
+        ApprovalAction action,
+        Long userId,
+        String userEmail,
+        String notes
+    ) {
+        return bookingChildIds.stream()
+            .map(id -> BookingApproval.builder()
+                .bookingId(bookingId)
+                .bookingType(type)
+                .bookingChildId(id)
+                .action(action)
+                .createdBy(userId)
+                .createdByName(userEmail)
+                .notes(notes)
+                .build()
+            )
+            .collect(Collectors.toList());
+    }
+
 }

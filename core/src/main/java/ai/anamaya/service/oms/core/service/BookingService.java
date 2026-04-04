@@ -6,6 +6,7 @@ import ai.anamaya.service.oms.core.dto.request.BookingRequest;
 import ai.anamaya.service.oms.core.dto.request.BookingUpdateStatusRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
 import ai.anamaya.service.oms.core.entity.*;
+import ai.anamaya.service.oms.core.enums.ApprovalAction;
 import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
 import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import ai.anamaya.service.oms.core.enums.BookingStatus;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BookingService {
 
+    private final BookingApprovalRepository bookingApprovalRepository;
     private final BookingAttachmentRepository bookingAttachmentRepository;
     private final BookingRepository bookingRepository;
     private final BookingPaxRepository bookingPaxRepository;
@@ -113,6 +115,72 @@ public class BookingService {
             .toList();
 
         List<BookingResponse> responses = orderedBookings.stream().map(b -> toResponse(
+                b,
+                flightMap.getOrDefault(b.getId(), List.of()),
+                hotelMap.getOrDefault(b.getId(), List.of()),
+                List.of(),
+                false
+            ))
+            .toList();
+
+        return new PageImpl<>(responses, pageable, idPage.getTotalElements());
+    }
+
+    public Page<BookingResponse> getMyApproved(
+        CallerContext callerContext,
+        int page,
+        int size,
+        String sort
+    ) {
+
+        Long userId = callerContext.userId();
+        Long companyId = callerContext.companyId();
+
+        // sorting
+        Sort sorting = Sort.by("createdAt").descending();
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(";");
+            Sort.Direction direction =
+                (parts.length > 1 && parts[1].equalsIgnoreCase("desc"))
+                    ? Sort.Direction.DESC
+                    : Sort.Direction.ASC;
+
+            sorting = Sort.by(direction, parts[0]);
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sorting);
+
+        Page<Long> idPage = bookingApprovalRepository
+            .findMyApprovedBookingIds(userId, ApprovalAction.APPROVED, pageable);
+
+        if (idPage.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
+
+        List<Long> bookingIds = idPage.getContent();
+
+        List<Booking> bookings = bookingRepository
+            .findByIdInAndCompanyId(bookingIds, companyId);
+
+        List<BookingFlight> flights =
+            bookingFlightRepository.findByBookingIdIn(bookingIds);
+
+        List<BookingHotel> hotels =
+            bookingHotelRepository.findByBookingIdIn(bookingIds);
+
+        Map<Long, List<BookingFlight>> flightMap =
+            flights.stream().collect(Collectors.groupingBy(BookingFlight::getBookingId));
+
+        Map<Long, List<BookingHotel>> hotelMap =
+            hotels.stream().collect(Collectors.groupingBy(BookingHotel::getBookingId));
+
+        Map<Long, Booking> bookingMap =
+            bookings.stream().collect(Collectors.toMap(Booking::getId, b -> b));
+
+        List<BookingResponse> responses = bookingIds.stream()
+            .map(bookingMap::get)
+            .filter(Objects::nonNull)
+            .map(b -> toResponse(
                 b,
                 flightMap.getOrDefault(b.getId(), List.of()),
                 hotelMap.getOrDefault(b.getId(), List.of()),

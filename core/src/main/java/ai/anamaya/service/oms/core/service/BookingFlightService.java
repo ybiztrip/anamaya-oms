@@ -35,6 +35,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BookingFlightService {
 
+    private final BookingApprovalRepository bookingApprovalRepository;
     private final BookingCommonService bookingCommonService;
     private final BookingFlightRepository bookingFlightRepository;
     private final BookingFlightHistoryRepository bookingFlightHistoryRepository;
@@ -156,10 +157,21 @@ public class BookingFlightService {
                 .build();
         }
 
+        List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndBookingCode(booking.getId(), bookingCode);
         if (message != null) {
+            bookingApprovalRepository.saveAll(
+                bookingCommonService.buildApprovals(
+                    booking.getId(),
+                    BookingType.FLIGHT,
+                    bookingFlights.stream().map(BookingFlight::getId).toList(),
+                    ApprovalAction.APPROVED,
+                    0L,
+                    "SYSTEM",
+                    "Auto approve"
+                )
+            );
             bookingPubSubPublisher.publishBookingStatus(message);
         } else {
-            List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndBookingCode(booking.getId(), bookingCode);
             bookingCommonService.sendNotificationToApprover(callerContext, booking.getId() ,bookingFlights, null);
         }
 

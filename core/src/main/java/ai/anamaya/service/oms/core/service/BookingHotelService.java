@@ -14,13 +14,11 @@ import ai.anamaya.service.oms.core.dto.response.BookingResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingCheckRateResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingCreateResponse;
 import ai.anamaya.service.oms.core.dto.response.booking.hotel.HotelBookingDetailResponse;
-import ai.anamaya.service.oms.core.entity.Booking;
-import ai.anamaya.service.oms.core.entity.BookingHotel;
-import ai.anamaya.service.oms.core.entity.BookingPax;
-import ai.anamaya.service.oms.core.entity.CompanyConfig;
+import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.helper.json.JsonHelper;
+import ai.anamaya.service.oms.core.repository.BookingApprovalRepository;
 import ai.anamaya.service.oms.core.repository.BookingHotelRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
 import ai.anamaya.service.oms.core.repository.CompanyConfigRepository;
@@ -41,6 +39,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BookingHotelService {
 
+    private final BookingApprovalRepository bookingApprovalRepository;
     private final BookingHotelRepository bookingHotelRepository;
     private final BookingPaxRepository bookingPaxRepository;
     private final CompanyConfigRepository companyConfigRepository;
@@ -159,6 +158,17 @@ public class BookingHotelService {
         bookingPaxService.submitBookingPax(callerContext, bookingId, bookingCode, request.getPaxs());
 
         if (message != null) {
+            bookingApprovalRepository.saveAll(
+                bookingCommonService.buildApprovals(
+                    bookingId,
+                    BookingType.HOTEL,
+                    List.of(newHotel.getId()),
+                    ApprovalAction.APPROVED,
+                    0L,
+                    "SYSTEM",
+                    "Auto approve"
+                )
+            );
             bookingPubSubPublisher.publishBookingStatus(message);
         } else {
             bookingCommonService.sendNotificationToApprover(callerContext, bookingId,null, List.of(newHotel));

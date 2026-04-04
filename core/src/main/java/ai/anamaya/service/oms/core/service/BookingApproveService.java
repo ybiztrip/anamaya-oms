@@ -5,8 +5,6 @@ import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.pubsub.BookingStatusMessage;
 import ai.anamaya.service.oms.core.dto.request.BookingApproveRequest;
 import ai.anamaya.service.oms.core.dto.request.BookingRejectRequest;
-import ai.anamaya.service.oms.core.dto.request.booking.payment.FlightBookingPaymentRequest;
-import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubmitResponse;
 import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
@@ -14,6 +12,7 @@ import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +25,7 @@ import java.util.*;
 public class BookingApproveService {
 
     private final UserRepository userRepository;
+    private final BookingApprovalRepository bookingApprovalRepository;
     private final BookingCommonService bookingCommonService;
     private final BookingRepository bookingRepository;
     private final BookingFlightRepository bookingFlightRepository;
@@ -109,6 +109,18 @@ public class BookingApproveService {
                 bookingCommonService.sendNotificationToUser(user.get(), bookingId, bookingFlights, null);
             }
 
+            bookingApprovalRepository.saveAll(
+                bookingCommonService.buildApprovals(
+                    bookingId,
+                    BookingType.FLIGHT,
+                    bookingFlights.stream().map(BookingFlight::getId).toList(),
+                    ApprovalAction.APPROVED,
+                    userId,
+                    userEmail,
+                    request.getNotes()
+                )
+            );
+
         }
 
         if (request.getHotelIds() != null && !request.getHotelIds().isEmpty()) {
@@ -143,6 +155,18 @@ public class BookingApproveService {
                         .build()
                     )
                     .toList()
+            );
+
+            bookingApprovalRepository.saveAll(
+                bookingCommonService.buildApprovals(
+                    bookingId,
+                    BookingType.HOTEL,
+                    bookingHotels.stream().map(BookingHotel::getId).toList(),
+                    ApprovalAction.APPROVED,
+                    userId,
+                    userEmail,
+                    request.getNotes()
+                )
             );
         }
 
@@ -219,6 +243,18 @@ public class BookingApproveService {
                 h.setUpdatedBy(userId);
             });
             bookingFlightRepository.saveAll(bookingFlights);
+
+            bookingApprovalRepository.saveAll(
+                bookingCommonService.buildApprovals(
+                    bookingId,
+                    BookingType.FLIGHT,
+                    bookingFlights.stream().map(BookingFlight::getId).toList(),
+                    ApprovalAction.REJECTED,
+                    userId,
+                    userEmail,
+                    request.getNotes()
+                )
+            );
         }
 
         List<BookingHotel> bookingHotels = Collections.emptyList();;
@@ -242,6 +278,18 @@ public class BookingApproveService {
                 h.setUpdatedBy(userId);
             });
             bookingHotelRepository.saveAll(bookingHotels);
+
+            bookingApprovalRepository.saveAll(
+                bookingCommonService.buildApprovals(
+                    bookingId,
+                    BookingType.HOTEL,
+                    bookingHotels.stream().map(BookingHotel::getId).toList(),
+                    ApprovalAction.REJECTED,
+                    userId,
+                    userEmail,
+                    request.getNotes()
+                )
+            );
         }
 
         Optional<User> user = userRepository.findByEmail(booking.getContactEmail());
