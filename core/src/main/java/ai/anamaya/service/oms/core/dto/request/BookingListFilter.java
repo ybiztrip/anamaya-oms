@@ -20,5 +20,6 @@ public class BookingListFilter {
     private Long userId;
     private LocalDate dateFrom;
     private LocalDate dateTo;
+    private String phoneNumber;
     private Boolean needAttachment = false;;
 }

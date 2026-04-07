@@ -27,6 +27,10 @@ public class BookingSpecification {
                 predicates.add(cb.equal(root.get("createdBy"), filter.getUserId()));
             }
 
+            if (filter.getPhoneNumber() != null && !filter.getPhoneNumber().isBlank()) {
+                predicates.add(cb.equal(root.get("contactPhoneNumber"), filter.getPhoneNumber()));
+            }
+
             if (filter.getDateFrom() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(
                     root.get("createdAt"),
