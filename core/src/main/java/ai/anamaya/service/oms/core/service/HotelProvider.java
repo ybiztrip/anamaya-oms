@@ -17,6 +17,7 @@ public interface HotelProvider {
     ApiResponse<List<HotelResponse>> searchHotels(HotelSearchRequest request);
     HotelDiscoveryResponse discoveryHotels(CallerContext callerContext, HotelDiscoveryRequest request);
     ApiResponse<List<HotelRoomResponse>> getHotelRooms(HotelRoomRequest request);
+    HotelPropertyDetailResponse getHotelPropertyDetails(CallerContext callerContext, HotelPropertyDetailRequest request);
     HotelDiscoveryResponse getHotelPropertyRates(CallerContext callerContext, HotelPropertyRateRequest request);
     ApiResponse<List<HotelRateResponse>> getHotelRates(HotelRateRequest request);
     List<HotelRoomRateResponse> getHotelRoomRate(CallerContext callerContext, HotelRoomRateRequest request);

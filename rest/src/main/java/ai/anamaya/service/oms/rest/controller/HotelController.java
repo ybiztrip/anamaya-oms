@@ -82,6 +82,21 @@ public class HotelController {
         return hotelService.getHotelRates(source, request);
     }
 
+    @PostMapping("/property-detail")
+    public ApiResponse<HotelPropertyDetailResponse> getHotelPropertyDetail(
+        @RequestParam(required = false) String source,
+        @Valid @RequestBody HotelPropertyDetailRequest request
+    ) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        HotelPropertyDetailResponse response =  hotelService.getHotelPropertyDetail(userCallerContext, source, request);
+
+        return ApiResponse.success(response);
+    }
+
     @PostMapping("/property-rate")
     public ApiResponse<HotelDiscoveryResponse> getHotelPropertyRate(
             @RequestParam(required = false) String source,

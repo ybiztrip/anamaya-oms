@@ -27,6 +27,7 @@ public class BiztripHotelProvider implements HotelProvider {
     private final BiztripHotelPropertyRateService biztripHotelPropertyRateService;
     private final BiztripHotelRateService biztripHotelRateService;
     private final BiztripHotelRoomRateService biztripHotelRoomRateService;
+    private final BiztripHotelPropertyDetailService biztripHotelPropertyDetailService;
     private final BiztripHotelBookingCheckRateService biztripHotelBookingCheckRateService;
     private final BiztripHotelBookingCreateService biztripHotelBookingCreateService;
     private final BiztripHotelGetDetailService biztripHotelGetDetailService;
@@ -49,6 +50,11 @@ public class BiztripHotelProvider implements HotelProvider {
     @Override
     public ApiResponse<List<HotelRoomResponse>> getHotelRooms(HotelRoomRequest request) {
         return biztripHotelRoomService.getHotelRooms(request);
+    }
+
+    @Override
+    public HotelPropertyDetailResponse getHotelPropertyDetails(CallerContext callerContext, HotelPropertyDetailRequest request) {
+        return biztripHotelPropertyDetailService.propertyDetails(callerContext, request);
     }
 
     @Override
