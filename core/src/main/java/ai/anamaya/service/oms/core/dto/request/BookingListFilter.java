@@ -14,7 +14,9 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class BookingListFilter {
-
+    private int page;
+    private int size;
+    private String sort;
     private List<BookingStatus> statuses;
     private Long companyId;
     private Long userId;

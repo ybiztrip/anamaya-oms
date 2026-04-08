@@ -38,13 +38,13 @@ public class BookingService {
     private final CompanyConfigRepository companyConfigRepository;
     private final JsonHelper jsonHelper;
 
-    public Page<BookingResponse> getAll(int page, int size, String sort, BookingListFilter filter) {
+    public Page<BookingResponse> getAll(BookingListFilter filter) {
 
         // Sorting
         Sort sorting = Sort.by("createdAt").descending();
 
-        if (sort != null && !sort.isBlank()) {
-            String[] parts = sort.split(";");
+        if (filter.getSort() != null && !filter.getSort().isBlank()) {
+            String[] parts = filter.getSort().split(";");
             String field = parts[0];
 
             Sort.Direction direction =
@@ -55,7 +55,7 @@ public class BookingService {
             sorting = Sort.by(direction, field);
         }
 
-        Pageable pageable = PageRequest.of(page, size, sorting);
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize(), sorting);
 
         Specification<Booking> spec = BookingSpecification.filter(filter);
 

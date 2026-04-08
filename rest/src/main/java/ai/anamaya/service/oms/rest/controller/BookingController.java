@@ -66,9 +66,6 @@ public class BookingController {
 
     @GetMapping
     public ApiResponse<List<BookingResponseRest>> getAll(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(required = false) String sort,
         @ModelAttribute BookingListFilter filter
     ) {
 
@@ -92,7 +89,7 @@ public class BookingController {
             filter.setUserId(userId);
         }
 
-        var pageResult = bookingService.getAll(page, size, sort, filter);
+        var pageResult = bookingService.getAll(filter);
 
         List<BookingResponseRest> listRest = pageResult
             .getContent()
