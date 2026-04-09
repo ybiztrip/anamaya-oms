@@ -13,10 +13,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BookingApprovalRepository extends JpaRepository<BookingApproval, Long>, JpaSpecificationExecutor<BookingApproval> {
     @Query("""
-        SELECT DISTINCT ba.bookingId
-        FROM BookingApproval ba
-        WHERE ba.createdBy = :userId
-        AND ba.action = :action
+    SELECT ba.bookingId
+    FROM BookingApproval ba
+    WHERE ba.createdBy = :userId
+    AND ba.action = :action
+    GROUP BY ba.bookingId
+    ORDER BY MAX(ba.createdAt) DESC
     """)
     Page<Long> findMyApprovedBookingIds(
         @Param("userId") Long userId,

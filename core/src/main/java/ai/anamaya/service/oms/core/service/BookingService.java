@@ -148,7 +148,7 @@ public class BookingService {
             sorting = Sort.by(direction, parts[0]);
         }
 
-        Pageable pageable = PageRequest.of(page, size, sorting);
+        Pageable pageable = PageRequest.of(page, size);
 
         Page<Long> idPage = bookingApprovalRepository
             .findMyApprovedBookingIds(userId, ApprovalAction.APPROVED, pageable);

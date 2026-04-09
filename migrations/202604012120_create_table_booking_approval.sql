@@ -7,5 +7,7 @@ CREATE TABLE booking_approval (
     notes TEXT,
     created_by BIGINT NOT NULL,      -- userId
     created_by_name VARCHAR(255) NULL,  -- snapshot (email)
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT,
+    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
 );
