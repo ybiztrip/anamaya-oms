@@ -25,5 +25,6 @@ public class BookingFlightResponse {
     private LocalDateTime arrivalDatetime;
     private BookingFlightStatus status;
     private JsonNode metadata;
+    private String paymentUrl;
     private List<BookingPaxResponse> paxs;
 }

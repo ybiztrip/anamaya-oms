@@ -14,17 +14,25 @@ public class BiztripHotelBookingDetailResponseMapper {
                 .build();
         }
 
-        BiztripHotelBookingDetailResponse.Room room = source.getRooms().get(0);
+        BiztripHotelBookingDetailResponse.Room room =
+            (source.getRooms() != null && !source.getRooms().isEmpty())
+                ? source.getRooms().get(0)
+                : null;
+
+        var rates = room != null ? room.getTotalSettlementRates() : null;
+        BiztripHotelBookingDetailResponse.CC cc = source.getCcChargeDetail();
+
         return HotelBookingDetailResponse.builder()
             .bookingReference(source.getBookingId())
+            .paymentUrl(cc != null ? cc.getCcPaymentUrl() : null)
             .status(source.getBookingStatus())
-            .currency(room.getTotalSettlementRates().getDisplayCurrency())
-            .totalAmount(
-                new BigDecimal(room.getTotalSettlementRates().getDisplayAmount()).longValue()
-            )
-            .partnerAmount(
-                new BigDecimal(room.getTotalSettlementRates().getPartnerAmount()).longValue()
-            )
+            .currency(rates != null ? rates.getDisplayCurrency() : null)
+            .totalAmount(rates != null && rates.getDisplayAmount() != null
+                ? new BigDecimal(rates.getDisplayAmount()).longValue()
+                : 0L)
+            .partnerAmount(rates != null && rates.getPartnerAmount() != null
+                ? new BigDecimal(rates.getPartnerAmount()).longValue()
+                : 0L)
             .build();
 
     }

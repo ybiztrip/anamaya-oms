@@ -26,6 +26,7 @@ public class BookingHotelResponse {
     private Double partnerNettAmount;
     private String currency;
     private String specialRequest;
+    private String paymentUrl;
     private BookingHotelStatus status;
     private JsonNode metadata;
     private List<BookingPaxResponse> paxs;

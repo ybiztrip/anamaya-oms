@@ -221,6 +221,18 @@ public class BookingHotelService {
                     bookingDetail.getStatus()
                 );
 
+            BookingHotelStatus hotelPaymentStatus =
+                BookingHotelStatus.fromBookingPartnerStatus(
+                    bookingDetail.getStatus()
+                );
+
+            if (hotelPaymentStatus == BookingHotelStatus.WAITING_PAYMENT) {
+                hotel.setPartnerNettAmount(Double.valueOf(bookingDetail.getTotalAmount()));
+                hotel.setPartnerSellAmount(Double.valueOf(bookingDetail.getTotalAmount()));
+                hotel.setPaymentUrl(bookingDetail.getPaymentUrl());
+                hotel.setStatus(hotelPaymentStatus);
+            }
+
             if(hotelStatus == BookingHotelStatus.ISSUED) {
                 hotel.setPartnerNettAmount(Double.valueOf(bookingDetail.getTotalAmount()));
                 hotel.setPartnerSellAmount(Double.valueOf(bookingDetail.getTotalAmount()));

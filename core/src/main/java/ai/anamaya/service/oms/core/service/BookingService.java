@@ -443,6 +443,7 @@ public class BookingService {
             .destination(f.getDestination())
             .departureDatetime(f.getDepartureDatetime())
             .arrivalDatetime(f.getArrivalDatetime())
+            .paymentUrl(f.getPaymentUrl())
             .status(f.getStatus())
             .metadata(
                 f.getMetadata() != null
@@ -475,6 +476,7 @@ public class BookingService {
             .partnerNettAmount(h.getPartnerNettAmount())
             .currency(h.getCurrency())
             .specialRequest(h.getSpecialRequest())
+            .paymentUrl(h.getPaymentUrl())
             .status(h.getStatus())
             .metadata(
                 h.getMetadata() != null

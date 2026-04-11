@@ -1,7 +1,6 @@
 package ai.anamaya.service.oms.rest.dto.response;
 
-import ai.anamaya.service.oms.core.dto.response.BookingAttachmentResponse;
-import ai.anamaya.service.oms.rest.dto.request.BookingAttachmentRequestRest;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,6 +10,7 @@ import java.util.Map;
 
 @Data
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookingResponseRest {
     private Long id;
     private Long companyId;

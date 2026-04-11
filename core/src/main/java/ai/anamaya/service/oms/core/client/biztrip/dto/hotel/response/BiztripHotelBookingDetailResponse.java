@@ -13,6 +13,7 @@ public class BiztripHotelBookingDetailResponse {
     private String propertyId;
     private String checkInDate;
     private String checkOutDate;
+    private CC ccChargeDetail;
     private List<Room> rooms;
 
     @Data
@@ -26,6 +27,14 @@ public class BiztripHotelBookingDetailResponse {
         private String displayAmount;
         private String partnerCurrency;
         private String partnerAmount;
+    }
+
+    @Data
+    public static class CC {
+        private String ccPaymentUrl;
+        private String baseTransactionAmount;
+        private String transactionFee;
+        private String totalTransactionAmount;
     }
 }
 

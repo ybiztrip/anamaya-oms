@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.rest.dto.response;
 
 import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookingHotelResponseRest {
     private Long id;
     private Long companyId;
@@ -28,6 +30,7 @@ public class BookingHotelResponseRest {
     private Double partnerNettAmount;
     private String currency;
     private String specialRequest;
+    private String paymentUrl;
     private BookingHotelStatus status;
     private JsonNode metadata;
     private List<BookingPaxResponseRest> paxs;

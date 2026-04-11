@@ -86,11 +86,12 @@ public class BiztripHotelBookingSubmitRequestMapper {
         BiztripHotelBookingCreateRequest.UserPayment payment =
             new BiztripHotelBookingCreateRequest.UserPayment();
         payment.setUserPayment(source.getUserPayment().getUserPayment());
+
         if(payment.getUserPayment() == BookingPaymentMethod.CUST_CREDIT_CARD) {
             BiztripHotelBookingCreateRequest.CreditCardDetail creditCardDetail =
                 new BiztripHotelBookingCreateRequest.CreditCardDetail();
-            creditCardDetail.setCardName(source.getPaymentReference1());
-            creditCardDetail.setLastSixDigitNumber(source.getPaymentReference2());
+            creditCardDetail.setCardName(source.getUserPayment().getCreditCardDetail().getCardName());
+            creditCardDetail.setLastSixDigitNumber(source.getUserPayment().getCreditCardDetail().getLastSixDigitNumber());
             payment.setCreditCardDetail(creditCardDetail);
         }
 

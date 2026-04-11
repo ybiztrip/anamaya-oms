@@ -14,6 +14,7 @@ public class HotelBookingDetailResponse {
     private Boolean isCancel;
     private String bookingId;
     private String bookingReference;
+    private String paymentUrl;
     private String status;
     private String currency;
     private Long totalAmount;

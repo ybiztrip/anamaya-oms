@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.rest.dto.response;
 import ai.anamaya.service.oms.core.enums.PaxGender;
 import ai.anamaya.service.oms.core.enums.PaxTitle;
 import ai.anamaya.service.oms.core.enums.PaxType;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookingPaxResponseRest {
     private Long id;
     private Long bookingId;
