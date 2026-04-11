@@ -6,6 +6,8 @@ public enum BookingHotelStatus {
     APPROVED,
     BOOKED,
     WAITING_PAYMENT,
+    PAID,
+    ISSUING,
     ISSUED,
     CANCELLED;
 
@@ -15,9 +17,11 @@ public enum BookingHotelStatus {
         }
 
         return switch (status.toUpperCase()) {
-            case "ISSUED" -> ISSUED;
             case "ON_PROCESS_BOOKING" -> WAITING_PAYMENT;
-            case "CANCELLED" -> CANCELLED;
+            case "PAID" -> PAID;
+            case "WAITING_FOR_ISSUANCE", "ISSUING" -> ISSUING;
+            case "ISSUED" -> ISSUED;
+            case "CANCELLED", "BOOKING_EXPIRED", "PAYMENT_EXPIRED", "FAILED" -> CANCELLED;
             default -> CREATED;
         };
     }
@@ -33,23 +37,22 @@ public enum BookingHotelStatus {
     }
 
     public static boolean isValidToUpdate(BookingHotelStatus newStatus, BookingHotelStatus oldStatus) {
-        switch (newStatus) {
-            case CANCELLED ->  {
-                return true;
-            }
-            case ISSUED -> {
-                if(oldStatus == CANCELLED) {
-                    return false;
-                }
-            }
-            case BOOKED -> {
-                if(oldStatus == CREATED || oldStatus == APPROVED) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return switch (newStatus) {
+            case CANCELLED -> true;
+            case PAID ->
+                oldStatus != CANCELLED &&
+                    oldStatus != ISSUING &&
+                    oldStatus != ISSUED;
+            case ISSUING ->
+                oldStatus != CANCELLED &&
+                    oldStatus != ISSUED;
+            case ISSUED ->
+                oldStatus != CANCELLED;
+            case BOOKED ->
+                oldStatus == CREATED ||
+                    oldStatus == APPROVED;
+            default -> false;
+        };
     }
 
 }

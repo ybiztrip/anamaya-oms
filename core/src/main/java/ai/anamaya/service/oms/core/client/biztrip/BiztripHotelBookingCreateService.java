@@ -81,7 +81,7 @@ public class BiztripHotelBookingCreateService {
                 "-H \"Content-Type: application/json\" \\\n" +
                 "-d '" + json + "'";
 
-            log.error("Biztrip Hotel Request as cURL:\n{}", curl);
+            log.info("Biztrip Hotel Request as cURL:\n{}", curl);
 
         } catch (Exception ex) {
             log.error("Failed to log Biztrip hotel cURL request", ex);

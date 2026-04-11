@@ -34,7 +34,9 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final BookingPaxRepository bookingPaxRepository;
     private final BookingFlightRepository bookingFlightRepository;
+    private final BookingFlightHistoryRepository bookingFlightHistoryRepository;
     private final BookingHotelRepository bookingHotelRepository;
+    private final BookingHotelHistoryRepository bookingHotelHistoryRepository;
     private final CompanyConfigRepository companyConfigRepository;
     private final JsonHelper jsonHelper;
 
@@ -265,12 +267,16 @@ public class BookingService {
         switch (request.getType()) {
 
             case FLIGHT -> {
-                BookingFlightStatus statusEnum = BookingFlightStatus.fromString(status);
+                BookingFlightStatus statusEnum = BookingFlightStatus.fromBookingPartnerStatus(status);
                 if (statusEnum == null) {
                     throw new IllegalArgumentException("Invalid flight status");
                 }
 
                 List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingCode(request.getPartnerBookingId());
+
+                if (bookingFlights == null || bookingFlights.isEmpty()) {
+                    throw new IllegalArgumentException("Booking code not found");
+                }
 
                 if(!BookingFlightStatus.isValidToUpdate(statusEnum, bookingFlights.get(0).getStatus())) {
                     throw new IllegalArgumentException("Invalid new status");
@@ -280,15 +286,30 @@ public class BookingService {
                     request.getPartnerBookingId(),
                     statusEnum
                 );
+
+                if (statusEnum != bookingFlights.get(0).getStatus()) {
+                    bookingFlightHistoryRepository.save(
+                        BookingFlightHistory.builder()
+                            .bookingId(bookingFlights.get(0).getBookingId())
+                            .bookingCode(bookingFlights.get(0).getBookingCode())
+                            .status(statusEnum)
+                            .data(request)
+                            .build()
+                    );
+                }
             }
 
             case HOTEL -> {
-                BookingHotelStatus statusEnum = BookingHotelStatus.fromString(status);
+                BookingHotelStatus statusEnum = BookingHotelStatus.fromBookingPartnerStatus(status);
                 if (statusEnum == null) {
                     throw new IllegalArgumentException("Invalid hotel status");
                 }
 
                 List<BookingHotel> bookingHotels = bookingHotelRepository.findByBookingCode(request.getPartnerBookingId());
+
+                if (bookingHotels == null || bookingHotels.isEmpty()) {
+                    throw new IllegalArgumentException("Booking code not found");
+                }
 
                 if(!BookingHotelStatus.isValidToUpdate(statusEnum, bookingHotels.get(0).getStatus())) {
                     throw new IllegalArgumentException("Invalid new status");
@@ -298,6 +319,17 @@ public class BookingService {
                     request.getPartnerBookingId(),
                     statusEnum
                 );
+
+                if (statusEnum != bookingHotels.get(0).getStatus()) {
+                    bookingHotelHistoryRepository.save(
+                        BookingHotelHistory.builder()
+                            .bookingId(bookingHotels.get(0).getBookingId())
+                            .bookingCode(bookingHotels.get(0).getBookingCode())
+                            .status(statusEnum)
+                            .data(request)
+                            .build()
+                    );
+                }
             }
 
             default -> {

@@ -80,7 +80,7 @@ public class BiztripHotelBookingCheckRateService {
                 "-H \"Content-Type: application/json\" \\\n" +
                 "-d '" + json + "'";
 
-            log.error("Biztrip RateCheck Request as cURL:\n{}", curl);
+            log.info("Biztrip RateCheck Request as cURL:\n{}", curl);
         } catch (Exception e) {
             log.error("Failed to log rate check cURL", e);
         }

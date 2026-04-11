@@ -7,6 +7,7 @@ public enum BookingFlightStatus {
     REJECTED,
     CANCELLED,
     WAITING_PAYMENT,
+    PAID,
     ISSUING,
     ISSUED,
     ISSUANCE_FAILED;
@@ -19,9 +20,11 @@ public enum BookingFlightStatus {
         return switch (status.toUpperCase()) {
             case "ON_PROCESS_BOOKING" -> CREATED;
             case "OK", "BOOK", "BOOKED", "BOOKED_DETAIL_CHANGED" -> BOOKED;
-            case "ISSUING" -> ISSUING;
+            case "PAID" -> PAID;
+            case "WAITING_FOR_ISSUANCE", "ISSUING" -> ISSUING;
             case "ISSUED" -> ISSUED;
             case "ISSUANCE_FAILED" -> ISSUANCE_FAILED;
+            case "BOOKING_EXPIRED", "PAYMENT_EXPIRED", "FAILED" -> CANCELLED;
             default -> CREATED;
         };
     }
@@ -48,23 +51,22 @@ public enum BookingFlightStatus {
     }
 
     public static boolean isValidToUpdate(BookingFlightStatus newStatus, BookingFlightStatus oldStatus) {
-        switch (newStatus) {
-            case CANCELLED ->  {
-                return true;
-            }
-            case ISSUED -> {
-                if(oldStatus == CANCELLED) {
-                    return false;
-                }
-            }
-            case BOOKED -> {
-                if(oldStatus == APPROVED) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return switch (newStatus) {
+            case CANCELLED -> true;
+            case PAID ->
+                oldStatus != CANCELLED &&
+                    oldStatus != ISSUING &&
+                    oldStatus != ISSUED;
+            case ISSUING ->
+                oldStatus != CANCELLED &&
+                    oldStatus != ISSUED;
+            case ISSUED ->
+                oldStatus != CANCELLED;
+            case BOOKED ->
+                oldStatus == CREATED ||
+                    oldStatus == APPROVED;
+            default -> false;
+        };
     }
 
 }

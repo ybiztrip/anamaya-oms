@@ -284,6 +284,7 @@ public class BookingFlightService {
         bookingFlightHistoryRepository.save(
             BookingFlightHistory.builder()
                 .bookingId(booking.getId())
+                .bookingCode(bookingFlights.get(0).getBookingCode())
                 .status(flightStatus)
                 .data(response)
                 .build()

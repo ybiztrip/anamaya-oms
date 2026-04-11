@@ -88,7 +88,8 @@ CREATE TABLE booking_flight_history (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by BIGINT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_booking_flight_history_booking_id (booking_id)
+    INDEX idx_booking_flight_history_booking_id (booking_id),
+    INDEX idx_booking_flight_history_booking_code (booking_code)
 );
 
 CREATE TABLE booking_hotel (
@@ -117,6 +118,20 @@ CREATE TABLE booking_hotel (
     updated_by BIGINT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_booking_hotel_booking_id (booking_id)
+);
+
+CREATE TABLE booking_hotel_history (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    booking_id BIGINT NOT NULL,
+    booking_code VARCHAR(100),
+    status VARCHAR(20),
+    data text,
+    created_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_booking_hotel_history_booking_id (booking_id),
+    INDEX idx_booking_hotel_history_booking_code (booking_code)
 );
 
 CREATE INDEX idx_booking_status ON booking(status);
