@@ -362,7 +362,9 @@ public class BookingService {
                 .contactDob(booking.getContactDob())
                 .additionalInfo(booking.getAdditionalInfo())
                 .clientAdditionalInfo(booking.getClientAdditionalInfo())
-                .status(booking.getStatus());
+                .status(booking.getStatus())
+                .createdAt(booking.getCreatedAt())
+                .createdAt(booking.getCreatedAt());
 
         if (detail) {
             builder.flights(
@@ -477,6 +479,7 @@ public class BookingService {
             .arrivalDatetime(f.getArrivalDatetime())
             .paymentUrl(f.getPaymentUrl())
             .status(f.getStatus())
+            .createdAt(f.getCreatedAt())
             .metadata(
                 f.getMetadata() != null
                     ? jsonHelper.toJsonNode(f.getMetadata())
@@ -510,6 +513,7 @@ public class BookingService {
             .specialRequest(h.getSpecialRequest())
             .paymentUrl(h.getPaymentUrl())
             .status(h.getStatus())
+            .createdAt(h.getCreatedAt())
             .metadata(
                 h.getMetadata() != null
                     ? jsonHelper.toJsonNode(h.getMetadata())

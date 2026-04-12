@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ public class BookingResponseRest {
     private Map<String, Object> additionalInfo;
     private Map<String, Object> clientAdditionalInfo;
     private String status;
+    private LocalDateTime createdAt;
 
     private List<BookingAttachmentResponseRest> attachments;
     private List<BookingFlightResponseRest> flights;

@@ -4,6 +4,7 @@ import ai.anamaya.service.oms.core.enums.BookingStatus;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ public class BookingResponse {
     private Map<String, Object> additionalInfo;
     private Map<String, Object> clientAdditionalInfo;
     private BookingStatus status;
+    private LocalDateTime createdAt;
 
     private List<BookingAttachmentResponse> attachments;
     private List<BookingFlightResponse> flights;

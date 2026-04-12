@@ -30,5 +30,7 @@ public class BookingFlightResponseRest {
     private String paymentUrl;
     private BookingFlightStatus status;
     private JsonNode metadata;
+    private LocalDateTime createdAt;
+
     private List<BookingPaxResponseRest> paxs;
 }

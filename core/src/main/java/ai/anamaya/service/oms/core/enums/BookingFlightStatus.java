@@ -24,7 +24,7 @@ public enum BookingFlightStatus {
             case "WAITING_FOR_ISSUANCE", "ISSUING" -> ISSUING;
             case "ISSUED" -> ISSUED;
             case "ISSUANCE_FAILED" -> ISSUANCE_FAILED;
-            case "BOOKING_EXPIRED", "PAYMENT_EXPIRED", "FAILED" -> CANCELLED;
+            case "CANCEL", "BOOKING_EXPIRED", "PAYMENT_EXPIRED", "FAILED" -> CANCELLED;
             default -> CREATED;
         };
     }

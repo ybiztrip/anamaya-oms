@@ -4,6 +4,7 @@ import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -29,5 +30,7 @@ public class BookingHotelResponse {
     private String paymentUrl;
     private BookingHotelStatus status;
     private JsonNode metadata;
+    private LocalDateTime createdAt;
+
     private List<BookingPaxResponse> paxs;
 }
