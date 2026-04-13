@@ -20,6 +20,7 @@ public class BookingFlightResponseRest {
     private Long id;
     private Long companyId;
     private Long bookingId;
+    private String bookingCode;
     private Short type;
     private String clientSource;
     private String itemId;
