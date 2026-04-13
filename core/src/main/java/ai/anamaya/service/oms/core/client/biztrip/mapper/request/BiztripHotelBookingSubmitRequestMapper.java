@@ -72,7 +72,11 @@ public class BiztripHotelBookingSubmitRequestMapper {
         customer.setFirstName(source.getCustomerInfo().getFirstName());
         customer.setLastName(source.getCustomerInfo().getLastName());
         customer.setEmail(source.getCustomerInfo().getEmail());
-        customer.setPhone(source.getCustomerInfo().getPhone());
+        customer.setPhone(
+            source.getCustomerInfo().getPhone() != null
+                ? source.getCustomerInfo().getPhone().replaceFirst("^\\+", "")
+                : null
+        );
         target.setCustomerInfo(customer);
 
         // Payment
