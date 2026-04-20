@@ -12,4 +12,6 @@ public interface CompanyConfigRepository extends JpaRepository<CompanyConfig, Lo
     List<CompanyConfig> findAllByCompanyId(Long companyId);
 
     List<CompanyConfig> findAllByCompanyIdOrderByCodeAsc(Long companyId);
+
+    List<CompanyConfig> findAllByCompanyIdAndIsVisibleOrderByCodeAsc(Long companyId, Short isVisible);
 }

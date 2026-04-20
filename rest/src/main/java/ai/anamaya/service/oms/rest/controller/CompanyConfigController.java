@@ -1,10 +1,10 @@
 package ai.anamaya.service.oms.rest.controller;
 
 import ai.anamaya.service.oms.core.context.UserCallerContext;
-import ai.anamaya.service.oms.core.dto.request.CompanyConfigUpdateRequest;
+import ai.anamaya.service.oms.core.dto.request.CompanyConfigBatchUpdateRequest;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.CompanyConfigService;
-import ai.anamaya.service.oms.rest.dto.request.CompanyConfigUpdateRequestRest;
+import ai.anamaya.service.oms.rest.dto.request.CompanyConfigBatchUpdateRequestRest;
 import ai.anamaya.service.oms.rest.dto.response.ApiResponse;
 import ai.anamaya.service.oms.rest.dto.response.CompanyConfigResponseRest;
 import ai.anamaya.service.oms.rest.mapper.CompanyConfigMapper;
@@ -32,14 +32,13 @@ public class CompanyConfigController {
     }
 
     @PreAuthorize("hasRole('COMPANY_ADMIN')")
-    @PutMapping("/{code}")
-    public ApiResponse<CompanyConfigResponseRest> update(
-        @PathVariable String code,
-        @Valid @RequestBody CompanyConfigUpdateRequestRest requestRest
+    @PutMapping
+    public ApiResponse<List<CompanyConfigResponseRest>> updateBatch(
+        @Valid @RequestBody CompanyConfigBatchUpdateRequestRest requestRest
     ) {
-        CompanyConfigUpdateRequest requestCore = companyConfigMapper.toCore(requestRest);
-        var updated = companyConfigService.updateValues(callerContext(), code, requestCore);
-        return ApiResponse.success(companyConfigMapper.toRest(updated));
+        CompanyConfigBatchUpdateRequest requestCore = companyConfigMapper.toCore(requestRest);
+        var updated = companyConfigService.updateBatch(callerContext(), requestCore);
+        return ApiResponse.success(companyConfigMapper.toRestList(updated));
     }
 
     private UserCallerContext callerContext() {
