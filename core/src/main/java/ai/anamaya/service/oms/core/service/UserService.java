@@ -13,6 +13,7 @@ import ai.anamaya.service.oms.core.repository.UserRepository;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 
 import ai.anamaya.service.oms.core.specification.UserSpecification;
+import ai.anamaya.service.oms.core.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -56,6 +58,8 @@ public class UserService {
         if (repository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
+
+        var pass = passwordEncoder.encode(request.getPassword());
 
         User user = User.builder()
             .companyId(request.getCompanyId())
@@ -94,7 +98,6 @@ public class UserService {
             .orElseThrow(() -> new NotFoundException("User not found"));
 
         user.setCompanyId(request.getCompanyId());
-        user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setGender(request.getGender());
@@ -116,10 +119,19 @@ public class UserService {
     }
 
     @Transactional
-    public void updatePassword(UpdatePasswordRequest request) {
+    public void updatePassword(CallerContext callerContext, UpdatePasswordRequest request) {
+        boolean isCompanyAdmin = SecurityUtil.hasRole("COMPANY_ADMIN");
+
+        if (!isCompanyAdmin && !Objects.equals(callerContext.userId(), request.getUserId())) {
+            throw new IllegalArgumentException("Invalid user");
+        }
 
         User user = repository.findById(request.getUserId())
             .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (!Objects.equals(user.getCompanyId(), callerContext.companyId())) {
+            throw new IllegalArgumentException("Invalid user");
+        }
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Old password is incorrect");

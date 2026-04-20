@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.rest.controller;
 
+import ai.anamaya.service.oms.core.context.UserCallerContext;
 import ai.anamaya.service.oms.core.dto.request.UpdatePasswordRequest;
 import ai.anamaya.service.oms.core.dto.request.UserCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.UserGetListRequest;
@@ -44,12 +45,20 @@ public class UserController {
         return ApiResponse.success(mapper.toRest(result));
     }
 
-    @PutMapping("/update-password")
-    public ApiResponse<String> updatePassword(@Valid @RequestBody UpdatePasswordRequestRest reqRest) {
+    @PutMapping("/{id}/update-password")
+    public ApiResponse<String> updatePassword(
+        @PathVariable Long id,
+        @Valid @RequestBody UpdatePasswordRequestRest reqRest
+    ) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
+        reqRest.setUserId(id);
         UpdatePasswordRequest reqCore = mapper.toCore(reqRest);
 
-        service.updatePassword(reqCore);
+        service.updatePassword(userCallerContext, reqCore);
 
         return ApiResponse.success("Password updated successfully");
     }
@@ -84,8 +93,8 @@ public class UserController {
         Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
         Long userIdFromToken = jwtUtils.getUserIdFromToken();
 
-        boolean isSuperAdmin = SecurityUtil.hasRole("ROLE_SUPER_ADMIN");
-        boolean isAdmin = SecurityUtil.hasRole("ROLE_COMPANY_ADMIN");
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
+        boolean isAdmin = SecurityUtil.hasRole("COMPANY_ADMIN");
         if (!isSuperAdmin) {
             requestRest.setCompanyId(companyIdFromToken);
         }

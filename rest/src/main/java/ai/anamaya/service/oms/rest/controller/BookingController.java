@@ -72,8 +72,8 @@ public class BookingController {
         Long userId = jwtUtils.getUserIdFromToken();
         Long companyId = jwtUtils.getCompanyIdFromToken();
 
-        boolean isCompanyAdmin = SecurityUtil.hasRole("ROLE_COMPANY_ADMIN");
-        boolean isSuperAdmin = SecurityUtil.hasRole("ROLE_SUPER_ADMIN");
+        boolean isCompanyAdmin = SecurityUtil.hasRole("COMPANY_ADMIN");
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
 
         filter.setCompanyId(companyId);
 
@@ -202,7 +202,7 @@ public class BookingController {
         @RequestParam(required = false) String sort,
         @ModelAttribute BookingFlightListFilter filter
     ) {
-        boolean isSuperAdmin = SecurityUtil.hasRole("ROLE_SUPER_ADMIN");
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
 
         if (!isSuperAdmin) {
             Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
@@ -249,7 +249,7 @@ public class BookingController {
         @RequestParam(required = false) String sort,
         @ModelAttribute BookingHotelListFilter filter
     ) {
-        boolean isSuperAdmin = SecurityUtil.hasRole("ROLE_SUPER_ADMIN");
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
 
         if (!isSuperAdmin) {
             Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();

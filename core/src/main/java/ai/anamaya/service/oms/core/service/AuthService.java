@@ -3,7 +3,6 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.dto.request.LoginExternalRequest;
 import ai.anamaya.service.oms.core.dto.request.LoginRequest;
 import ai.anamaya.service.oms.core.dto.response.LoginResponse;
-import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.entity.User;
 import ai.anamaya.service.oms.core.repository.UserRepository;
 import ai.anamaya.service.oms.core.exception.NotFoundException;

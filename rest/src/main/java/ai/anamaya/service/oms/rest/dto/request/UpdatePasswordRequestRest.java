@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UpdatePasswordRequestRest {
 
-    @NotNull
     private Long userId;
 
     @NotBlank
