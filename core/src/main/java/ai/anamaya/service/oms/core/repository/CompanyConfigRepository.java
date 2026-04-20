@@ -8,5 +8,8 @@ import java.util.List;
 
 public interface CompanyConfigRepository extends JpaRepository<CompanyConfig, Long> {
     Optional<CompanyConfig> findByCompanyIdAndCode(Long companyId, String code);
+
     List<CompanyConfig> findAllByCompanyId(Long companyId);
+
+    List<CompanyConfig> findAllByCompanyIdOrderByCodeAsc(Long companyId);
 }
