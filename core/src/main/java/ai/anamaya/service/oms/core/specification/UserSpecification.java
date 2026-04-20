@@ -37,6 +37,12 @@ public class UserSpecification {
                 );
             }
 
+            if (filter.getStatus() != null) {
+                predicates.add(
+                    cb.equal(root.get("status"), filter.getStatus())
+                );
+            }
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
