@@ -5,14 +5,15 @@ import ai.anamaya.service.oms.core.dto.request.UpdatePasswordRequest;
 import ai.anamaya.service.oms.core.dto.request.UserCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.UserGetListRequest;
 import ai.anamaya.service.oms.core.dto.request.UserUpdateRequest;
+import ai.anamaya.service.oms.core.dto.request.UserRoleItemRequest;
 import ai.anamaya.service.oms.core.dto.response.UserResponse;
+import ai.anamaya.service.oms.core.dto.response.UserRoleResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.UserService;
 
 import ai.anamaya.service.oms.core.util.SecurityUtil;
 import ai.anamaya.service.oms.rest.dto.request.*;
-import ai.anamaya.service.oms.rest.dto.response.UserResponseRest;
-import ai.anamaya.service.oms.rest.dto.response.ApiResponse;
+import ai.anamaya.service.oms.rest.dto.response.*;
 import ai.anamaya.service.oms.rest.mapper.UserMapper;
 
 import jakarta.validation.Valid;
@@ -22,8 +23,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/v1/users")
@@ -126,5 +125,36 @@ public class UserController {
     public ApiResponse<String> delete(@PathVariable Long id) {
         service.delete(id);
         return ApiResponse.success("User deleted successfully");
+    }
+
+    @GetMapping("/{id}/roles")
+    public ApiResponse<List<UserRoleResponseRest>> getUserRoles(@PathVariable Long id) {
+        List<UserRoleResponse> result = service.getUserRoles(id);
+        
+        List<UserRoleResponseRest> resultRest = result.stream()
+                .map(mapper::toRest)
+                .toList();
+
+        return ApiResponse.success(resultRest);
+    }
+
+    @PreAuthorize("hasAnyRole('COMPANY_ADMIN')")
+    @PostMapping("/{id}/roles")
+    public ApiResponse<String> updateUserRoles(
+            @PathVariable Long id,
+            @Valid @RequestBody List<UserRoleItemRequestRest> requestRests
+    ) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        List<UserRoleItemRequest> requests = requestRests.stream()
+                .map(mapper::toCore)
+                .toList();
+
+        service.updateUserRoles(userCallerContext, id, requests);
+
+        return ApiResponse.success("User roles updated successfully");
     }
 }

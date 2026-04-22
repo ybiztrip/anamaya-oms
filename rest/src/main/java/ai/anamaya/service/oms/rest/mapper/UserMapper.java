@@ -10,7 +10,12 @@ import ai.anamaya.service.oms.rest.dto.request.UserCreateRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.UserGetListRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.UserUpdateRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.UpdatePasswordRequestRest;
+import ai.anamaya.service.oms.rest.dto.request.UserRoleItemRequestRest;
+import ai.anamaya.service.oms.rest.dto.response.UserRoleResponseRest;
 import ai.anamaya.service.oms.rest.dto.response.UserResponseRest;
+
+import ai.anamaya.service.oms.core.dto.request.UserRoleItemRequest;
+import ai.anamaya.service.oms.core.dto.response.UserRoleResponse;
 
 import org.mapstruct.Mapper;
 
@@ -25,4 +30,7 @@ public interface UserMapper {
 
     UserGetListRequest toCore(UserGetListRequestRest dto);
     UserResponseRest toRest(UserResponse core);
+
+    UserRoleItemRequest toCore(UserRoleItemRequestRest dto);
+    UserRoleResponseRest toRest(UserRoleResponse core);
 }

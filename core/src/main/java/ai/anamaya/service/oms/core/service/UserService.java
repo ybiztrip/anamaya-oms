@@ -10,6 +10,12 @@ import ai.anamaya.service.oms.core.dto.response.UserResponse;
 import ai.anamaya.service.oms.core.entity.User;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.UserRepository;
+import ai.anamaya.service.oms.core.dto.request.UserRoleItemRequest;
+import ai.anamaya.service.oms.core.dto.response.UserRoleResponse;
+import ai.anamaya.service.oms.core.entity.UserRole;
+import ai.anamaya.service.oms.core.entity.Role;
+import ai.anamaya.service.oms.core.repository.UserRoleRepository;
+import ai.anamaya.service.oms.core.repository.RoleRepository;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 
 import ai.anamaya.service.oms.core.specification.UserSpecification;
@@ -38,6 +44,8 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final ChatEngineService chatEngineClient;
+    private final UserRoleRepository userRoleRepository;
+    private final RoleRepository roleRepository;
 
     @Transactional
     public UserResponse create(UserCreateRequest request) {
@@ -217,5 +225,55 @@ public class UserService {
             .updatedBy(user.getUpdatedBy())
             .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null)
             .build();
+    }
+
+    public List<UserRoleResponse> getUserRoles(Long userId) {
+        if (!repository.existsById(userId)) {
+            throw new NotFoundException("User not found");
+        }
+        
+        List<UserRole> userRoles = userRoleRepository.findByUserId(userId);
+        return userRoles.stream().map(ur -> UserRoleResponse.builder()
+                .id(ur.getId())
+                .roleId(ur.getRole().getId())
+                .roleName(ur.getRole().getName())
+                .roleCode(ur.getRole().getCode())
+                .build()).toList();
+    }
+
+    @Transactional
+    public void updateUserRoles(CallerContext callerContext, Long userId, List<UserRoleItemRequest> requests) {
+
+        boolean isCompanyAdmin = SecurityUtil.hasRole("COMPANY_ADMIN");
+
+        User user = repository.findById(userId)
+            .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if (!Objects.equals(user.getCompanyId(), callerContext.companyId())) {
+            throw new NotFoundException("User not found");
+        }
+
+        if(!isCompanyAdmin && !Objects.equals(user.getId(), userId)) {
+            throw new NotFoundException("User not found");
+        }
+
+        for (UserRoleItemRequest req : requests) {
+            Optional<UserRole> existing = userRoleRepository.findByUserIdAndRoleId(userId, req.getRoleId());
+            
+            if (Boolean.TRUE.equals(req.getIsDelete())) {
+                existing.ifPresent(userRoleRepository::delete);
+            } else {
+                if (existing.isEmpty()) {
+                    Role role = roleRepository.findById(req.getRoleId())
+                        .orElseThrow(() -> new NotFoundException("Role not found"));
+                    
+                    UserRole newUserRole = UserRole.builder()
+                            .user(user)
+                            .role(role)
+                            .build();
+                    userRoleRepository.save(newUserRole);
+                }
+            }
+        }
     }
 }
