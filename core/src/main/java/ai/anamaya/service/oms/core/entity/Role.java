@@ -18,4 +18,7 @@ public class Role extends BaseEntity {
 
     @Column(nullable = false, length = 50)
     private String code;
+
+    @Column(name = "is_super_admin", nullable = false, length = 1)
+    private String isSuperAdmin;
 }
