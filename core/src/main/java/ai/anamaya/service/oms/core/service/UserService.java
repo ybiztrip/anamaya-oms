@@ -153,7 +153,12 @@ public class UserService {
         User user = repository.findById(id)
             .orElseThrow(() -> new NotFoundException("User not found"));
 
-        return toResponse(user);
+        UserResponse response = toResponse(user);
+
+        List<UserRoleResponse> roles = getUserRoles(id);
+        response.setRoles(roles);
+
+        return response;
     }
 
     public Page<UserResponse> getAll(int page, int size, String sort, UserGetListRequest filter) {

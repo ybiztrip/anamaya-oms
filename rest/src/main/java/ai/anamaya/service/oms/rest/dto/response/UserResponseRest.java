@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -37,4 +38,6 @@ public class UserResponseRest {
     private String createdAt;
     private Long updatedBy;
     private String updatedAt;
+
+    private List<UserRoleResponseRest> roles;
 }

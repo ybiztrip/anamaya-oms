@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -34,4 +35,6 @@ public class UserResponse {
     private String createdAt;
     private Long updatedBy;
     private String updatedAt;
+
+    private List<UserRoleResponse> roles;
 }
