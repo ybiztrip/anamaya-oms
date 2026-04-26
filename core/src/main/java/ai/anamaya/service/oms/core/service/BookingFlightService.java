@@ -186,6 +186,9 @@ public class BookingFlightService {
         if (bookingFlights.get(0).getPaymentMethod() == BookingPaymentMethod.DEPOSIT) {
             flightStatus = BookingFlightStatus.ISSUING;
             bookingCommonService.bookingDebitBalance(callerContext, booking, bookingFlights, null);
+        } else if (bookingFlights.get(0).getPaymentMethod() == BookingPaymentMethod.CREDIT) {
+            flightStatus = BookingFlightStatus.ISSUING;
+            bookingCommonService.bookingDebitCredit(callerContext, booking, bookingFlights, null);
         } else {
             flightStatus = BookingFlightStatus.WAITING_PAYMENT;
         }
@@ -242,7 +245,11 @@ public class BookingFlightService {
 
         if(status == BookingFlightStatus.CANCELLED) {
             bookingFlightRepository.updateStatusByBookingReferences(bookingId, bookingReferenceIds, BookingFlightStatus.CANCELLED);
-            bookingCommonService.bookingRollbackBalance(callerContext, booking, bookingFlights, null);
+            if(bookingFlights.get(0).getPaymentMethod() == BookingPaymentMethod.DEPOSIT) {
+                bookingCommonService.bookingRollbackBalance(callerContext, booking, bookingFlights, null);
+            } else if(bookingFlights.get(0).getPaymentMethod() == BookingPaymentMethod.CREDIT) {
+                bookingCommonService.bookingRollbackCredit(callerContext, booking, bookingFlights, null);
+            }
         }
     }
 

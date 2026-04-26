@@ -237,13 +237,16 @@ public class BookingHotelService {
                 hotel.setPartnerNettAmount(Double.valueOf(bookingDetail.getTotalAmount()));
                 hotel.setPartnerSellAmount(Double.valueOf(bookingDetail.getTotalAmount()));
                 hotel.setStatus(hotelStatus);
-                bookingCommonService.bookingDebitBalance(callerContext, booking, null, hotel);
                 continue;
             }
 
             if(hotelStatus == BookingHotelStatus.CANCELLED) {
                 hotel.setStatus(hotelStatus);
-                bookingCommonService.bookingRollbackBalance(callerContext, booking, null, hotel);
+                if(hotel.getPaymentMethod().equals(BookingPaymentMethod.DEPOSIT)) {
+                    bookingCommonService.bookingRollbackBalance(callerContext, booking, null, hotel);
+                } else if(hotel.getPaymentMethod().equals(BookingPaymentMethod.CREDIT)) {
+                    bookingCommonService.bookingRollbackCredit(callerContext, booking, null, hotel);
+                }
                 continue;
             }
 
@@ -255,7 +258,12 @@ public class BookingHotelService {
 
             if(rateResponse.getIsCancel()) {
                 hotel.setStatus(BookingHotelStatus.CANCELLED);
-                bookingCommonService.bookingRollbackBalance(callerContext, booking, null, hotel);
+                if(hotel.getPaymentMethod().equals(BookingPaymentMethod.DEPOSIT)) {
+                    bookingCommonService.bookingRollbackBalance(callerContext, booking, null, hotel);
+
+                } else if(hotel.getPaymentMethod().equals(BookingPaymentMethod.CREDIT)) {
+                    bookingCommonService.bookingRollbackCredit(callerContext, booking, null, hotel);
+                }
                 continue;
             }
 
@@ -271,6 +279,8 @@ public class BookingHotelService {
 
             if (hotel.getPaymentMethod() == BookingPaymentMethod.DEPOSIT) {
                 bookingCommonService.bookingDebitBalance(callerContext, booking, null, hotel);
+            } else if (hotel.getPaymentMethod() == BookingPaymentMethod.CREDIT) {
+                bookingCommonService.bookingDebitCredit(callerContext, booking, null, hotel);
             }
 
             HotelBookingCreateResponse createResponse =
@@ -281,7 +291,11 @@ public class BookingHotelService {
 
             if (Boolean.TRUE.equals(createResponse.getIsCancel())) {
                 hotel.setStatus(BookingHotelStatus.CANCELLED);
-                bookingCommonService.bookingRollbackBalance(callerContext, booking, null, hotel);
+                if(hotel.getPaymentMethod().equals(BookingPaymentMethod.DEPOSIT)) {
+                    bookingCommonService.bookingRollbackBalance(callerContext, booking, null, hotel);
+                } else if(hotel.getPaymentMethod().equals(BookingPaymentMethod.CREDIT)) {
+                    bookingCommonService.bookingRollbackCredit(callerContext, booking, null, hotel);
+                }
                 continue;
             }
 

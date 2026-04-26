@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.client.apricode.AppricodeService;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.BalanceAdjustRequest;
+import ai.anamaya.service.oms.core.dto.request.CreditAdjustRequest;
 import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class BookingCommonService {
 
     private final BalanceService balanceService;
+    private final CreditService creditService;
     private final BookingRepository bookingRepository;
     private final CompanyConfigRepository companyConfigRepository;
     private final AppricodeService appricodeClient;
@@ -153,6 +155,117 @@ public class BookingCommonService {
                     .code(detail.getBalance().getCode())
                     .sourceType(detail.getSourceType())
                     .type(BalanceTransactionType.CREDIT)
+                    .amount(detail.getAmount())
+                    .referenceId(detail.getReferenceId())
+                    .referenceCode(detail.getReferenceCode())
+                    .remarks("Rollback by system")
+                    .build());
+        }
+    }
+
+    public void bookingDebitCredit(
+        CallerContext callerContext,
+        Booking booking,
+        List<BookingFlight> bookingFlights,
+        BookingHotel bookingHotel
+    ) {
+
+        String referenceCode = "";
+        BigDecimal flightTotalAmount = BigDecimal.ZERO;
+        if (bookingFlights != null) {
+            flightTotalAmount = bookingFlights.stream()
+                .filter(f -> f.getStatus() == BookingFlightStatus.APPROVED)
+                .map(BookingFlight::getTotalAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            referenceCode = bookingFlights.get(0).getBookingCode();
+        }
+
+        BigDecimal hotelTotalAmount = BigDecimal.ZERO;
+        if (bookingHotel != null) {
+            hotelTotalAmount = BigDecimal.valueOf(bookingHotel.getPartnerSellAmount());
+            referenceCode = bookingHotel.getBookingCode();
+        }
+
+        if (referenceCode.isEmpty()) {
+            throw new IllegalArgumentException("reference code is empty.");
+        }
+
+        List<CompanyCreditDetail> balanceDetails  = creditService.getBalanceDetailByReferenceCode(CreditSourceType.BOOKING, referenceCode);
+        if(balanceDetails != null && !balanceDetails.isEmpty()) {
+            return;
+        }
+
+        if (bookingFlights != null) {
+            creditService.adjustBalance(
+                callerContext,
+                CreditAdjustRequest.builder()
+                    .companyId(booking.getCompanyId())
+                    .code(CreditCodeType.CREDIT_FLIGHT)
+                    .sourceType(CreditSourceType.BOOKING)
+                    .type(CreditTransactionType.DEBIT)
+                    .amount(flightTotalAmount)
+                    .referenceId(booking.getId())
+                    .referenceCode(referenceCode)
+                    .remarks("Buying flight ticket approved by " + booking.getApprovedByName())
+                    .build());
+        }
+
+        if (bookingHotel != null) {
+            creditService.adjustBalance(
+                callerContext,
+                CreditAdjustRequest.builder()
+                    .companyId(booking.getCompanyId())
+                    .code(CreditCodeType.CREDIT_HOTEL)
+                    .sourceType(CreditSourceType.BOOKING)
+                    .type(CreditTransactionType.DEBIT)
+                    .amount(hotelTotalAmount)
+                    .referenceId(booking.getId())
+                    .referenceCode(referenceCode)
+                    .remarks("Buying hotel ticket approved by " + booking.getApprovedByName())
+                    .build());
+        }
+    }
+
+    public void bookingRollbackCredit(
+        CallerContext callerContext,
+        Booking booking,
+        List<BookingFlight> bookingFlights,
+        BookingHotel bookingHotel
+    ) {
+        String referenceCode = "";
+        if (bookingFlights != null) {
+            referenceCode = bookingFlights.get(0).getBookingCode();
+        }
+
+        if (bookingHotel != null) {
+            referenceCode = bookingHotel.getBookingCode();
+        }
+
+        List<CompanyCreditDetail> companyBalanceDetails = creditService.getBalanceDetailByReferenceCode(
+            CreditSourceType.BOOKING,
+            referenceCode
+        );
+
+
+        Set<String> creditedReferenceCodes = companyBalanceDetails.stream()
+            .filter(detail -> detail.getType() == CreditTransactionType.CREDIT)
+            .map(CompanyCreditDetail::getReferenceCode)
+            .collect(Collectors.toSet());
+
+        List<CompanyCreditDetail> balanceNeedRollback = companyBalanceDetails.stream()
+            .filter(detail -> detail.getType() == CreditTransactionType.DEBIT)
+            .filter(detail -> !creditedReferenceCodes.contains(detail.getReferenceCode()))
+            .toList();
+
+        for(CompanyCreditDetail detail: balanceNeedRollback) {
+            creditService.adjustBalance(
+                callerContext,
+                CreditAdjustRequest.builder()
+                    .companyId(booking.getCompanyId())
+                    .code(detail.getBalance().getCode())
+                    .sourceType(detail.getSourceType())
+                    .type(CreditTransactionType.CREDIT)
                     .amount(detail.getAmount())
                     .referenceId(detail.getReferenceId())
                     .referenceCode(detail.getReferenceCode())
