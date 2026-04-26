@@ -66,7 +66,7 @@ public class BookingPax extends BaseEntity {
     private LocalDate dob;
 
     @Type(JsonType.class)
-    @Column(name = "add_on", columnDefinition = "json")
+    @Column(name = "add_on", columnDefinition = "jsonb")
     private List<Map<String, Object>> addOn;
 
     @Column(name = "issuing_country")

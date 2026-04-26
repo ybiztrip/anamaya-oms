@@ -10,9 +10,6 @@ import java.util.Map;
 import java.util.List;
 
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class BookingPaxRequest {
     private Long id;
     private boolean deleted;
