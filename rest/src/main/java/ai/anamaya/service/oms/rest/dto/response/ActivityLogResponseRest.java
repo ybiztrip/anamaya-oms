@@ -1,0 +1,27 @@
+package ai.anamaya.service.oms.rest.dto.response;
+
+import ai.anamaya.service.oms.core.enums.ActivityLogType;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ActivityLogResponseRest {
+    private Long id;
+    private Long companyId;
+    private ActivityLogType type;
+    private Long referenceId;
+    private JsonNode data;
+    private Short status;
+    private Long createdBy;
+    private String createdAt;
+    private Long updatedBy;
+    private String updatedAt;
+}
