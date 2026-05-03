@@ -40,6 +40,7 @@ public class UserCreateRequestRest {
     private Date passportExpiry;
     private Date dateOfBirth;
     private String nationalityCode;
+    private Long travelPolicyId;
 
     @NotNull
     private Short status;

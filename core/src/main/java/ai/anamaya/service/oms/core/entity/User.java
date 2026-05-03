@@ -68,6 +68,9 @@ public class User extends BaseEntity {
     @Column(name = "nationality_code")
     private String nationalityCode;
 
+    @Column(name = "travel_policy_id")
+    private Long travelPolicyId;
+
     @Column(nullable = false)
     private Short status;
 

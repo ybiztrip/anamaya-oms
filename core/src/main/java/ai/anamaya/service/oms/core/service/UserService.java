@@ -7,6 +7,7 @@ import ai.anamaya.service.oms.core.dto.request.UserCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.UserGetListRequest;
 import ai.anamaya.service.oms.core.dto.request.UserUpdateRequest;
 import ai.anamaya.service.oms.core.dto.response.UserResponse;
+import ai.anamaya.service.oms.core.entity.TravelPolicy;
 import ai.anamaya.service.oms.core.entity.User;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.UserRepository;
@@ -46,18 +47,14 @@ public class UserService {
     private final ChatEngineService chatEngineClient;
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
+    private final TravelPolicyService travelPolicyService;
 
     @Transactional
-    public UserResponse create(UserCreateRequest request) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-
-        boolean isCompanyAdmin = authorities.stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_COMPANY_ADMIN"));
+    public UserResponse create(CallerContext callerContext, UserCreateRequest request) {
+        boolean isCompanyAdmin = SecurityUtil.hasRole("COMPANY_ADMIN");
 
         if (isCompanyAdmin) {
-            Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
+            Long companyIdFromToken = callerContext.companyId();
             request.setCompanyId(companyIdFromToken);
         } else if (request.getCompanyId() == null) {
             throw new IllegalArgumentException("companyId is required for SUPER_ADMIN");
@@ -67,7 +64,9 @@ public class UserService {
             throw new IllegalArgumentException("Email already exists");
         }
 
-        var pass = passwordEncoder.encode(request.getPassword());
+        if(request.getTravelPolicyId()!=null) {
+            travelPolicyService.getById(callerContext, request.getTravelPolicyId());
+        }
 
         User user = User.builder()
             .companyId(request.getCompanyId())
@@ -86,6 +85,7 @@ public class UserService {
             .passportExpiry(request.getPassportExpiry())
             .dateOfBirth(request.getDateOfBirth())
             .nationalityCode(request.getNationalityCode())
+            .travelPolicyId(request.getTravelPolicyId())
             .status(request.getStatus())
             .enableChatEngine(request.getEnableChatEngine())
             .build();
@@ -100,10 +100,27 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse update(Long id, UserUpdateRequest request) {
+    public UserResponse update(CallerContext callerContext, Long id, UserUpdateRequest request) {
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
+        boolean isCompanyAdmin = SecurityUtil.hasRole("COMPANY_ADMIN");
+
+        if (isCompanyAdmin) {
+            Long companyIdFromToken = callerContext.companyId();
+            request.setCompanyId(companyIdFromToken);
+        } else if (request.getCompanyId() == null) {
+            throw new IllegalArgumentException("companyId is required for SUPER_ADMIN");
+        }
 
         User user = repository.findById(id)
             .orElseThrow(() -> new NotFoundException("User not found"));
+
+        if(!Objects.equals(user.getCompanyId(), request.getCompanyId())) {
+            throw new NotFoundException("User not found");
+        }
+
+        if(request.getTravelPolicyId()!=null) {
+            travelPolicyService.getById(callerContext, request.getTravelPolicyId());
+        }
 
         user.setCompanyId(request.getCompanyId());
         user.setFirstName(request.getFirstName());
@@ -119,6 +136,7 @@ public class UserService {
         user.setPassportExpiry(request.getPassportExpiry());
         user.setDateOfBirth(request.getDateOfBirth());
         user.setNationalityCode(request.getNationalityCode());
+        user.setTravelPolicyId(request.getTravelPolicyId());
         user.setStatus(request.getStatus());
 
         repository.save(user);
@@ -224,6 +242,7 @@ public class UserService {
             .passportExpiry(user.getPassportExpiry())
             .dateOfBirth(user.getDateOfBirth())
             .nationalityCode(user.getNationalityCode())
+            .travelPolicyId(user.getTravelPolicyId())
             .status(user.getStatus())
             .createdBy(user.getCreatedBy())
             .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)

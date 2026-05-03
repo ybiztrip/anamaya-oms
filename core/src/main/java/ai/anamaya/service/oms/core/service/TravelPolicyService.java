@@ -11,6 +11,7 @@ import ai.anamaya.service.oms.core.specification.TravelPolicySpecification;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Call;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,22 @@ public class TravelPolicyService {
         return new PageImpl<>(mapped, pageable, travelPolicies.getTotalElements());
     }
 
+    public TravelPolicy getById(CallerContext callerContext, Long id) {
+        long companyId = callerContext.companyId();
+
+        Optional<TravelPolicy> data = repository.findById(id);
+        if (data.isEmpty()) {
+            throw new NotFoundException("Travel policy not found");
+        }
+
+        TravelPolicy travelPolicy = data.get();
+        if(!Objects.equals(travelPolicy.getCompanyId(), companyId)) {
+            throw new IllegalArgumentException("Invalid data");
+        }
+
+        return travelPolicy;
+    }
+
     @Transactional
     public TravelPolicyResponse create(CallerContext callerContext, TravelPolicyRequest request) {
         Long userId = callerContext.userId();
@@ -107,17 +124,8 @@ public class TravelPolicyService {
     @Transactional
     public TravelPolicyResponse update(CallerContext callerContext, Long id, TravelPolicyRequest request) {
         Long userId = callerContext.userId();
-        Long companyId = callerContext.companyId();
 
-        Optional<TravelPolicy> data = repository.findById(id);
-        if (data.isEmpty()) {
-            throw new NotFoundException("Travel policy not found");
-        }
-
-        TravelPolicy travelPolicy = data.get();
-        if(!Objects.equals(travelPolicy.getCompanyId(), companyId)) {
-            throw new IllegalArgumentException("Invalid data");
-        }
+        TravelPolicy travelPolicy = getById(callerContext, id);
 
         if (!Objects.equals(travelPolicy.getName(), request.getName())) {
             if (repository.existsByNameAndCompanyId(request.getName(), request.getCompanyId())) {

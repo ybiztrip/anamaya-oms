@@ -36,10 +36,14 @@ public class UserController {
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','COMPANY_ADMIN')")
     @PostMapping
     public ApiResponse<UserResponseRest> create(@Valid @RequestBody UserCreateRequestRest reqRest) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
         UserCreateRequest reqCore = mapper.toCore(reqRest);
 
-        UserResponse result = service.create(reqCore);
+        UserResponse result = service.create(userCallerContext, reqCore);
 
         return ApiResponse.success(mapper.toRest(result));
     }
@@ -67,10 +71,14 @@ public class UserController {
         @PathVariable Long id,
         @Valid @RequestBody UserUpdateRequestRest reqRest
     ) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
         UserUpdateRequest reqCore = mapper.toCore(reqRest);
 
-        UserResponse result = service.update(id, reqCore);
+        UserResponse result = service.update(userCallerContext, id, reqCore);
 
         return ApiResponse.success(mapper.toRest(result));
     }

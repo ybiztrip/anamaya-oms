@@ -35,3 +35,6 @@ CREATE TABLE activity_log (
 
     KEY idx_activity_log_reference_id_company_id (reference_id, company_id),
 );
+
+ALTER TABLE `user`
+ADD COLUMN `travel_policy_id` BIGINT NULL AFTER `nationality_code`;

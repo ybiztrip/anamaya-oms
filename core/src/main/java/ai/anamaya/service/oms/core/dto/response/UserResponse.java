@@ -30,6 +30,7 @@ public class UserResponse {
     private Date passportExpiry;
     private Date dateOfBirth;
     private String nationalityCode;
+    private Long travelPolicyId;
     private Short status;
     private Long createdBy;
     private String createdAt;
