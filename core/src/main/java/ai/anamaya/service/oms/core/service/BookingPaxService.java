@@ -2,7 +2,6 @@ package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingPaxRequest;
-import ai.anamaya.service.oms.core.dto.response.*;
 import ai.anamaya.service.oms.core.entity.BookingPax;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,7 @@ public class BookingPaxService {
     private final BookingPaxRepository bookingPaxRepository;
 
     @Transactional
-    public Void submitBookingPax(
+    public void submitBookingPax(
         CallerContext callerContext,
         Long bookingId,
         String bookingCode,
@@ -53,7 +52,6 @@ public class BookingPaxService {
             bookingPaxRepository.save(newPax);
         });
 
-        return null;
     }
 
 }

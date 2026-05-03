@@ -139,6 +139,7 @@ public class BookingFlightService {
 
         createBookingFlight(callerContext, booking, bookingCode);
         handleBookingFlightApprovalFlow(callerContext, booking, bookingCode);
+        bookingCommonService.bookingTravelPolicy(callerContext, bookingCode, BookingType.FLIGHT);
 
         return bookingService.toResponse(booking, true, false);
     }

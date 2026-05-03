@@ -174,6 +174,8 @@ public class BookingHotelService {
             bookingCommonService.sendNotificationToApprover(callerContext, bookingId,null, List.of(newHotel));
         }
 
+        bookingCommonService.bookingTravelPolicy(callerContext, bookingCode, BookingType.HOTEL);
+
         return bookingService.toResponse(booking, true, false);
     }
 

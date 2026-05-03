@@ -101,7 +101,6 @@ public class UserService {
 
     @Transactional
     public UserResponse update(CallerContext callerContext, Long id, UserUpdateRequest request) {
-        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
         boolean isCompanyAdmin = SecurityUtil.hasRole("COMPANY_ADMIN");
 
         if (isCompanyAdmin) {
@@ -249,6 +248,14 @@ public class UserService {
             .updatedBy(user.getUpdatedBy())
             .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt().toString() : null)
             .build();
+    }
+
+    public TravelPolicy getTravelPolicy(CallerContext callerContext) {
+        Long userId = callerContext.userId();
+         User user = repository.findById(userId)
+             .orElseThrow(() -> new NotFoundException("User not found"));
+
+         return travelPolicyService.getById(callerContext, user.getTravelPolicyId());
     }
 
     public List<UserRoleResponse> getUserRoles(Long userId) {

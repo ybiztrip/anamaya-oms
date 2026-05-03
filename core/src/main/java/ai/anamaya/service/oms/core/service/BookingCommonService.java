@@ -9,7 +9,10 @@ import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.BookingRepository;
+import ai.anamaya.service.oms.core.repository.BookingTravelPolicyRepository;
 import ai.anamaya.service.oms.core.repository.CompanyConfigRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,9 +28,11 @@ public class BookingCommonService {
     private final BalanceService balanceService;
     private final CreditService creditService;
     private final BookingRepository bookingRepository;
+    private final BookingTravelPolicyRepository bookingTravelPolicyRepository;
     private final CompanyConfigRepository companyConfigRepository;
     private final AppricodeService appricodeClient;
     private final UserService userService;
+    private final ObjectMapper objectMapper;
 
     public boolean validateBookingPaymentMethod(CallerContext callerContext, BookingPaymentMethod paymentMethod) {
         return companyConfigRepository
@@ -50,6 +55,28 @@ public class BookingCommonService {
         }
 
         return booking;
+    }
+
+    public void bookingTravelPolicy(
+        CallerContext callerContext,
+        String bookingCode,
+        BookingType type
+    ) {
+        Long userId = callerContext.userId();
+        TravelPolicy travelPolicy = userService.getTravelPolicy(callerContext);
+        JsonNode jsonData = objectMapper.valueToTree(travelPolicy);
+        BookingTravelPolicy bookingTravelPolicy = BookingTravelPolicy.builder()
+            .companyId(travelPolicy.getCompanyId())
+            .type(type)
+            .bookingCode(bookingCode)
+            .travelPolicyId(travelPolicy.getId())
+            .travelPolicyName(travelPolicy.getName())
+            .data(jsonData)
+            .createdBy(userId)
+            .updatedBy(userId)
+            .build();
+
+        bookingTravelPolicyRepository.save(bookingTravelPolicy);
     }
 
     public void bookingDebitBalance(

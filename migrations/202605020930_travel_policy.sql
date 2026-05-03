@@ -18,7 +18,7 @@ CREATE TABLE travel_policy (
     updated_by BIGINT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    KEY idx_travel_policy_company_id (company_id),
+    KEY idx_travel_policy_company_id (company_id)
 );
 
 CREATE TABLE activity_log (
@@ -33,8 +33,24 @@ CREATE TABLE activity_log (
     updated_by BIGINT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-    KEY idx_activity_log_reference_id_company_id (reference_id, company_id),
+    KEY idx_activity_log_reference_id_company_id (reference_id, company_id)
 );
 
 ALTER TABLE `user`
 ADD COLUMN `travel_policy_id` BIGINT NULL AFTER `nationality_code`;
+
+CREATE TABLE booking_travel_policy (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    company_id BIGINT NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    booking_code VARCHAR(100) NOT NULL,
+    travel_policy_id BIGINT NOT NULL,
+    travel_policy_name VARCHAR(100),
+    data json,
+    created_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    KEY idx_booking_travel_policy_booking_code (booking_code)
+);
