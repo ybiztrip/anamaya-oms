@@ -34,3 +34,20 @@ CREATE TABLE company_credit_detail (
     KEY idx_credit_detail_reference_id (reference_id),
     KEY idx_credit_detail_source_type (source_type)
 );
+
+CREATE TABLE company_credit_invoice (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    company_id BIGINT NOT NULL,
+    code VARCHAR(50) NOT NULL,
+    doc_no VARCHAR(50) NOT NULL,
+    amount DECIMAL(18,2) NOT NULL DEFAULT 0,
+    currency VARCHAR(10) DEFAULT 'IDR',
+    status VARCHAR(20) NOT NULL,
+    created_by BIGINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by BIGINT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    KEY idx_company_invoice_company_id (company_id),
+    UNIQUE KEY uq_company_invoice_doc_no_company_code (doc_no, company_id)
+);
