@@ -3,15 +3,15 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.CompanyCreditInvoiceListFilter;
 import ai.anamaya.service.oms.core.dto.request.CompanyCreditInvoiceRequest;
-import ai.anamaya.service.oms.core.dto.request.TravelPolicyListFilter;
+import ai.anamaya.service.oms.core.dto.request.CreditAdjustRequest;
 import ai.anamaya.service.oms.core.dto.response.CompanyCreditInvoiceResponse;
-import ai.anamaya.service.oms.core.dto.response.TravelPolicyResponse;
 import ai.anamaya.service.oms.core.entity.CompanyCreditInvoice;
-import ai.anamaya.service.oms.core.entity.TravelPolicy;
+import ai.anamaya.service.oms.core.enums.CreditSourceType;
+import ai.anamaya.service.oms.core.enums.CreditTransactionType;
 import ai.anamaya.service.oms.core.enums.InvoiceStatus;
+import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.CompanyCreditInvoiceRepository;
 import ai.anamaya.service.oms.core.specification.CompanyCreditInvoiceSpecification;
-import ai.anamaya.service.oms.core.specification.TravelPolicySpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -19,11 +19,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class CompanyCreditService {
 
+    private  final CreditService creditService;
     private final CompanyCreditInvoiceRepository companyCreditInvoiceRepository;
 
     public Page<CompanyCreditInvoiceResponse> getAll(CallerContext callerContext, CompanyCreditInvoiceListFilter filter) {
@@ -77,6 +79,37 @@ public class CompanyCreditService {
             .updatedBy(userId)
             .build();
         companyCreditInvoiceRepository.save(companyCreditInvoice);
+        return toResponse(companyCreditInvoice);
+    }
+
+    @Transactional
+    public CompanyCreditInvoiceResponse paidInvoice(CallerContext callerContext, Long id) {
+        Optional<CompanyCreditInvoice> data = companyCreditInvoiceRepository.findById(id);
+        if(data.isEmpty()) {
+            throw new NotFoundException("Data not found");
+        }
+
+        CompanyCreditInvoice companyCreditInvoice = data.get();
+        if(companyCreditInvoice.getStatus() == InvoiceStatus.PAID) {
+            return toResponse(companyCreditInvoice);
+        }
+
+        creditService.adjustBalance(
+            callerContext,
+            CreditAdjustRequest.builder()
+                .companyId(companyCreditInvoice.getCompanyId())
+                .code(companyCreditInvoice.getCode())
+                .sourceType(CreditSourceType.INVOICE)
+                .type(CreditTransactionType.CREDIT)
+                .amount(companyCreditInvoice.getAmount())
+                .referenceId(companyCreditInvoice.getId())
+                .referenceCode(companyCreditInvoice.getDocNo())
+                .remarks("Invoice paid")
+                .build());
+
+        companyCreditInvoice.setStatus(InvoiceStatus.PAID);
+        companyCreditInvoiceRepository.save(companyCreditInvoice);
+
         return toResponse(companyCreditInvoice);
     }
 

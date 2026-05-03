@@ -66,4 +66,17 @@ public class CompanyCreditController {
         return ApiResponse.success(mapper.toRest(result));
     }
 
+    @PostMapping("/invoices/{id}/paid")
+    public ApiResponse<CompanyCreditInvoiceResponseRest> paidInvoice(
+        @PathVariable Long id) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        var result = service.paidInvoice(userCallerContext, id);
+
+        return ApiResponse.success(mapper.toRest(result));
+    }
+
 }
