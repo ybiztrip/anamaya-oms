@@ -51,3 +51,9 @@ CREATE TABLE company_credit_invoice (
     KEY idx_company_invoice_company_id (company_id),
     UNIQUE KEY uq_company_invoice_doc_no_company_code (doc_no, company_id)
 );
+
+ALTER TABLE `booking_flight`
+ADD COLUMN `management_fee_amount` DOUBLE NULL AFTER `infant_amount`;
+
+ALTER TABLE `booking_hotel`
+ADD COLUMN `management_fee_amount` DOUBLE NULL AFTER `partner_nett_amount`;

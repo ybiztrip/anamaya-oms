@@ -2,17 +2,24 @@ package ai.anamaya.service.oms.rest.controller;
 
 import ai.anamaya.service.oms.core.context.UserCallerContext;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
+import ai.anamaya.service.oms.core.dto.response.BalanceRecapDailyResponse;
 import ai.anamaya.service.oms.core.enums.BalanceCodeType;
 import ai.anamaya.service.oms.core.security.JwtUtils;
+import ai.anamaya.service.oms.core.service.BalanceRecapDailyService;
 import ai.anamaya.service.oms.core.service.BalanceService;
 import ai.anamaya.service.oms.rest.dto.request.BalanceAdjustRequestRest;
+import ai.anamaya.service.oms.rest.dto.request.BalanceRecapDailyRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.BalanceTopUpRequestRest;
+import ai.anamaya.service.oms.rest.dto.response.BalanceRecapDailyResponseRest;
 import ai.anamaya.service.oms.rest.dto.response.CompanyBalanceResponseRest;
 import ai.anamaya.service.oms.rest.mapper.BalanceMapper;
+import ai.anamaya.service.oms.rest.mapper.BalanceRecapDailyMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +29,9 @@ import java.util.Map;
 public class BalanceController {
 
     private final BalanceService balanceService;
+    private final BalanceRecapDailyService balanceRecapDailyService;
     private final BalanceMapper mapper;
+    private final BalanceRecapDailyMapper recapMapper;
     private final JwtUtils jwtUtils;
 
     @PostMapping("/adjust")
@@ -67,6 +76,16 @@ public class BalanceController {
             .toList();
 
         return ApiResponse.success(list);
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PostMapping("/recap/daily")
+    public ApiResponse<List<BalanceRecapDailyResponseRest>> recapDaily(
+        @Valid @RequestBody BalanceRecapDailyRequestRest reqRest) {
+
+        LocalDate date = LocalDate.parse(reqRest.getDate());
+        List<BalanceRecapDailyResponse> results = balanceRecapDailyService.recapDailyBalance(date);
+        return ApiResponse.success(results.stream().map(recapMapper::toRest).toList());
     }
 
     @GetMapping("/{code}")
