@@ -2,6 +2,7 @@ package ai.anamaya.service.oms.rest.config;
 
 import ai.anamaya.service.oms.rest.security.BiztripAuthenticationTokenFilter;
 import ai.anamaya.service.oms.rest.security.JwtAuthenticationFilter;
+import ai.anamaya.service.oms.rest.security.OfficelessAuthenticationTokenFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,13 +20,16 @@ public class WebSecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final BiztripAuthenticationTokenFilter biztripAuthenticationTokenFilter;
+    private final OfficelessAuthenticationTokenFilter officelessAuthenticationTokenFilter;
 
     public WebSecurityConfig(
         JwtAuthenticationFilter jwtAuthenticationFilter,
-        BiztripAuthenticationTokenFilter biztripAuthenticationTokenFilter
+        BiztripAuthenticationTokenFilter biztripAuthenticationTokenFilter,
+        OfficelessAuthenticationTokenFilter officelessAuthenticationTokenFilter
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.biztripAuthenticationTokenFilter = biztripAuthenticationTokenFilter;
+        this.officelessAuthenticationTokenFilter = officelessAuthenticationTokenFilter;
     }
 
     @Bean
@@ -41,6 +45,7 @@ public class WebSecurityConfig {
                     .anyRequest().authenticated()
             )
             .addFilterBefore(biztripAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(officelessAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .cors(cors -> cors.configurationSource(corsConfigurationSource));
         return http.build();

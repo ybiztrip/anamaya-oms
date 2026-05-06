@@ -10,6 +10,7 @@ import ai.anamaya.service.oms.rest.dto.response.CompanyCreditInvoiceResponseRest
 import ai.anamaya.service.oms.rest.mapper.CompanyCreditMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,6 +52,7 @@ public class CompanyCreditController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('OFFICELESS')")
     @PostMapping("/invoices")
     public ApiResponse<CompanyCreditInvoiceResponseRest> createInvoice(
         @Valid @RequestBody CompanyCreditInvoiceRequestRest reqRest) {
@@ -66,6 +68,7 @@ public class CompanyCreditController {
         return ApiResponse.success(mapper.toRest(result));
     }
 
+    @PreAuthorize("hasAnyRole('OFFICELESS')")
     @PostMapping("/invoices/{id}/paid")
     public ApiResponse<CompanyCreditInvoiceResponseRest> paidInvoice(
         @PathVariable Long id) {
