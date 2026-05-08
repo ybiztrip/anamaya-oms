@@ -68,6 +68,9 @@ public class BookingFlight extends BaseEntity {
     @Column(name = "total_amount", precision = 18, scale = 2)
     private BigDecimal totalAmount;
 
+    @Column(name = "management_fee_amount", precision = 18, scale = 2)
+    private BigDecimal managementFeeAmount;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method")
     private BookingPaymentMethod paymentMethod;
@@ -96,4 +99,7 @@ public class BookingFlight extends BaseEntity {
 
     @Column(columnDefinition = "json")
     private String metadata;
+
+    @Column(name = "error_message", columnDefinition = "TEXT")
+    private String errorMessage;
 }

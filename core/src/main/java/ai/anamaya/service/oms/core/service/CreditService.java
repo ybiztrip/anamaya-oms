@@ -42,7 +42,9 @@ public class CreditService {
             return null;
         }
 
-        CompanyCredit balance = creditRepository.findByCompanyIdAndCode(companyId, request.getCode())
+        CompanyCredit balance = (request.getType() == CreditTransactionType.DEBIT
+                ? creditRepository.findByCompanyIdAndCodeForUpdate(companyId, request.getCode())
+                : creditRepository.findByCompanyIdAndCode(companyId, request.getCode()))
                 .orElseThrow(() -> new NotFoundException(
                         "Credit with code '" + request.getCode() + "' not found for your company."));
 

@@ -53,18 +53,28 @@ public class BiztripFlightBookingPaymentService {
                     new TypeReference<BiztripBaseResponse<BiztripBookingPaymentConfirmDirectResponse>>() {}
                 );
 
-            if (biztripResponse == null || biztripResponse.getData() == null
+            if (biztripResponse == null
+                || !biztripResponse.isSuccess()
+                || biztripResponse.getData() == null
             ) {
-                throw new RuntimeException(
-                    "Biztrip response data is null. Raw response: " + rawResponse
-                );
+                String errorMessage = biztripResponse != null && biztripResponse.getErrorMessage() != null
+                    ? biztripResponse.getErrorMessage()
+                    : "Biztrip response data is null";
+                log.warn("Biztrip flight payment rejected: {}. Raw response: {}", errorMessage, rawResponse);
+                BookingFlightSubmitResponse errorResponse = new BookingFlightSubmitResponse();
+                errorResponse.setError(true);
+                errorResponse.setErrorMessage(errorMessage);
+                return errorResponse;
             }
 
             return submitResponseMapper.map(biztripResponse.getData());
 
         } catch (Exception e) {
             log.error("Submit booking to Biztrip failed", e);
-            throw new RuntimeException("Booking submission failed: " + e.getMessage());
+            BookingFlightSubmitResponse errorResponse = new BookingFlightSubmitResponse();
+            errorResponse.setError(true);
+            errorResponse.setErrorMessage("Booking submission failed: " + e.getMessage());
+            return errorResponse;
         }
     }
 

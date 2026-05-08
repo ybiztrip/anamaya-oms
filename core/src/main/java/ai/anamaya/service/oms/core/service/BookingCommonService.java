@@ -33,15 +33,33 @@ public class BookingCommonService {
     private final AppricodeService appricodeClient;
     private final UserService userService;
     private final ObjectMapper objectMapper;
+    private final ManagementFeeService managementFeeService;
+    private final ai.anamaya.service.oms.core.repository.BookingFlightRepository bookingFlightRepository;
+    private final ai.anamaya.service.oms.core.repository.BookingHotelRepository bookingHotelRepository;
 
-    public boolean validateBookingPaymentMethod(CallerContext callerContext, BookingPaymentMethod paymentMethod) {
-        return companyConfigRepository
+    public boolean validateBookingPaymentMethod(
+        CallerContext callerContext, BookingPaymentMethod paymentMethod, BookingType bookingType
+    ) {
+        boolean methodAllowed = companyConfigRepository
             .findByCompanyIdAndCode(callerContext.companyId(), "PAYMENT_METHOD")
             .map(config -> Arrays.stream(config.getValueStr().split(","))
                 .map(String::trim)
                 .anyMatch(method -> method.equals(paymentMethod.name()))
             )
             .orElse(false);
+
+        if (!methodAllowed) {
+            return false;
+        }
+
+        if (paymentMethod == BookingPaymentMethod.LIMIT) {
+            String code = bookingType == BookingType.FLIGHT
+                ? ManagementFeeService.CONFIG_FLIGHT
+                : ManagementFeeService.CONFIG_HOTEL;
+            managementFeeService.validateConfig(callerContext.companyId(), code);
+        }
+
+        return true;
     }
 
     public Booking getValidatedBookingById(CallerContext callerContext, Boolean isSystem, Long id) {
@@ -208,9 +226,11 @@ public class BookingCommonService {
             referenceCode = bookingFlights.get(0).getBookingCode();
         }
 
-        BigDecimal hotelTotalAmount = BigDecimal.ZERO;
+        BigDecimal hotelSellAmount = BigDecimal.ZERO;
+        BigDecimal hotelNettAmount = BigDecimal.ZERO;
         if (bookingHotel != null) {
-            hotelTotalAmount = BigDecimal.valueOf(bookingHotel.getPartnerSellAmount());
+            hotelSellAmount = BigDecimal.valueOf(bookingHotel.getPartnerSellAmount());
+            hotelNettAmount = BigDecimal.valueOf(bookingHotel.getPartnerNettAmount());
             referenceCode = bookingHotel.getBookingCode();
         }
 
@@ -224,6 +244,12 @@ public class BookingCommonService {
         }
 
         if (bookingFlights != null) {
+            BigDecimal flightFee = managementFeeService.calculateFlightFee(
+                booking.getCompanyId(), flightTotalAmount
+            );
+            distributeFlightFee(bookingFlights, flightTotalAmount, flightFee);
+            bookingFlightRepository.saveAll(bookingFlights);
+
             creditService.adjustBalance(
                 callerContext,
                 CreditAdjustRequest.builder()
@@ -231,7 +257,7 @@ public class BookingCommonService {
                     .code(CreditCodeType.CREDIT_FLIGHT)
                     .sourceType(CreditSourceType.BOOKING)
                     .type(CreditTransactionType.DEBIT)
-                    .amount(flightTotalAmount)
+                    .amount(flightTotalAmount.add(flightFee))
                     .referenceId(booking.getId())
                     .referenceCode(referenceCode)
                     .remarks("Buying flight ticket approved by " + booking.getApprovedByName())
@@ -239,6 +265,12 @@ public class BookingCommonService {
         }
 
         if (bookingHotel != null) {
+            BigDecimal hotelFee = managementFeeService.calculateHotelFee(
+                booking.getCompanyId(), hotelNettAmount
+            );
+            bookingHotel.setManagementFeeAmount(hotelFee);
+            bookingHotelRepository.save(bookingHotel);
+
             creditService.adjustBalance(
                 callerContext,
                 CreditAdjustRequest.builder()
@@ -246,11 +278,38 @@ public class BookingCommonService {
                     .code(CreditCodeType.CREDIT_HOTEL)
                     .sourceType(CreditSourceType.BOOKING)
                     .type(CreditTransactionType.DEBIT)
-                    .amount(hotelTotalAmount)
+                    .amount(hotelSellAmount.add(hotelFee))
                     .referenceId(booking.getId())
                     .referenceCode(referenceCode)
                     .remarks("Buying hotel ticket approved by " + booking.getApprovedByName())
                     .build());
+        }
+    }
+
+    private void distributeFlightFee(
+        List<BookingFlight> flights, BigDecimal totalAmount, BigDecimal totalFee
+    ) {
+        if (flights.isEmpty() || totalFee.signum() == 0) {
+            return;
+        }
+        if (totalAmount.signum() == 0) {
+            flights.get(flights.size() - 1).setManagementFeeAmount(totalFee);
+            return;
+        }
+
+        BigDecimal allocated = BigDecimal.ZERO;
+        for (int i = 0; i < flights.size(); i++) {
+            BookingFlight f = flights.get(i);
+            BigDecimal rowTotal = f.getTotalAmount() != null ? f.getTotalAmount() : BigDecimal.ZERO;
+            BigDecimal rowFee;
+            if (i == flights.size() - 1) {
+                rowFee = totalFee.subtract(allocated);
+            } else {
+                rowFee = totalFee.multiply(rowTotal)
+                    .divide(totalAmount, 2, java.math.RoundingMode.HALF_UP);
+                allocated = allocated.add(rowFee);
+            }
+            f.setManagementFeeAmount(rowFee);
         }
     }
 

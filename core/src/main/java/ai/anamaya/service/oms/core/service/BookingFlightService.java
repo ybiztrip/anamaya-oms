@@ -99,7 +99,7 @@ public class BookingFlightService {
             throw new AccessDeniedException("This booking journey is not approved.");
         }
 
-        if(!bookingCommonService.validateBookingPaymentMethod(callerContext, request.getFlights().get(0).getPaymentMethod())) {
+        if(!bookingCommonService.validateBookingPaymentMethod(callerContext, request.getFlights().get(0).getPaymentMethod(), BookingType.FLIGHT)) {
             throw new IllegalArgumentException("Invalid payment method");
         }
 
@@ -183,17 +183,37 @@ public class BookingFlightService {
 
         List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingIdAndBookingCode(request.getBookingId(), request.getBookingCode());
 
+        BookingPaymentMethod paymentMethod = bookingFlights.get(0).getPaymentMethod();
         BookingFlightStatus flightStatus;
-        if (bookingFlights.get(0).getPaymentMethod() == BookingPaymentMethod.DEPOSIT) {
+        if (paymentMethod == BookingPaymentMethod.DEPOSIT) {
             flightStatus = BookingFlightStatus.ISSUING;
             bookingCommonService.bookingDebitBalance(callerContext, booking, bookingFlights, null);
-        } else if (bookingFlights.get(0).getPaymentMethod() == BookingPaymentMethod.CREDIT) {
+        } else if (paymentMethod == BookingPaymentMethod.LIMIT) {
             flightStatus = BookingFlightStatus.ISSUING;
             bookingCommonService.bookingDebitCredit(callerContext, booking, bookingFlights, null);
         } else {
             flightStatus = BookingFlightStatus.WAITING_PAYMENT;
         }
         BookingFlightSubmitResponse bookingFlightSubmitResponse = processFlights(callerContext, booking, bookingFlights);
+
+        if (bookingFlightSubmitResponse.isError()) {
+            String errorMessage = bookingFlightSubmitResponse.getErrorMessage();
+            log.warn("Flight payment failed for bookingCode {}: {}", request.getBookingCode(), errorMessage);
+
+            bookingFlights.forEach(h -> {
+                h.setStatus(BookingFlightStatus.CANCELLED);
+                h.setErrorMessage(errorMessage);
+                h.setUpdatedBy(userId);
+            });
+            bookingFlightRepository.saveAll(bookingFlights);
+
+            if (paymentMethod == BookingPaymentMethod.DEPOSIT) {
+                bookingCommonService.bookingRollbackBalance(callerContext, booking, bookingFlights, null);
+            } else if (paymentMethod == BookingPaymentMethod.LIMIT) {
+                bookingCommonService.bookingRollbackCredit(callerContext, booking, bookingFlights, null);
+            }
+            return;
+        }
 
         bookingFlights.forEach(h -> {
             h.setStatus(flightStatus);
@@ -248,7 +268,7 @@ public class BookingFlightService {
             bookingFlightRepository.updateStatusByBookingReferences(bookingId, bookingReferenceIds, BookingFlightStatus.CANCELLED);
             if(bookingFlights.get(0).getPaymentMethod() == BookingPaymentMethod.DEPOSIT) {
                 bookingCommonService.bookingRollbackBalance(callerContext, booking, bookingFlights, null);
-            } else if(bookingFlights.get(0).getPaymentMethod() == BookingPaymentMethod.CREDIT) {
+            } else if(bookingFlights.get(0).getPaymentMethod() == BookingPaymentMethod.LIMIT) {
                 bookingCommonService.bookingRollbackCredit(callerContext, booking, bookingFlights, null);
             }
         }
@@ -497,8 +517,10 @@ public class BookingFlightService {
             .departureDatetime(f.getDepartureDatetime())
             .arrivalDatetime(f.getArrivalDatetime())
             .totalAmount(f.getTotalAmount())
+            .managementFeeAmount(f.getManagementFeeAmount())
             .paymentMethod(f.getPaymentMethod())
             .invoiceId(f.getInvoiceId())
+            .errorMessage(f.getErrorMessage())
             .status(f.getStatus())
             .metadata(
                 f.getMetadata() != null

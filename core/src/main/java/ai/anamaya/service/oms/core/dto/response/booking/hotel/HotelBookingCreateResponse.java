@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class HotelBookingCreateResponse {
 
     private Boolean isCancel;
+    private String errorMessage;
     private String bookingId;
     private String bookingReference;
     private String paymentUrl;

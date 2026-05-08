@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class BiztripBaseResponse<T> {
     private boolean success;
+    private String errorMessage;
     private T data;
 }

@@ -26,11 +26,13 @@ public class BookingFlightResponse {
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
     private BigDecimal totalAmount;
+    private BigDecimal managementFeeAmount;
     private BookingPaymentMethod paymentMethod;
     private Long invoiceId;
     private BookingFlightStatus status;
     private JsonNode metadata;
     private String paymentUrl;
+    private String errorMessage;
     private LocalDateTime createdAt;
 
     private List<BookingPaxResponse> paxs;

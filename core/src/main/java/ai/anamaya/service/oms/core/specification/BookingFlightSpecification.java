@@ -44,7 +44,7 @@ public class BookingFlightSpecification {
             }
 
             if (Boolean.TRUE.equals(filter.getInvoiceCandidate())) {
-                predicates.add(cb.equal(root.get("paymentMethod"), BookingPaymentMethod.CREDIT));
+                predicates.add(cb.equal(root.get("paymentMethod"), BookingPaymentMethod.LIMIT));
                 predicates.add(cb.isNull(root.get("invoiceId")));
                 predicates.add(root.get("status").in(
                     BookingFlightStatus.PAID,

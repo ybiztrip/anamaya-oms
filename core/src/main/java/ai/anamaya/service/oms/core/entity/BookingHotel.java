@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -64,6 +65,9 @@ public class BookingHotel extends BaseEntity {
     @Column(name = "partner_nett_amount")
     private Double partnerNettAmount;
 
+    @Column(name = "management_fee_amount", precision = 18, scale = 2)
+    private BigDecimal managementFeeAmount;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method")
     private BookingPaymentMethod paymentMethod;
@@ -98,4 +102,7 @@ public class BookingHotel extends BaseEntity {
     
     @Column(columnDefinition = "json")
     private String metadata;
+
+    @Column(name = "error_message", columnDefinition = "TEXT")
+    private String errorMessage;
 }

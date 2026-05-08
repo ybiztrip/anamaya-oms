@@ -31,9 +31,11 @@ public class BookingFlightResponseRest {
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
     private BigDecimal totalAmount;
+    private BigDecimal managementFeeAmount;
     private BookingPaymentMethod paymentMethod;
     private Long invoiceId;
     private String paymentUrl;
+    private String errorMessage;
     private BookingFlightStatus status;
     private JsonNode metadata;
     private LocalDateTime createdAt;

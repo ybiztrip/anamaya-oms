@@ -4,6 +4,8 @@ import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,10 +31,12 @@ public class BookingHotelResponse {
     private String currency;
     private String specialRequest;
     private String paymentUrl;
+    private BigDecimal managementFeeAmount;
     private BookingPaymentMethod paymentMethod;
     private Long invoiceId;
     private BookingHotelStatus status;
     private JsonNode metadata;
+    private String errorMessage;
     private LocalDateTime createdAt;
 
     private List<BookingPaxResponse> paxs;

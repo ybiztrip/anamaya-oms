@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.core.specification;
 
 import ai.anamaya.service.oms.core.dto.request.BookingHotelListFilter;
 import ai.anamaya.service.oms.core.entity.BookingHotel;
+import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
 import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
@@ -44,8 +45,12 @@ public class BookingHotelSpecification {
             }
 
             if (Boolean.TRUE.equals(filter.getInvoiceCandidate())) {
-                predicates.add(cb.equal(root.get("paymentMethod"), BookingPaymentMethod.CREDIT));
+                predicates.add(cb.equal(root.get("paymentMethod"), BookingPaymentMethod.LIMIT));
                 predicates.add(cb.isNull(root.get("invoiceId")));
+                predicates.add(root.get("status").in(
+                    BookingHotelStatus.PAID,
+                    BookingHotelStatus.ISSUED
+                ));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
