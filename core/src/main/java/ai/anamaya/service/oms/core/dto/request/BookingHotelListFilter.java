@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.dto.request;
 
 import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,4 +21,6 @@ public class BookingHotelListFilter {
     private Long userId;
     private LocalDate dateFrom;
     private LocalDate dateTo;
+    private BookingPaymentMethod paymentMethod;
+    private Boolean invoiceCandidate;
 }

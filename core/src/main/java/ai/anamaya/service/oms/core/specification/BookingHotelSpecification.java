@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.core.specification;
 
 import ai.anamaya.service.oms.core.dto.request.BookingHotelListFilter;
 import ai.anamaya.service.oms.core.entity.BookingHotel;
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -36,6 +37,15 @@ public class BookingHotelSpecification {
                     root.get("createdAt"),
                     filter.getDateTo().atTime(23, 59, 59)
                 ));
+            }
+
+            if (filter.getPaymentMethod() != null) {
+                predicates.add(cb.equal(root.get("paymentMethod"), filter.getPaymentMethod()));
+            }
+
+            if (Boolean.TRUE.equals(filter.getInvoiceCandidate())) {
+                predicates.add(cb.equal(root.get("paymentMethod"), BookingPaymentMethod.CREDIT));
+                predicates.add(cb.isNull(root.get("invoiceId")));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

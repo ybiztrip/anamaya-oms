@@ -1,9 +1,11 @@
 package ai.anamaya.service.oms.core.dto.response;
 
 import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -23,6 +25,9 @@ public class BookingFlightResponse {
     private String destination;
     private LocalDateTime departureDatetime;
     private LocalDateTime arrivalDatetime;
+    private BigDecimal totalAmount;
+    private BookingPaymentMethod paymentMethod;
+    private Long invoiceId;
     private BookingFlightStatus status;
     private JsonNode metadata;
     private String paymentUrl;

@@ -227,6 +227,43 @@ public class BookingController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('OFFICELESS')")
+    @GetMapping("/flights/invoice-candidates")
+    public ApiResponse<List<BookingFlightResponseRest>> getFlightInvoiceCandidates(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String sort,
+        @ModelAttribute BookingFlightListFilter filter
+    ) {
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
+
+        if (isSuperAdmin) {
+            if (filter.getCompanyId() == null || filter.getCompanyId() == 0) {
+                throw new IllegalArgumentException("companyId is required");
+            }
+        } else {
+            filter.setCompanyId(jwtUtils.getCompanyIdFromToken());
+        }
+        filter.setInvoiceCandidate(true);
+
+        var pageResult = bookingFlightService.getAll(page, size, sort, filter);
+
+        List<BookingFlightResponseRest> listRest = pageResult
+            .getContent()
+            .stream()
+            .map(mapper::toRest)
+            .toList();
+
+        return ApiResponse.paginatedSuccess(
+            listRest,
+            pageResult.getTotalElements(),
+            pageResult.getTotalPages(),
+            pageResult.isLast(),
+            pageResult.getSize(),
+            pageResult.getNumber()
+        );
+    }
+
     @PostMapping("/{id}/flights")
     public ApiResponse<?> submitBookingFlights(
         @PathVariable Long id,
@@ -255,6 +292,43 @@ public class BookingController {
             Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
             filter.setCompanyId(companyIdFromToken);
         }
+
+        var pageResult = bookingHotelService.getAll(page, size, sort, filter);
+
+        List<BookingHotelResponseRest> listRest = pageResult
+            .getContent()
+            .stream()
+            .map(mapper::toRest)
+            .toList();
+
+        return ApiResponse.paginatedSuccess(
+            listRest,
+            pageResult.getTotalElements(),
+            pageResult.getTotalPages(),
+            pageResult.isLast(),
+            pageResult.getSize(),
+            pageResult.getNumber()
+        );
+    }
+
+    @PreAuthorize("hasAnyRole('OFFICELESS')")
+    @GetMapping("/hotels/invoice-candidates")
+    public ApiResponse<List<BookingHotelResponseRest>> getHotelInvoiceCandidates(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String sort,
+        @ModelAttribute BookingHotelListFilter filter
+    ) {
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
+
+        if (isSuperAdmin) {
+            if (filter.getCompanyId() == null || filter.getCompanyId() == 0) {
+                throw new IllegalArgumentException("companyId is required");
+            }
+        } else {
+            filter.setCompanyId(jwtUtils.getCompanyIdFromToken());
+        }
+        filter.setInvoiceCandidate(true);
 
         var pageResult = bookingHotelService.getAll(page, size, sort, filter);
 

@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.dto.response;
 
 import ai.anamaya.service.oms.core.enums.BookingHotelStatus;
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 import java.time.LocalDate;
@@ -28,6 +29,8 @@ public class BookingHotelResponse {
     private String currency;
     private String specialRequest;
     private String paymentUrl;
+    private BookingPaymentMethod paymentMethod;
+    private Long invoiceId;
     private BookingHotelStatus status;
     private JsonNode metadata;
     private LocalDateTime createdAt;

@@ -2,6 +2,8 @@ package ai.anamaya.service.oms.core.specification;
 
 import ai.anamaya.service.oms.core.dto.request.BookingFlightListFilter;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
+import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
+import ai.anamaya.service.oms.core.enums.BookingPaymentMethod;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -34,6 +36,19 @@ public class BookingFlightSpecification {
                 predicates.add(cb.lessThanOrEqualTo(
                     root.get("createdAt"),
                     filter.getDateTo().atTime(23, 59, 59)
+                ));
+            }
+
+            if (filter.getPaymentMethod() != null) {
+                predicates.add(cb.equal(root.get("paymentMethod"), filter.getPaymentMethod()));
+            }
+
+            if (Boolean.TRUE.equals(filter.getInvoiceCandidate())) {
+                predicates.add(cb.equal(root.get("paymentMethod"), BookingPaymentMethod.CREDIT));
+                predicates.add(cb.isNull(root.get("invoiceId")));
+                predicates.add(root.get("status").in(
+                    BookingFlightStatus.PAID,
+                    BookingFlightStatus.ISSUED
                 ));
             }
 

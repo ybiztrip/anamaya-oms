@@ -462,6 +462,8 @@ public class BookingHotelService {
             .partnerNettAmount(h.getPartnerNettAmount())
             .currency(h.getCurrency())
             .specialRequest(h.getSpecialRequest())
+            .paymentMethod(h.getPaymentMethod())
+            .invoiceId(h.getInvoiceId())
             .status(h.getStatus())
             .metadata(
                 h.getMetadata() != null

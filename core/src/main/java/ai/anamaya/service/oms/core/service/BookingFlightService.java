@@ -496,6 +496,9 @@ public class BookingFlightService {
             .destination(f.getDestination())
             .departureDatetime(f.getDepartureDatetime())
             .arrivalDatetime(f.getArrivalDatetime())
+            .totalAmount(f.getTotalAmount())
+            .paymentMethod(f.getPaymentMethod())
+            .invoiceId(f.getInvoiceId())
             .status(f.getStatus())
             .metadata(
                 f.getMetadata() != null

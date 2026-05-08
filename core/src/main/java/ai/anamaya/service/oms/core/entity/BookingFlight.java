@@ -81,6 +81,9 @@ public class BookingFlight extends BaseEntity {
     @Column(name = "payment_url")
     private String paymentUrl;
 
+    @Column(name = "invoice_id")
+    private Long invoiceId;
+
     @Column(name = "booking_reference", length = 256)
     private String bookingReference;
 
