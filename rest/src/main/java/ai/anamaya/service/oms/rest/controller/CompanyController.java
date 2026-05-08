@@ -67,7 +67,7 @@ public class CompanyController {
         return ApiResponse.success(mapper.toRest(response));
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'OFFICELESS')")
     @GetMapping
     public ApiResponse<List<CompanyResponseRest>> getAll(
         @RequestParam(defaultValue = "0") int page,
