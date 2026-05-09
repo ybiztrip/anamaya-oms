@@ -1,14 +1,15 @@
 package ai.anamaya.service.oms.core.dto.request;
 
-import ai.anamaya.service.oms.core.enums.BalanceCodeType;
-import ai.anamaya.service.oms.core.enums.CreditCodeType;
+import ai.anamaya.service.oms.core.enums.InvoiceProductType;
 import lombok.Data;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class CompanyCreditInvoiceRequest {
-    private CreditCodeType code;
+    private Long companyId;
     private String docNo;
-    private BigDecimal amount;
+    private InvoiceProductType type;
+    private List<Long> bookingFlightIds;
+    private List<Long> bookingHotelIds;
 }

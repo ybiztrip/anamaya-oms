@@ -16,6 +16,22 @@ public interface BookingFlightRepository extends JpaRepository<BookingFlight, Lo
     List<BookingFlight> findByBookingId(Long bookingId);
     List<BookingFlight> findByBookingIdAndBookingCode(Long bookingId, String bookingCode);
     List<BookingFlight> findByBookingCode(String bookingCode);
+    List<BookingFlight> findByIdInAndCompanyId(List<Long> ids, Long companyId);
+
+    @Modifying
+    @Query("""
+        UPDATE BookingFlight bf
+        SET bf.invoiceId = :invoiceId, bf.updatedBy = :userId
+        WHERE bf.id IN :ids
+          AND bf.companyId = :companyId
+          AND bf.invoiceId IS NULL
+    """)
+    int linkInvoice(
+        @Param("ids") List<Long> ids,
+        @Param("companyId") Long companyId,
+        @Param("invoiceId") Long invoiceId,
+        @Param("userId") Long userId
+    );
 
     @Modifying
     @Query("""

@@ -16,6 +16,22 @@ public interface BookingHotelRepository extends JpaRepository<BookingHotel, Long
     List<BookingHotel> findByBookingId(Long bookingId);
     List<BookingHotel> findByBookingIdAndBookingCode(Long bookingId, String bookingCode);
     List<BookingHotel> findByBookingCode(String bookingCode);
+    List<BookingHotel> findByIdInAndCompanyId(List<Long> ids, Long companyId);
+
+    @Modifying
+    @Query("""
+        UPDATE BookingHotel bh
+        SET bh.invoiceId = :invoiceId, bh.updatedBy = :userId
+        WHERE bh.id IN :ids
+          AND bh.companyId = :companyId
+          AND bh.invoiceId IS NULL
+    """)
+    int linkInvoice(
+        @Param("ids") List<Long> ids,
+        @Param("companyId") Long companyId,
+        @Param("invoiceId") Long invoiceId,
+        @Param("userId") Long userId
+    );
 
     @Modifying
     @Query("""
