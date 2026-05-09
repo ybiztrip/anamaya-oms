@@ -34,6 +34,10 @@ public class ActivityLog extends BaseEntity {
     @Column(name = "data", columnDefinition = "jsonb")
     private JsonNode data;
 
+    @Type(JsonType.class)
+    @Column(name = "change_summary", columnDefinition = "json")
+    private JsonNode changeSummary;
+
     @Column
     private Short status;
 

@@ -27,6 +27,7 @@ CREATE TABLE activity_log (
     type VARCHAR(100),
     reference_id BIGINT NOT NULL,
     data json,
+    change_summary JSON NULL,
     status SMALLINT DEFAULT 1,
     created_by BIGINT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

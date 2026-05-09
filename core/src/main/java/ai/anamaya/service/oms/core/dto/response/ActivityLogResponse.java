@@ -22,6 +22,7 @@ public class ActivityLogResponse {
     private ActivityLogType type;
     private Long referenceId;
     private JsonNode data;
+    private JsonNode changeSummary;
     private Short status;
     private Long createdBy;
     private String createdAt;

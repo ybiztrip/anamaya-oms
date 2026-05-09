@@ -60,6 +60,7 @@ public class ActivityLogService {
             .type(a.getType())
             .referenceId(a.getReferenceId())
             .data(a.getData())
+            .changeSummary(a.getChangeSummary())
             .status(a.getStatus())
             .createdBy(a.getCreatedBy())
             .createdAt(a.getCreatedAt() != null ? a.getCreatedAt().toString() : null)

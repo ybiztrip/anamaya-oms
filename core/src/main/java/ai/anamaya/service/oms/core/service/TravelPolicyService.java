@@ -8,6 +8,7 @@ import ai.anamaya.service.oms.core.enums.ActivityLogType;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.*;
 import ai.anamaya.service.oms.core.specification.TravelPolicySpecification;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -111,6 +117,7 @@ public class TravelPolicyService {
             .type(ActivityLogType.TRAVEL_POLICY)
             .referenceId(travelPolicy.getId())
             .data(jsonData)
+            .changeSummary(objectMapper.valueToTree(List.of()))
             .createdBy(userId)
             .updatedBy(userId)
             .status((short) 1)
@@ -133,6 +140,21 @@ public class TravelPolicyService {
             }
         }
 
+        TravelPolicy currentSnapshot = TravelPolicy.builder()
+            .name(travelPolicy.getName())
+            .flights(travelPolicy.getFlights())
+            .flightMinimumPrice(travelPolicy.getFlightMinimumPrice())
+            .flightMaximumPrice(travelPolicy.getFlightMaximumPrice())
+            .flightMinimumClass(travelPolicy.getFlightMinimumClass())
+            .flightMaximumClass(travelPolicy.getFlightMaximumClass())
+            .hotelMinimumPrice(travelPolicy.getHotelMinimumPrice())
+            .hotelMaximumPrice(travelPolicy.getHotelMaximumPrice())
+            .hotelMinimumClass(travelPolicy.getHotelMinimumClass())
+            .hotelMaximumClass(travelPolicy.getHotelMaximumClass())
+            .hotelPagu(travelPolicy.getHotelPagu())
+            .status(travelPolicy.getStatus())
+            .build();
+
         travelPolicy.setName(request.getName());
         travelPolicy.setFlights(request.getFlights());
         travelPolicy.setFlightMinimumPrice(request.getFlightMinimumPrice());
@@ -148,12 +170,14 @@ public class TravelPolicyService {
         travelPolicy.setStatus(request.getStatus());
         repository.save(travelPolicy);
 
+        List<String> changes = buildChangeSummary(currentSnapshot, travelPolicy);
         JsonNode jsonData = objectMapper.valueToTree(travelPolicy);
         ActivityLog activityLog = ActivityLog.builder()
             .companyId(travelPolicy.getCompanyId())
             .type(ActivityLogType.TRAVEL_POLICY)
             .referenceId(travelPolicy.getId())
             .data(jsonData)
+            .changeSummary(objectMapper.valueToTree(changes))
             .createdBy(userId)
             .updatedBy(userId)
             .status((short) 1)
@@ -162,6 +186,54 @@ public class TravelPolicyService {
         activityLogRepository.save(activityLog);
 
         return toResponse(travelPolicy);
+    }
+
+    List<String> buildChangeSummary(TravelPolicy current, TravelPolicy updated) {
+        LinkedHashSet<String> out = new LinkedHashSet<>();
+        compare(out, "name", current.getName(), updated.getName());
+        compare(out, "flights", current.getFlights(), updated.getFlights());
+        compare(out, "flightMinimumPrice", current.getFlightMinimumPrice(), updated.getFlightMinimumPrice());
+        compare(out, "flightMaximumPrice", current.getFlightMaximumPrice(), updated.getFlightMaximumPrice());
+        compare(out, "flightMinimumClass", current.getFlightMinimumClass(), updated.getFlightMinimumClass());
+        compare(out, "flightMaximumClass", current.getFlightMaximumClass(), updated.getFlightMaximumClass());
+        compare(out, "hotelMinimumPrice", current.getHotelMinimumPrice(), updated.getHotelMinimumPrice());
+        compare(out, "hotelMaximumPrice", current.getHotelMaximumPrice(), updated.getHotelMaximumPrice());
+        compare(out, "hotelMinimumClass", current.getHotelMinimumClass(), updated.getHotelMinimumClass());
+        compare(out, "hotelMaximumClass", current.getHotelMaximumClass(), updated.getHotelMaximumClass());
+        compare(out, "hotelPagu", current.getHotelPagu(), updated.getHotelPagu());
+        compare(out, "status", current.getStatus(), updated.getStatus());
+        return new ArrayList<>(out);
+    }
+
+    private void compare(LinkedHashSet<String> out, String field, Object oldV, Object newV) {
+        boolean equal = (oldV instanceof Collection || oldV instanceof Map
+            || newV instanceof Collection || newV instanceof Map)
+            ? Objects.equals(objectMapper.valueToTree(oldV), objectMapper.valueToTree(newV))
+            : Objects.equals(oldV, newV);
+        if (equal) {
+            return;
+        }
+        out.add(field + " " + formatValue(oldV) + " -> " + formatValue(newV));
+    }
+
+    private String formatValue(Object v) {
+        if (v == null) {
+            return "null";
+        }
+        if (v instanceof Float || v instanceof Double) {
+            return BigDecimal.valueOf(((Number) v).doubleValue()).stripTrailingZeros().toPlainString();
+        }
+        if (v instanceof BigDecimal bd) {
+            return bd.stripTrailingZeros().toPlainString();
+        }
+        if (v instanceof Collection || v instanceof Map) {
+            try {
+                return objectMapper.writeValueAsString(v);
+            } catch (JsonProcessingException e) {
+                return String.valueOf(v);
+            }
+        }
+        return String.valueOf(v);
     }
 
     private TravelPolicyResponse toResponse(TravelPolicy t) {
