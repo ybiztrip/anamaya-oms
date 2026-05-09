@@ -202,6 +202,34 @@ public class CompanyCreditService {
     }
 
     @Transactional
+    public CompanyCreditInvoiceResponse cancelInvoice(CallerContext callerContext, Long id) {
+        Long userId = callerContext.userId();
+
+        CompanyCreditInvoice invoice = companyCreditInvoiceRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("Data not found"));
+
+        if (invoice.getStatus() == InvoiceStatus.CANCELLED) {
+            return toResponse(invoice);
+        }
+
+        if (invoice.getStatus() == InvoiceStatus.PAID) {
+            throw new IllegalArgumentException("cannot cancel a paid invoice");
+        }
+
+        if (invoice.getCode() == CreditCodeType.CREDIT_FLIGHT) {
+            bookingFlightRepository.unlinkInvoice(invoice.getId(), userId);
+        } else if (invoice.getCode() == CreditCodeType.CREDIT_HOTEL) {
+            bookingHotelRepository.unlinkInvoice(invoice.getId(), userId);
+        }
+
+        invoice.setStatus(InvoiceStatus.CANCELLED);
+        invoice.setUpdatedBy(userId);
+        companyCreditInvoiceRepository.save(invoice);
+
+        return toResponse(invoice);
+    }
+
+    @Transactional
     public CompanyCreditInvoiceResponse paidInvoice(CallerContext callerContext, Long id) {
         Optional<CompanyCreditInvoice> data = companyCreditInvoiceRepository.findById(id);
         if(data.isEmpty()) {

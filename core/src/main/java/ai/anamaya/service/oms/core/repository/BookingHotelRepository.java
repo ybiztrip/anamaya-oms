@@ -36,6 +36,17 @@ public interface BookingHotelRepository extends JpaRepository<BookingHotel, Long
     @Modifying
     @Query("""
         UPDATE BookingHotel bh
+        SET bh.invoiceId = NULL, bh.updatedBy = :userId
+        WHERE bh.invoiceId = :invoiceId
+    """)
+    int unlinkInvoice(
+        @Param("invoiceId") Long invoiceId,
+        @Param("userId") Long userId
+    );
+
+    @Modifying
+    @Query("""
+        UPDATE BookingHotel bh
         SET bh.status = :status
         WHERE bh.bookingCode = :bookingCode
     """)

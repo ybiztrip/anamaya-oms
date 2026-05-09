@@ -36,6 +36,17 @@ public interface BookingFlightRepository extends JpaRepository<BookingFlight, Lo
     @Modifying
     @Query("""
         UPDATE BookingFlight bf
+        SET bf.invoiceId = NULL, bf.updatedBy = :userId
+        WHERE bf.invoiceId = :invoiceId
+    """)
+    int unlinkInvoice(
+        @Param("invoiceId") Long invoiceId,
+        @Param("userId") Long userId
+    );
+
+    @Modifying
+    @Query("""
+        UPDATE BookingFlight bf
         SET bf.status = :status
         WHERE bf.bookingId = :bookingId
           AND bf.bookingReference IN :bookingReferenceIds

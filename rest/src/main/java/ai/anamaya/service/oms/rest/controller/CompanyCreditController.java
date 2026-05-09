@@ -82,4 +82,18 @@ public class CompanyCreditController {
         return ApiResponse.success(mapper.toRest(result));
     }
 
+    @PreAuthorize("hasAnyRole('OFFICELESS')")
+    @PostMapping("/invoices/{id}/cancel")
+    public ApiResponse<CompanyCreditInvoiceResponseRest> cancelInvoice(
+        @PathVariable Long id) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        var result = service.cancelInvoice(userCallerContext, id);
+
+        return ApiResponse.success(mapper.toRest(result));
+    }
+
 }
