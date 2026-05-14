@@ -1,12 +1,16 @@
 package ai.anamaya.service.oms.rest.controller;
 
+import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.context.UserCallerContext;
 import ai.anamaya.service.oms.core.dto.request.CompanyCreditInvoiceListFilter;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
-import ai.anamaya.service.oms.core.service.CompanyCreditService;
+import ai.anamaya.service.oms.core.service.CreditService;
+import ai.anamaya.service.oms.core.util.SecurityUtil;
 import ai.anamaya.service.oms.rest.dto.request.CompanyCreditInvoiceRequestRest;
 import ai.anamaya.service.oms.rest.dto.response.CompanyCreditInvoiceResponseRest;
+import ai.anamaya.service.oms.rest.dto.response.CompanyCreditResponseRest;
 import ai.anamaya.service.oms.rest.mapper.CompanyCreditMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +24,34 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CompanyCreditController {
 
-    private final CompanyCreditService service;
+    private final CreditService service;
     private final CompanyCreditMapper mapper;
     private final JwtUtils jwtUtils;
+
+    @GetMapping
+    public ApiResponse<List<CompanyCreditResponseRest>> getAll(
+        @RequestParam(required = false) Long companyId
+    ) {
+        CallerContext callerContext;
+        if (SecurityUtil.hasRole("SYSTEM")) {
+            if (companyId == null) {
+                throw new IllegalArgumentException("companyId is required");
+            }
+            callerContext = new SystemCallerContext(companyId);
+        } else {
+            Long tokenCompanyId = jwtUtils.getCompanyIdFromToken();
+            Long userId = jwtUtils.getUserIdFromToken();
+            String userEmail = jwtUtils.getEmailFromToken();
+            callerContext = new UserCallerContext(tokenCompanyId, userId, userEmail);
+        }
+
+        var list = service.getBalancesByCompany(callerContext)
+            .stream()
+            .map(mapper::toRest)
+            .toList();
+
+        return ApiResponse.success(list);
+    }
 
     @GetMapping("/invoices")
     public ApiResponse<List<CompanyCreditInvoiceResponseRest>> getAll(
@@ -34,7 +63,7 @@ public class CompanyCreditController {
         UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
         filter.setCompanyId(companyId);
-        var pageResult = service.getAll(userCallerContext, filter);
+        var pageResult = service.getAllInvoice(userCallerContext, filter);
 
         List<CompanyCreditInvoiceResponseRest> listRest = pageResult
             .getContent()
