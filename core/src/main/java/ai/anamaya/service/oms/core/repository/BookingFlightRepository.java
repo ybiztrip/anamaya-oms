@@ -15,7 +15,7 @@ public interface BookingFlightRepository extends JpaRepository<BookingFlight, Lo
     List<BookingFlight> findByBookingIdIn(List<Long> bookingId);
     List<BookingFlight> findByBookingId(Long bookingId);
     List<BookingFlight> findByBookingIdAndBookingCode(Long bookingId, String bookingCode);
-    List<BookingFlight> findByBookingCode(String bookingCode);
+    List<BookingFlight> findByBookingCodeOrderByIdAsc(String bookingCode);
     List<BookingFlight> findByIdInAndCompanyId(List<Long> ids, Long companyId);
 
     @Modifying

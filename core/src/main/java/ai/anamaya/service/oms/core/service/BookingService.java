@@ -1,10 +1,14 @@
 package ai.anamaya.service.oms.core.service;
 
+import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripSubmitResponse;
 import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
 import ai.anamaya.service.oms.core.dto.request.BookingRequest;
 import ai.anamaya.service.oms.core.dto.request.BookingUpdateStatusRequest;
+import ai.anamaya.service.oms.core.dto.request.booking.status.FlightBookingStatusCheckRequest;
 import ai.anamaya.service.oms.core.dto.response.*;
+import ai.anamaya.service.oms.core.dto.response.booking.submit.BookingFlightSubmitResponse;
 import ai.anamaya.service.oms.core.entity.*;
 import ai.anamaya.service.oms.core.enums.ApprovalAction;
 import ai.anamaya.service.oms.core.enums.BookingFlightStatus;
@@ -17,6 +21,7 @@ import ai.anamaya.service.oms.core.repository.*;
 import ai.anamaya.service.oms.core.specification.BookingSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -25,6 +30,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookingService {
@@ -39,6 +45,7 @@ public class BookingService {
     private final BookingHotelHistoryRepository bookingHotelHistoryRepository;
     private final CompanyConfigRepository companyConfigRepository;
     private final JsonHelper jsonHelper;
+    private final Map<String, FlightProvider> flightProviders;
 
     public Page<BookingResponse> getAll(BookingListFilter filter) {
 
@@ -272,7 +279,7 @@ public class BookingService {
                     throw new IllegalArgumentException("Invalid flight status");
                 }
 
-                List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingCode(request.getPartnerBookingId());
+                List<BookingFlight> bookingFlights = bookingFlightRepository.findByBookingCodeOrderByIdAsc(request.getPartnerBookingId());
 
                 if (bookingFlights == null || bookingFlights.isEmpty()) {
                     throw new IllegalArgumentException("Booking code not found");
@@ -288,6 +295,9 @@ public class BookingService {
                 );
 
                 if (statusEnum != bookingFlights.get(0).getStatus()) {
+                    if (statusEnum == BookingFlightStatus.ISSUED) {
+                        applyIssuedPnrInfo(callerContext, bookingFlights);
+                    }
                     bookingFlightHistoryRepository.save(
                         BookingFlightHistory.builder()
                             .bookingId(bookingFlights.get(0).getBookingId())
@@ -342,6 +352,63 @@ public class BookingService {
         }
 
         return "Success";
+    }
+
+    private void applyIssuedPnrInfo(CallerContext callerContext, List<BookingFlight> bookingFlights) {
+        List<String> referenceIds = bookingFlights.stream()
+            .map(BookingFlight::getBookingReference)
+            .filter(Objects::nonNull)
+            .toList();
+
+        if (referenceIds.isEmpty()) {
+            log.warn("Skip pnr_info fetch: no bookingReference for bookingCode {}",
+                bookingFlights.get(0).getBookingCode());
+            return;
+        }
+
+        FlightProvider provider = flightProviders.get("biztripFlightProvider");
+        if (provider == null) {
+            log.warn("biztripFlightProvider bean not available; skipping pnr_info fetch");
+            return;
+        }
+
+        CallerContext effectiveContext =
+            (callerContext != null && callerContext.companyId() != null)
+                ? callerContext
+                : new SystemCallerContext(bookingFlights.get(0).getCompanyId());
+
+        BookingFlightSubmitResponse fullStatus = provider.checkStatus(
+            effectiveContext,
+            FlightBookingStatusCheckRequest.builder().bookingReferenceIds(referenceIds).build()
+        );
+
+        BookingFlightSubmitResponse.PnrInfo pnr = fullStatus != null ? fullStatus.getPnrInfo() : null;
+        if (pnr == null) {
+            return;
+        }
+
+        boolean changed = false;
+        if (applyProviderPnr(bookingFlights, 0, pnr.getDeparturePnr())) {
+            changed = true;
+        }
+        if (bookingFlights.size() > 1 && applyProviderPnr(bookingFlights, 1, pnr.getReturnPnr())) {
+            changed = true;
+        }
+        if (changed) {
+            bookingFlightRepository.saveAll(bookingFlights);
+        }
+    }
+
+    private boolean applyProviderPnr(List<BookingFlight> rows, int idx, List<BiztripSubmitResponse.PnrData> pnrList) {
+        if (pnrList == null || pnrList.isEmpty()) {
+            return false;
+        }
+        String providerPnr = pnrList.get(0).getProviderPnr();
+        if (providerPnr == null || providerPnr.isBlank()) {
+            return false;
+        }
+        rows.get(idx).setPnrInfo(providerPnr);
+        return true;
     }
 
     public BookingResponse toResponse(Booking booking, boolean detail, boolean needAttachment) {

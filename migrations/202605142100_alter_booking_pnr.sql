@@ -1,0 +1,2 @@
+ALTER TABLE `booking_flight`
+    ADD COLUMN `pnr_info` VARCHAR(100) AFTER `ota_reference`;

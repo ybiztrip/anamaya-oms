@@ -29,7 +29,6 @@ public class BiztripFlightBookingCheckStatusService {
     private final BiztripFlightBookingCheckFullStatusRequestMapper requestMapper = new BiztripFlightBookingCheckFullStatusRequestMapper();
     private final BiztripFlightBookingCheckFullStatusResponseMapper submitResponseMapper = new BiztripFlightBookingCheckFullStatusResponseMapper();
 
-
     public BookingFlightSubmitResponse checkStatus(CallerContext callerContext, FlightBookingStatusCheckRequest request) {
         try {
             String token = authService.getAccessToken(callerContext.companyId());

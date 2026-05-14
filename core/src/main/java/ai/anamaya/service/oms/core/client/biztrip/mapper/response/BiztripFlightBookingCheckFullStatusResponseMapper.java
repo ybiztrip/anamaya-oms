@@ -16,7 +16,18 @@ public class BiztripFlightBookingCheckFullStatusResponseMapper {
         BiztripCheckFullStatusResult statusResult = b.getBookingStatusResult().get(0);
         res.setBookingSubmissionStatus(statusResult.getStatus());
         res.setBookingId(statusResult.getBookingId());
+        res.setPnrInfo(toPnrInfo(statusResult.getPnrInfo()));
         return res;
+    }
+
+    private BookingFlightSubmitResponse.PnrInfo toPnrInfo(BiztripCheckFullStatusResult.PnrInfo src) {
+        if (src == null) {
+            return null;
+        }
+        BookingFlightSubmitResponse.PnrInfo dst = new BookingFlightSubmitResponse.PnrInfo();
+        dst.setDeparturePnr(src.getDeparturePnr());
+        dst.setReturnPnr(src.getReturnPnr());
+        return dst;
     }
 
 }
