@@ -15,6 +15,7 @@ public class HotelBookingCreateResponse {
     private String errorMessage;
     private String bookingId;
     private String bookingReference;
+    private String itineraryId;
     private String paymentUrl;
     private String status;
     private String currency;

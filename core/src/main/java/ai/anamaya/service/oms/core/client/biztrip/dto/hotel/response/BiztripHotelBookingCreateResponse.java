@@ -8,6 +8,7 @@ public class BiztripHotelBookingCreateResponse {
     private String bookingId;
     private String partnerBookingId;
     private String bookingStatus;
+    private String itineraryId;
     private String propertyId;
     private String checkInDate;
     private String checkOutDate;

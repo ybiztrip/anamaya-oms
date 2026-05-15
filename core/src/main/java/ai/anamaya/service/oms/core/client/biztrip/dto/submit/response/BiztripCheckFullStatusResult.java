@@ -12,12 +12,19 @@ public class BiztripCheckFullStatusResult {
 
     @Data
     public static class PnrInfo {
-        private List<BiztripSubmitResponse.PnrData> departurePnr;
-        private List<BiztripSubmitResponse.PnrData> returnPnr;
+        private List<PnrData> departurePnr;
+        private List<PnrData> returnPnr;
     }
 
     @Data
     public static class PnrData {
         private String providerPnr;
+        private List<AirlinePnrItems> airlinePnrItems;
+    }
+
+    @Data
+    public static class AirlinePnrItems {
+        private String airlinePnr;
+        private String segment;
     }
 }

@@ -1,6 +1,5 @@
 package ai.anamaya.service.oms.core.service;
 
-import ai.anamaya.service.oms.core.client.biztrip.dto.submit.response.BiztripSubmitResponse;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
@@ -285,19 +284,22 @@ public class BookingService {
                     throw new IllegalArgumentException("Booking code not found");
                 }
 
-                if(!BookingFlightStatus.isValidToUpdate(statusEnum, bookingFlights.get(0).getStatus())) {
+                BookingFlightStatus oldStatus = bookingFlights.get(0).getStatus();
+                if (!BookingFlightStatus.isValidToUpdate(statusEnum, oldStatus)) {
                     throw new IllegalArgumentException("Invalid new status");
                 }
 
-                updatedRows = bookingFlightRepository.updateStatusByBookingCode(
-                    request.getPartnerBookingId(),
-                    statusEnum
-                );
+                boolean statusChanged = statusEnum != oldStatus;
 
-                if (statusEnum != bookingFlights.get(0).getStatus()) {
-                    if (statusEnum == BookingFlightStatus.ISSUED) {
-                        applyIssuedPnrInfo(callerContext, bookingFlights);
-                    }
+                if (statusChanged && statusEnum == BookingFlightStatus.ISSUED) {
+                    applyIssuedPnrInfo(callerContext, bookingFlights);
+                }
+
+                bookingFlights.forEach(bf -> bf.setStatus(statusEnum));
+                bookingFlightRepository.saveAll(bookingFlights);
+                updatedRows = bookingFlights.size();
+
+                if (statusChanged) {
                     bookingFlightHistoryRepository.save(
                         BookingFlightHistory.builder()
                             .bookingId(bookingFlights.get(0).getBookingId())
@@ -387,28 +389,21 @@ public class BookingService {
             return;
         }
 
-        boolean changed = false;
-        if (applyProviderPnr(bookingFlights, 0, pnr.getDeparturePnr())) {
-            changed = true;
-        }
-        if (bookingFlights.size() > 1 && applyProviderPnr(bookingFlights, 1, pnr.getReturnPnr())) {
-            changed = true;
-        }
-        if (changed) {
-            bookingFlightRepository.saveAll(bookingFlights);
+        applyProviderPnr(bookingFlights, 0, pnr.getDeparturePnr());
+        if (bookingFlights.size() > 1) {
+            applyProviderPnr(bookingFlights, 1, pnr.getReturnPnr());
         }
     }
 
-    private boolean applyProviderPnr(List<BookingFlight> rows, int idx, List<BiztripSubmitResponse.PnrData> pnrList) {
+    private void applyProviderPnr(List<BookingFlight> rows, int idx, List<BookingFlightSubmitResponse.PnrData> pnrList) {
         if (pnrList == null || pnrList.isEmpty()) {
-            return false;
+            return;
         }
-        String providerPnr = pnrList.get(0).getProviderPnr();
+        String providerPnr = pnrList.get(0).getAirlinePnrItems().get(0).getAirlinePnr();
         if (providerPnr == null || providerPnr.isBlank()) {
-            return false;
+            return;
         }
         rows.get(idx).setPnrInfo(providerPnr);
-        return true;
     }
 
     public BookingResponse toResponse(Booking booking, boolean detail, boolean needAttachment) {

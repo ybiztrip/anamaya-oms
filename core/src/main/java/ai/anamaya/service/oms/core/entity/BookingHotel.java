@@ -96,6 +96,9 @@ public class BookingHotel extends BaseEntity {
     @Column(name = "ota_reference", length = 256)
     private String otaReference;
 
+    @Column(name = "itinerary_id", length = 100)
+    private String itineraryId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private BookingHotelStatus status;

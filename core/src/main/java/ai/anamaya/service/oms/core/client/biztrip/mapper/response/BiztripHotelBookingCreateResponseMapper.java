@@ -36,6 +36,7 @@ public class BiztripHotelBookingCreateResponseMapper {
 
         return HotelBookingCreateResponse.builder()
             .bookingReference(source.getBookingId())
+            .itineraryId(source.getItineraryId())
             .status(source.getBookingStatus())
             .currency(
                 source.getTotalChargeableRate() != null

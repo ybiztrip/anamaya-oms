@@ -309,6 +309,7 @@ public class BookingHotelService {
             );
 
             hotel.setStatus(hotelStatus);
+            hotel.setItineraryId(createResponse.getItineraryId());
             hotel.setBookingReference(createResponse.getBookingReference());
             hotel.setPaymentUrl(createResponse.getPaymentUrl());
             hotel.setPartnerSellAmount(
