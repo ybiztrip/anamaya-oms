@@ -4,16 +4,24 @@ import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.context.UserCallerContext;
 import ai.anamaya.service.oms.core.dto.request.CompanyCreditInvoiceListFilter;
+import ai.anamaya.service.oms.core.dto.request.CreditMonitoringFilter;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
+import ai.anamaya.service.oms.core.dto.response.CreditMonitoringResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
+import ai.anamaya.service.oms.core.service.CreditMonitoringService;
 import ai.anamaya.service.oms.core.service.CreditService;
 import ai.anamaya.service.oms.core.util.SecurityUtil;
 import ai.anamaya.service.oms.rest.dto.request.CompanyCreditInvoiceRequestRest;
 import ai.anamaya.service.oms.rest.dto.response.CompanyCreditInvoiceResponseRest;
 import ai.anamaya.service.oms.rest.dto.response.CompanyCreditResponseRest;
+import ai.anamaya.service.oms.rest.dto.response.CreditMonitoringResponseRest;
 import ai.anamaya.service.oms.rest.mapper.CompanyCreditMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +33,7 @@ import java.util.List;
 public class CompanyCreditController {
 
     private final CreditService service;
+    private final CreditMonitoringService creditMonitoringService;
     private final CompanyCreditMapper mapper;
     private final JwtUtils jwtUtils;
 
@@ -51,6 +60,44 @@ public class CompanyCreditController {
             .toList();
 
         return ApiResponse.success(list);
+    }
+
+    @GetMapping("/monitoring")
+    public ApiResponse<List<CreditMonitoringResponseRest>> monitoring(
+        @ModelAttribute CreditMonitoringFilter filter,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String sort) {
+
+        Long jwtCompanyId = jwtUtils.getCompanyIdFromToken();
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
+
+        if (!isSuperAdmin) {
+            filter.setCompanyId(jwtCompanyId);
+        } else if (filter.getCompanyId() == null || filter.getCompanyId() == 0) {
+            filter.setCompanyId(jwtCompanyId);
+        }
+
+        Pageable pageable = PageRequest.of(
+            page,
+            size,
+            sort != null ? Sort.by(sort) : Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        Page<CreditMonitoringResponse> result = creditMonitoringService.getMonitoring(filter, pageable);
+
+        List<CreditMonitoringResponseRest> data = result.getContent().stream()
+            .map(mapper::toRest)
+            .toList();
+
+        return ApiResponse.paginatedSuccess(
+            data,
+            result.getTotalElements(),
+            result.getTotalPages(),
+            result.isLast(),
+            result.getSize(),
+            result.getNumber()
+        );
     }
 
     @GetMapping("/invoices")

@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.core.entity;
 
+import ai.anamaya.service.oms.core.enums.BookingType;
 import ai.anamaya.service.oms.core.enums.CreditSourceType;
 import ai.anamaya.service.oms.core.enums.CreditTransactionType;
 import jakarta.persistence.*;
@@ -33,6 +34,10 @@ public class CompanyCreditDetail extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "source_type")
     private CreditSourceType sourceType; // e.g., Booking, Procurement
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "booking_type")
+    private BookingType bookingType; // FLIGHT or HOTEL when sourceType=BOOKING; null otherwise
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")

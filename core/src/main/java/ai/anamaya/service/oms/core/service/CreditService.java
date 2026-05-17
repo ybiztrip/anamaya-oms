@@ -57,6 +57,7 @@ public class CreditService {
                 request.getType(),
                 request.getAmount(),
                 request.getSourceType(),
+                request.getBookingType(),
                 request.getReferenceId(),
                 request.getReferenceCode(),
                 request.getRemarks(),
@@ -78,6 +79,7 @@ public class CreditService {
                 CreditTransactionType.CREDIT,
                 request.getAmount(),
                 CreditSourceType.TOPUP,
+                null,
                 request.getReferenceId(),
                 request.getReferenceCode(),
                 request.getRemarks() != null ? request.getRemarks() : "Credit top-up",
@@ -90,6 +92,7 @@ public class CreditService {
             CreditTransactionType type,
             BigDecimal amount,
             CreditSourceType sourceType,
+            BookingType bookingType,
             Long referenceId,
             String referenceCode,
             String remarks,
@@ -118,6 +121,7 @@ public class CreditService {
                 .referenceId(referenceId)
                 .referenceCode(referenceCode)
                 .sourceType(sourceType)
+                .bookingType(bookingType)
                 .type(type)
                 .amount(amount)
                 .beginBalance(begin)

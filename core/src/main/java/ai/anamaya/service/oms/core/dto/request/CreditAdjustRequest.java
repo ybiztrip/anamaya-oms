@@ -16,6 +16,7 @@ public class CreditAdjustRequest {
     private Long companyId;
     private CreditCodeType code;
     private CreditSourceType sourceType;
+    private BookingType bookingType;
     private CreditTransactionType type;
     private BigDecimal amount;
     private Long referenceId;
