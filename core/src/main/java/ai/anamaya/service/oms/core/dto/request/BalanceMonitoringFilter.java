@@ -2,23 +2,23 @@ package ai.anamaya.service.oms.core.dto.request;
 
 import ai.anamaya.service.oms.core.enums.BalanceCodeType;
 import ai.anamaya.service.oms.core.enums.BalanceSourceType;
-import ai.anamaya.service.oms.core.enums.BalanceTransactionType;
 import ai.anamaya.service.oms.core.enums.BookingType;
-import lombok.*;
-import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BalanceAdjustRequest {
+@Builder
+public class BalanceMonitoringFilter {
     private Long companyId;
-    private BalanceCodeType code;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private BalanceCodeType balanceCodeType;
     private BalanceSourceType sourceType;
     private BookingType bookingType;
-    private BalanceTransactionType type;
-    private BigDecimal amount;
-    private Long referenceId;
-    private String referenceCode;
-    private String remarks;
 }

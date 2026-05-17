@@ -2,6 +2,7 @@ package ai.anamaya.service.oms.core.entity;
 
 import ai.anamaya.service.oms.core.enums.BalanceSourceType;
 import ai.anamaya.service.oms.core.enums.BalanceTransactionType;
+import ai.anamaya.service.oms.core.enums.BookingType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -30,6 +31,10 @@ public class CompanyBalanceDetail extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "source_type")
     private BalanceSourceType sourceType; // e.g., Booking, Procurement
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "booking_type")
+    private BookingType bookingType; // FLIGHT or HOTEL when sourceType=BOOKING; null otherwise
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")

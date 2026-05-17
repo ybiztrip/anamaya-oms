@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface BookingHotelRepository extends JpaRepository<BookingHotel, Long>, JpaSpecificationExecutor<BookingHotel> {
@@ -16,6 +17,7 @@ public interface BookingHotelRepository extends JpaRepository<BookingHotel, Long
     List<BookingHotel> findByBookingId(Long bookingId);
     List<BookingHotel> findByBookingIdAndBookingCode(Long bookingId, String bookingCode);
     List<BookingHotel> findByBookingCode(String bookingCode);
+    List<BookingHotel> findByBookingCodeIn(Collection<String> bookingCodes);
     List<BookingHotel> findByIdInAndCompanyId(List<Long> ids, Long companyId);
 
     @Modifying

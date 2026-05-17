@@ -1,21 +1,30 @@
 package ai.anamaya.service.oms.rest.controller;
 
 import ai.anamaya.service.oms.core.context.UserCallerContext;
+import ai.anamaya.service.oms.core.dto.request.BalanceMonitoringFilter;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
+import ai.anamaya.service.oms.core.dto.response.BalanceMonitoringResponse;
 import ai.anamaya.service.oms.core.dto.response.BalanceRecapDailyResponse;
 import ai.anamaya.service.oms.core.enums.BalanceCodeType;
 import ai.anamaya.service.oms.core.security.JwtUtils;
+import ai.anamaya.service.oms.core.service.BalanceMonitoringService;
 import ai.anamaya.service.oms.core.service.BalanceRecapDailyService;
 import ai.anamaya.service.oms.core.service.BalanceService;
+import ai.anamaya.service.oms.core.util.SecurityUtil;
 import ai.anamaya.service.oms.rest.dto.request.BalanceAdjustRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.BalanceRecapDailyRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.BalanceTopUpRequestRest;
+import ai.anamaya.service.oms.rest.dto.response.BalanceMonitoringResponseRest;
 import ai.anamaya.service.oms.rest.dto.response.BalanceRecapDailyResponseRest;
 import ai.anamaya.service.oms.rest.dto.response.CompanyBalanceResponseRest;
 import ai.anamaya.service.oms.rest.mapper.BalanceMapper;
 import ai.anamaya.service.oms.rest.mapper.BalanceRecapDailyMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +39,7 @@ public class BalanceController {
 
     private final BalanceService balanceService;
     private final BalanceRecapDailyService balanceRecapDailyService;
+    private final BalanceMonitoringService balanceMonitoringService;
     private final BalanceMapper mapper;
     private final BalanceRecapDailyMapper recapMapper;
     private final JwtUtils jwtUtils;
@@ -86,6 +96,44 @@ public class BalanceController {
         LocalDate date = LocalDate.parse(reqRest.getDate());
         List<BalanceRecapDailyResponse> results = balanceRecapDailyService.recapDailyBalance(date);
         return ApiResponse.success(results.stream().map(recapMapper::toRest).toList());
+    }
+
+    @GetMapping("/monitoring")
+    public ApiResponse<List<BalanceMonitoringResponseRest>> monitoring(
+        @ModelAttribute BalanceMonitoringFilter filter,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String sort) {
+
+        Long jwtCompanyId = jwtUtils.getCompanyIdFromToken();
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
+
+        if (!isSuperAdmin) {
+            filter.setCompanyId(jwtCompanyId);
+        } else if (filter.getCompanyId() == null || filter.getCompanyId() == 0) {
+            filter.setCompanyId(jwtCompanyId);
+        }
+
+        Pageable pageable = PageRequest.of(
+            page,
+            size,
+            sort != null ? Sort.by(sort) : Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        Page<BalanceMonitoringResponse> result = balanceMonitoringService.getMonitoring(filter, pageable);
+
+        List<BalanceMonitoringResponseRest> data = result.getContent().stream()
+            .map(mapper::toRest)
+            .toList();
+
+        return ApiResponse.paginatedSuccess(
+            data,
+            result.getTotalElements(),
+            result.getTotalPages(),
+            result.isLast(),
+            result.getSize(),
+            result.getNumber()
+        );
     }
 
     @GetMapping("/{code}")

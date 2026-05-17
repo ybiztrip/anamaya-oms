@@ -50,6 +50,7 @@ public class BalanceService {
                 request.getType(),
                 request.getAmount(),
                 request.getSourceType(),
+                request.getBookingType(),
                 request.getReferenceId(),
                 request.getReferenceCode(),
                 request.getRemarks(),
@@ -71,6 +72,7 @@ public class BalanceService {
                 BalanceTransactionType.CREDIT,
                 request.getAmount(),
                 BalanceSourceType.TOPUP,
+                null,
                 request.getReferenceId(),
                 request.getReferenceCode(),
                 request.getRemarks() != null ? request.getRemarks() : "Balance top-up",
@@ -83,6 +85,7 @@ public class BalanceService {
             BalanceTransactionType type,
             BigDecimal amount,
             BalanceSourceType sourceType,
+            BookingType bookingType,
             Long referenceId,
             String referenceCode,
             String remarks,
@@ -111,6 +114,7 @@ public class BalanceService {
                 .referenceId(referenceId)
                 .referenceCode(referenceCode)
                 .sourceType(sourceType)
+                .bookingType(bookingType)
                 .type(type)
                 .amount(amount)
                 .beginBalance(begin)

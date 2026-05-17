@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface BookingFlightRepository extends JpaRepository<BookingFlight, Long>, JpaSpecificationExecutor<BookingFlight> {
@@ -16,6 +17,7 @@ public interface BookingFlightRepository extends JpaRepository<BookingFlight, Lo
     List<BookingFlight> findByBookingId(Long bookingId);
     List<BookingFlight> findByBookingIdAndBookingCode(Long bookingId, String bookingCode);
     List<BookingFlight> findByBookingCodeOrderByIdAsc(String bookingCode);
+    List<BookingFlight> findByBookingCodeIn(Collection<String> bookingCodes);
     List<BookingFlight> findByIdInAndCompanyId(List<Long> ids, Long companyId);
 
     @Modifying
