@@ -69,4 +69,44 @@ public interface BookingFlightRepository extends JpaRepository<BookingFlight, Lo
         @Param("bookingCode") String bookingCode,
         @Param("status") BookingFlightStatus status
     );
+
+    @Modifying
+    @Query("""
+        UPDATE BookingFlight bf
+        SET bf.refundId = :refundId, bf.updatedBy = :userId
+        WHERE bf.id = :id
+          AND bf.companyId = :companyId
+          AND bf.refundId IS NULL
+    """)
+    int linkRefund(
+        @Param("id") Long id,
+        @Param("companyId") Long companyId,
+        @Param("refundId") Long refundId,
+        @Param("userId") Long userId
+    );
+
+    @Modifying
+    @Query("""
+        UPDATE BookingFlight bf
+        SET bf.refundId = NULL, bf.updatedBy = :userId
+        WHERE bf.refundId = :refundId
+    """)
+    int unlinkRefund(
+        @Param("refundId") Long refundId,
+        @Param("userId") Long userId
+    );
+
+    java.util.Optional<BookingFlight> findFirstByRefundId(Long refundId);
+
+    @Modifying
+    @Query("""
+        UPDATE BookingFlight bf
+        SET bf.status = :status, bf.updatedBy = :userId
+        WHERE bf.id = :id
+    """)
+    int updateStatusById(
+        @Param("id") Long id,
+        @Param("status") BookingFlightStatus status,
+        @Param("userId") Long userId
+    );
 }

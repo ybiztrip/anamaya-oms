@@ -5,4 +5,5 @@ public enum BalanceSourceType {
     PROCUREMENT,
     ADJUSTMENT,
     TOPUP,
+    REFUND,
 }

@@ -57,4 +57,44 @@ public interface BookingHotelRepository extends JpaRepository<BookingHotel, Long
         @Param("status") BookingHotelStatus status
     );
 
+    @Modifying
+    @Query("""
+        UPDATE BookingHotel bh
+        SET bh.refundId = :refundId, bh.updatedBy = :userId
+        WHERE bh.id = :id
+          AND bh.companyId = :companyId
+          AND bh.refundId IS NULL
+    """)
+    int linkRefund(
+        @Param("id") Long id,
+        @Param("companyId") Long companyId,
+        @Param("refundId") Long refundId,
+        @Param("userId") Long userId
+    );
+
+    @Modifying
+    @Query("""
+        UPDATE BookingHotel bh
+        SET bh.refundId = NULL, bh.updatedBy = :userId
+        WHERE bh.refundId = :refundId
+    """)
+    int unlinkRefund(
+        @Param("refundId") Long refundId,
+        @Param("userId") Long userId
+    );
+
+    java.util.Optional<BookingHotel> findFirstByRefundId(Long refundId);
+
+    @Modifying
+    @Query("""
+        UPDATE BookingHotel bh
+        SET bh.status = :status, bh.updatedBy = :userId
+        WHERE bh.id = :id
+    """)
+    int updateStatusById(
+        @Param("id") Long id,
+        @Param("status") BookingHotelStatus status,
+        @Param("userId") Long userId
+    );
+
 }

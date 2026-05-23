@@ -10,7 +10,8 @@ public enum BookingFlightStatus {
     PAID,
     ISSUING,
     ISSUED,
-    ISSUANCE_FAILED;
+    ISSUANCE_FAILED,
+    REFUNDED;
 
     public static BookingFlightStatus fromBookingPartnerStatus(String status) {
         if (status == null) {

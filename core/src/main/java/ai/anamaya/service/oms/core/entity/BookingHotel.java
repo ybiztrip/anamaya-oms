@@ -84,6 +84,9 @@ public class BookingHotel extends BaseEntity {
     @Column(name = "invoice_id")
     private Long invoiceId;
 
+    @Column(name = "refund_id")
+    private Long refundId;
+
     @Column(name = "currency", length = 4)
     private String currency;
 

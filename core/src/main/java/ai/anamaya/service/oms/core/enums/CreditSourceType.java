@@ -4,4 +4,5 @@ public enum CreditSourceType {
     INVOICE,
     BOOKING,
     TOPUP,
+    REFUND,
 }

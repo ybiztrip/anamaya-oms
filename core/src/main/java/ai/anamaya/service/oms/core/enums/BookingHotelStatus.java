@@ -9,7 +9,8 @@ public enum BookingHotelStatus {
     PAID,
     ISSUING,
     ISSUED,
-    CANCELLED;
+    CANCELLED,
+    REFUNDED;
 
     public static BookingHotelStatus fromBookingPartnerStatus(String status) {
         if (status == null) {
