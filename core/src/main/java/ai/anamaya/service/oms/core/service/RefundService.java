@@ -4,6 +4,7 @@ import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.BalanceAdjustRequest;
 import ai.anamaya.service.oms.core.dto.request.CreditAdjustRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundCreateRequest;
+import ai.anamaya.service.oms.core.dto.request.RefundFilter;
 import ai.anamaya.service.oms.core.dto.request.RefundPaidRequest;
 import ai.anamaya.service.oms.core.dto.response.RefundResponse;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
@@ -24,7 +25,10 @@ import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.BookingFlightRepository;
 import ai.anamaya.service.oms.core.repository.BookingHotelRepository;
 import ai.anamaya.service.oms.core.repository.RefundRepository;
+import ai.anamaya.service.oms.core.specification.RefundSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -229,6 +233,13 @@ public class RefundService {
         Refund refund = refundRepository.findByIdAndCompanyId(id, callerContext.companyId())
             .orElseThrow(() -> new NotFoundException("Refund not found"));
         return toResponse(refund);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<RefundResponse> getList(CallerContext callerContext, RefundFilter filter, Pageable pageable) {
+        filter.setCompanyId(callerContext.companyId());
+        Page<Refund> page = refundRepository.findAll(RefundSpecification.filter(filter), pageable);
+        return page.map(this::toResponse);
     }
 
     private void adjustFunds(CallerContext callerContext, Refund refund) {
