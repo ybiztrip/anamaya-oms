@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.core.dto.request.FlightOneWaySearchRequest;
+import ai.anamaya.service.oms.core.dto.request.RefundProviderRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.payment.FlightBookingPaymentRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.status.FlightBookingStatusCheckRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.FlightBookingSearchDataRequest;
@@ -24,4 +25,6 @@ public interface FlightProvider {
     BookingFlightSubmitResponse payment(CallerContext callerContext, FlightBookingPaymentRequest request);
     BookingFlightSubmitResponse checkStatus(CallerContext callerContext, FlightBookingStatusCheckRequest request);
     List<BookingDataResponse> searchData(CallerContext callerContext, FlightBookingSearchDataRequest request);
+
+    RefundProviderResponse submitRefund(CallerContext callerContext, RefundProviderRequest request);
 }

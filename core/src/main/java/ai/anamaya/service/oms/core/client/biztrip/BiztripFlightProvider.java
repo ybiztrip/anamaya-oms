@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.core.client.biztrip;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.core.dto.request.FlightOneWaySearchRequest;
+import ai.anamaya.service.oms.core.dto.request.RefundProviderRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.payment.FlightBookingPaymentRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.status.FlightBookingStatusCheckRequest;
 import ai.anamaya.service.oms.core.dto.request.booking.submit.FlightBookingSearchDataRequest;
@@ -29,6 +30,7 @@ public class BiztripFlightProvider implements FlightProvider {
     private final BiztripFlightSearchService searchService;
     private final BiztripFlightBookingSubmitService bookingSubmitService;
     private final BiztripFlightBookingPaymentService biztripFlightBookingPaymentService;
+    private final BiztripFlightRefundSubmitService biztripFlightRefundSubmitService;
 
     @Override
     public ApiResponse<List<FlightAirportResponse>> getAirports() {
@@ -73,5 +75,10 @@ public class BiztripFlightProvider implements FlightProvider {
     @Override
     public List<BookingDataResponse> searchData(CallerContext callerContext, FlightBookingSearchDataRequest request) {
         return biztripFlightBookingSearchDataService.search(callerContext, request);
+    }
+
+    @Override
+    public RefundProviderResponse submitRefund(CallerContext callerContext, RefundProviderRequest request) {
+        return biztripFlightRefundSubmitService.submit(callerContext, request);
     }
 }

@@ -6,6 +6,7 @@ import ai.anamaya.service.oms.core.dto.request.CreditAdjustRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundFilter;
 import ai.anamaya.service.oms.core.dto.request.RefundPaidRequest;
+import ai.anamaya.service.oms.core.dto.request.RefundProviderRequest;
 import ai.anamaya.service.oms.core.dto.response.RefundResponse;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
 import ai.anamaya.service.oms.core.entity.BookingHotel;
@@ -45,6 +46,26 @@ public class RefundService {
     private final BookingHotelRepository bookingHotelRepository;
     private final BalanceService balanceService;
     private final CreditService creditService;
+    private final java.util.Map<String, FlightProvider> flightProviders;
+    private final java.util.Map<String, HotelProvider> hotelProviders;
+
+    private FlightProvider getFlightProvider(String source) {
+        String key = (source != null ? source.toLowerCase() : "biztrip") + "FlightProvider";
+        FlightProvider provider = flightProviders.get(key);
+        if (provider == null) {
+            provider = flightProviders.get("biztripFlightProvider");
+        }
+        return provider;
+    }
+
+    private HotelProvider getHotelProvider(String source) {
+        String key = (source != null ? source.toLowerCase() : "biztrip") + "HotelProvider";
+        HotelProvider provider = hotelProviders.get(key);
+        if (provider == null) {
+            provider = hotelProviders.get("biztripHotelProvider");
+        }
+        return provider;
+    }
 
     @Transactional
     public RefundResponse createRefund(CallerContext callerContext, RefundCreateRequest request) {
@@ -78,6 +99,8 @@ public class RefundService {
         String bookingCode;
         BookingPaymentMethod paymentMethod;
         Long bookingId;
+        String otaReference;
+        String clientSource;
 
         if (request.getBookingType() == BookingType.FLIGHT) {
             BookingFlight flight = bookingFlightRepository
@@ -99,6 +122,8 @@ public class RefundService {
             bookingCode = flight.getBookingCode();
             paymentMethod = flight.getPaymentMethod();
             bookingId = flight.getId();
+            otaReference = flight.getOtaReference();
+            clientSource = flight.getClientSource();
         } else {
             BookingHotel hotel = bookingHotelRepository
                 .findByIdInAndCompanyId(java.util.List.of(request.getBookingHotelId()), companyId)
@@ -119,6 +144,13 @@ public class RefundService {
             bookingCode = hotel.getBookingCode();
             paymentMethod = hotel.getPaymentMethod();
             bookingId = hotel.getId();
+            otaReference = hotel.getOtaReference();
+            clientSource = hotel.getClientSource();
+        }
+
+        if (otaReference == null || otaReference.isBlank()) {
+            throw new IllegalArgumentException(
+                "Booking has no provider reference; cannot submit refund to provider");
         }
 
         if (refundRepository.existsByCompanyIdAndBookingCodeAndStatusNot(
@@ -161,6 +193,18 @@ public class RefundService {
 
         if (linked != 1) {
             throw new IllegalArgumentException("Booking already linked to another refund");
+        }
+
+        RefundProviderRequest providerRequest = RefundProviderRequest.builder()
+            .partnerBookingId(bookingCode)
+            .bookingId(otaReference)
+            .cancellationReason(request.getRemarks())
+            .build();
+
+        if (request.getBookingType() == BookingType.FLIGHT) {
+            getFlightProvider(clientSource).submitRefund(callerContext, providerRequest);
+        } else {
+            getHotelProvider(clientSource).submitCancellation(callerContext, providerRequest);
         }
 
         return toResponse(refund);

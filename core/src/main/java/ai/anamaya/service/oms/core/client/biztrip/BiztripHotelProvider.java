@@ -31,6 +31,7 @@ public class BiztripHotelProvider implements HotelProvider {
     private final BiztripHotelBookingCheckRateService biztripHotelBookingCheckRateService;
     private final BiztripHotelBookingCreateService biztripHotelBookingCreateService;
     private final BiztripHotelGetDetailService biztripHotelGetDetailService;
+    private final BiztripHotelBookingCancellationService biztripHotelBookingCancellationService;
 
     @Override
     public HotelGeoListResponse getGeoList(CallerContext callerContext, HotelGeoListRequest request) {
@@ -90,6 +91,11 @@ public class BiztripHotelProvider implements HotelProvider {
     @Override
     public HotelBookingDetailResponse getBookingDetail(CallerContext callerContext, HotelBookingGetDetailRequest request) {
         return biztripHotelGetDetailService.getDetail(callerContext, request);
+    }
+
+    @Override
+    public RefundProviderResponse submitCancellation(CallerContext callerContext, RefundProviderRequest request) {
+        return biztripHotelBookingCancellationService.submitCancellation(callerContext, request);
     }
 
 }

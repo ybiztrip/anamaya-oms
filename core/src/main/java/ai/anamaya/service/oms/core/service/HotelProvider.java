@@ -26,4 +26,6 @@ public interface HotelProvider {
     HotelBookingCheckRateResponse checkRate(CallerContext callerContext, HotelBookingCheckRateRequest request);
     HotelBookingCreateResponse create(CallerContext callerContext, HotelBookingCreateRequest request);
     HotelBookingDetailResponse getBookingDetail(CallerContext callerContext, HotelBookingGetDetailRequest request);
+
+    RefundProviderResponse submitCancellation(CallerContext callerContext, RefundProviderRequest request);
 }
