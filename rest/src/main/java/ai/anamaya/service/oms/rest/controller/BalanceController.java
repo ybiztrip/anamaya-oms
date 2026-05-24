@@ -7,6 +7,7 @@ import ai.anamaya.service.oms.core.dto.response.BalanceMonitoringResponse;
 import ai.anamaya.service.oms.core.dto.response.BalanceRecapDailyResponse;
 import ai.anamaya.service.oms.core.enums.BalanceCodeType;
 import ai.anamaya.service.oms.core.security.JwtUtils;
+import ai.anamaya.service.oms.core.service.BalanceMonitoringExportService;
 import ai.anamaya.service.oms.core.service.BalanceMonitoringService;
 import ai.anamaya.service.oms.core.service.BalanceRecapDailyService;
 import ai.anamaya.service.oms.core.service.BalanceService;
@@ -25,6 +26,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +44,7 @@ public class BalanceController {
     private final BalanceService balanceService;
     private final BalanceRecapDailyService balanceRecapDailyService;
     private final BalanceMonitoringService balanceMonitoringService;
+    private final BalanceMonitoringExportService balanceMonitoringExportService;
     private final BalanceMapper mapper;
     private final BalanceRecapDailyMapper recapMapper;
     private final JwtUtils jwtUtils;
@@ -134,6 +139,28 @@ public class BalanceController {
             result.getSize(),
             result.getNumber()
         );
+    }
+
+    @GetMapping("/monitoring/export")
+    public ResponseEntity<byte[]> exportMonitoring(
+        @ModelAttribute BalanceMonitoringFilter filter) {
+
+        Long jwtCompanyId = jwtUtils.getCompanyIdFromToken();
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
+
+        if (!isSuperAdmin) {
+            filter.setCompanyId(jwtCompanyId);
+        } else if (filter.getCompanyId() == null || filter.getCompanyId() == 0) {
+            filter.setCompanyId(jwtCompanyId);
+        }
+
+        byte[] csv = balanceMonitoringExportService.exportToCsv(filter);
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .header(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=balance-monitoring.csv")
+            .body(csv);
     }
 
     @GetMapping("/{code}")

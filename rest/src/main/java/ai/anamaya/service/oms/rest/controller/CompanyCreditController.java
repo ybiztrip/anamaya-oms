@@ -8,6 +8,7 @@ import ai.anamaya.service.oms.core.dto.request.CreditMonitoringFilter;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.dto.response.CreditMonitoringResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
+import ai.anamaya.service.oms.core.service.CreditMonitoringExportService;
 import ai.anamaya.service.oms.core.service.CreditMonitoringService;
 import ai.anamaya.service.oms.core.service.CreditService;
 import ai.anamaya.service.oms.core.util.SecurityUtil;
@@ -22,6 +23,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +38,7 @@ public class CompanyCreditController {
 
     private final CreditService service;
     private final CreditMonitoringService creditMonitoringService;
+    private final CreditMonitoringExportService creditMonitoringExportService;
     private final CompanyCreditMapper mapper;
     private final JwtUtils jwtUtils;
 
@@ -98,6 +103,28 @@ public class CompanyCreditController {
             result.getSize(),
             result.getNumber()
         );
+    }
+
+    @GetMapping("/monitoring/export")
+    public ResponseEntity<byte[]> exportMonitoring(
+        @ModelAttribute CreditMonitoringFilter filter) {
+
+        Long jwtCompanyId = jwtUtils.getCompanyIdFromToken();
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
+
+        if (!isSuperAdmin) {
+            filter.setCompanyId(jwtCompanyId);
+        } else if (filter.getCompanyId() == null || filter.getCompanyId() == 0) {
+            filter.setCompanyId(jwtCompanyId);
+        }
+
+        byte[] csv = creditMonitoringExportService.exportToCsv(filter);
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .header(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=credit-monitoring.csv")
+            .body(csv);
     }
 
     @GetMapping("/invoices")
