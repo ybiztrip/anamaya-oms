@@ -6,16 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RefundPaidRequest {
+public class RefundCancelRequest {
     private BookingType type;
     private String partnerBookingId;
     private String bookingId;
-    private BigDecimal paidAmount;
     private String remarks;
 }

@@ -6,6 +6,7 @@ import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.dto.response.RefundResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.RefundService;
+import ai.anamaya.service.oms.rest.dto.request.RefundCancelRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.RefundCreateRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.RefundPaidRequestRest;
 import ai.anamaya.service.oms.rest.dto.response.RefundResponseRest;
@@ -45,21 +46,18 @@ public class RefundController {
     }
 
     @PreAuthorize("hasAnyRole('OFFICELESS', 'SYSTEM')")
-    @PostMapping("/{id}/paid")
-    public ApiResponse<RefundResponseRest> paid(
-        @PathVariable Long id,
-        @Valid @RequestBody RefundPaidRequestRest reqRest
-    ) {
+    @PostMapping("/paid")
+    public ApiResponse<RefundResponseRest> paid(@Valid @RequestBody RefundPaidRequestRest reqRest) {
         UserCallerContext ctx = callerContext();
-        var result = refundService.paidRefund(ctx, id, mapper.toCore(reqRest));
+        var result = refundService.paidRefund(ctx, mapper.toCore(reqRest));
         return ApiResponse.success(mapper.toRest(result));
     }
 
     @PreAuthorize("hasAnyRole('OFFICELESS', 'SYSTEM')")
-    @PostMapping("/{id}/cancel")
-    public ApiResponse<RefundResponseRest> cancel(@PathVariable Long id) {
+    @PostMapping("/cancel")
+    public ApiResponse<RefundResponseRest> cancel(@Valid @RequestBody RefundCancelRequestRest reqRest) {
         UserCallerContext ctx = callerContext();
-        var result = refundService.cancelRefund(ctx, id);
+        var result = refundService.cancelRefund(ctx, mapper.toCore(reqRest));
         return ApiResponse.success(mapper.toRest(result));
     }
 

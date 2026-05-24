@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.BalanceAdjustRequest;
 import ai.anamaya.service.oms.core.dto.request.CreditAdjustRequest;
+import ai.anamaya.service.oms.core.dto.request.RefundCancelRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundFilter;
 import ai.anamaya.service.oms.core.dto.request.RefundPaidRequest;
@@ -211,16 +212,28 @@ public class RefundService {
     }
 
     @Transactional
-    public RefundResponse paidRefund(CallerContext callerContext, Long id, RefundPaidRequest request) {
+    public RefundResponse paidRefund(CallerContext callerContext, RefundPaidRequest request) {
         Long userId = callerContext.userId();
 
-        if (request == null || request.getPaidAmount() == null
+        if (request == null) {
+            throw new IllegalArgumentException("request is required");
+        }
+        if (request.getType() == null) {
+            throw new IllegalArgumentException("type is required");
+        }
+        if (request.getPartnerBookingId() == null || request.getPartnerBookingId().isBlank()) {
+            throw new IllegalArgumentException("partnerBookingId is required");
+        }
+        if (request.getBookingId() == null || request.getBookingId().isBlank()) {
+            throw new IllegalArgumentException("bookingId is required");
+        }
+        if (request.getPaidAmount() == null
             || request.getPaidAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("paidAmount must be greater than zero");
         }
 
-        Refund refund = refundRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Refund not found"));
+        Refund refund = findRefundByBooking(
+            request.getType(), request.getPartnerBookingId(), request.getBookingId());
 
         if (refund.getStatus() == RefundStatus.PAID) {
             return toResponse(refund);
@@ -245,11 +258,24 @@ public class RefundService {
     }
 
     @Transactional
-    public RefundResponse cancelRefund(CallerContext callerContext, Long id) {
+    public RefundResponse cancelRefund(CallerContext callerContext, RefundCancelRequest request) {
         Long userId = callerContext.userId();
 
-        Refund refund = refundRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Refund not found"));
+        if (request == null) {
+            throw new IllegalArgumentException("request is required");
+        }
+        if (request.getType() == null) {
+            throw new IllegalArgumentException("type is required");
+        }
+        if (request.getPartnerBookingId() == null || request.getPartnerBookingId().isBlank()) {
+            throw new IllegalArgumentException("partnerBookingId is required");
+        }
+        if (request.getBookingId() == null || request.getBookingId().isBlank()) {
+            throw new IllegalArgumentException("bookingId is required");
+        }
+
+        Refund refund = findRefundByBooking(
+            request.getType(), request.getPartnerBookingId(), request.getBookingId());
 
         if (refund.getStatus() == RefundStatus.CANCELLED) {
             return toResponse(refund);
@@ -260,6 +286,9 @@ public class RefundService {
 
         refund.setStatus(RefundStatus.CANCELLED);
         refund.setCancelledAt(LocalDateTime.now());
+        if (request.getRemarks() != null && !request.getRemarks().isBlank()) {
+            refund.setRemarks(request.getRemarks());
+        }
         refund.setUpdatedBy(userId);
         refundRepository.save(refund);
 
@@ -284,6 +313,37 @@ public class RefundService {
         filter.setCompanyId(callerContext.companyId());
         Page<Refund> page = refundRepository.findAll(RefundSpecification.filter(filter), pageable);
         return page.map(this::toResponse);
+    }
+
+    private Refund findRefundByBooking(BookingType type, String bookingCode, String otaReference) {
+        Long refundId;
+        if (type == BookingType.FLIGHT) {
+            BookingFlight flight = bookingFlightRepository
+                .findByBookingCodeOrderByIdAsc(bookingCode)
+                .stream()
+                .filter(b -> otaReference.equals(b.getOtaReference()))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(
+                    "Booking flight not found for the given partnerBookingId and bookingId"));
+            refundId = flight.getRefundId();
+        } else if (type == BookingType.HOTEL) {
+            BookingHotel hotel = bookingHotelRepository
+                .findByBookingCode(bookingCode)
+                .stream()
+                .filter(b -> otaReference.equals(b.getOtaReference()))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(
+                    "Booking hotel not found for the given partnerBookingId and bookingId"));
+            refundId = hotel.getRefundId();
+        } else {
+            throw new IllegalArgumentException("Unsupported booking type: " + type);
+        }
+
+        if (refundId == null) {
+            throw new NotFoundException("Booking has no refund");
+        }
+        return refundRepository.findById(refundId)
+            .orElseThrow(() -> new NotFoundException("Refund not found"));
     }
 
     private void adjustFunds(CallerContext callerContext, Refund refund) {

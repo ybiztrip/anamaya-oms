@@ -3,13 +3,10 @@ package ai.anamaya.service.oms.rest.dto.request;
 import ai.anamaya.service.oms.core.enums.BookingType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 @Data
-public class RefundPaidRequestRest {
+public class RefundCancelRequestRest {
     @NotNull
     private BookingType type;
 
@@ -18,10 +15,6 @@ public class RefundPaidRequestRest {
 
     @NotBlank
     private String bookingId;
-
-    @NotNull
-    @Positive
-    private BigDecimal paidAmount;
 
     private String remarks;
 }
