@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.dto.request.CompanyCreditInvoiceListFilter;
 import ai.anamaya.service.oms.core.dto.request.CompanyCreditInvoiceRequest;
 import ai.anamaya.service.oms.core.dto.request.CreditAdjustRequest;
@@ -28,11 +29,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CreditService {
 
+    private static final String CFG_BIZTRIP_ACCOUNT_ID = "BIZTRIP_ACCOUNT_ID";
+
     private final CompanyCreditRepository creditRepository;
     private final CompanyCreditInvoiceRepository companyCreditInvoiceRepository;
     private final BookingFlightRepository bookingFlightRepository;
     private final BookingHotelRepository bookingHotelRepository;
     private final CompanyCreditDetailRepository detailRepository;
+    private final CompanyConfigRepository companyConfigRepository;
 
     @Transactional
     public CompanyCreditResponse adjustBalance(CallerContext callerContext, CreditAdjustRequest request) {
@@ -142,6 +146,22 @@ public class CreditService {
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public List<CompanyCreditResponse> getBalancesByBiztripAccountId(String accountId) {
+        List<CompanyConfig> rows = companyConfigRepository
+                .findAllByCodeAndValueStr(CFG_BIZTRIP_ACCOUNT_ID, accountId);
+
+        if (rows.isEmpty()) {
+            throw new NotFoundException("No company mapped to biztrip accountId=" + accountId);
+        }
+        if (rows.size() > 1) {
+            throw new IllegalStateException(
+                    "Multiple companies mapped to biztrip accountId=" + accountId);
+        }
+
+        Long companyId = rows.get(0).getCompanyId();
+        return getBalancesByCompany(new SystemCallerContext(companyId));
     }
 
     @Transactional(readOnly = true)

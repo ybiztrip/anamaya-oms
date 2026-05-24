@@ -67,6 +67,23 @@ public class CompanyCreditController {
         return ApiResponse.success(list);
     }
 
+    @PreAuthorize("hasRole('SYSTEM')")
+    @GetMapping("/external")
+    public ApiResponse<List<CompanyCreditResponseRest>> getAllExternal(
+        @RequestParam String accountId
+    ) {
+        if (accountId == null || accountId.isBlank()) {
+            throw new IllegalArgumentException("accountId is required");
+        }
+
+        var list = service.getBalancesByBiztripAccountId(accountId)
+            .stream()
+            .map(mapper::toRest)
+            .toList();
+
+        return ApiResponse.success(list);
+    }
+
     @GetMapping("/monitoring")
     public ApiResponse<List<CreditMonitoringResponseRest>> monitoring(
         @ModelAttribute CreditMonitoringFilter filter,
