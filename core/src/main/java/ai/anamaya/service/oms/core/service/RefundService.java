@@ -245,7 +245,7 @@ public class RefundService {
                     .code(refund.getBookingType() == BookingType.FLIGHT
                         ? BalanceCodeType.WALLET_FLIGHT
                         : BalanceCodeType.WALLET_HOTEL)
-                    .sourceType(BalanceSourceType.REFUND)
+                    .sourceType(BalanceSourceType.BOOKING_REFUND)
                     .bookingType(refund.getBookingType())
                     .type(BalanceTransactionType.CREDIT)
                     .amount(refund.getPaidAmount())
@@ -261,7 +261,7 @@ public class RefundService {
                     .code(refund.getBookingType() == BookingType.FLIGHT
                         ? CreditCodeType.CREDIT_FLIGHT
                         : CreditCodeType.CREDIT_HOTEL)
-                    .sourceType(CreditSourceType.REFUND)
+                    .sourceType(CreditSourceType.BOOKING_REFUND)
                     .bookingType(refund.getBookingType())
                     .type(CreditTransactionType.CREDIT)
                     .amount(refund.getPaidAmount())

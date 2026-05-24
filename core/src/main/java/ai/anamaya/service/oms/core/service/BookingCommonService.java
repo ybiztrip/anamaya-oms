@@ -178,18 +178,21 @@ public class BookingCommonService {
             referenceCode = bookingHotel.getBookingCode();
         }
 
-        List<CompanyBalanceDetail> companyBalanceDetails = balanceService.getBalanceDetailByReferenceCode(
+        List<CompanyBalanceDetail> originalDetails = balanceService.getBalanceDetailByReferenceCode(
             BalanceSourceType.BOOKING,
             referenceCode
         );
+        List<CompanyBalanceDetail> failedDetails = balanceService.getBalanceDetailByReferenceCode(
+            BalanceSourceType.BOOKING_FAILED,
+            referenceCode
+        );
 
-
-        Set<String> creditedReferenceCodes = companyBalanceDetails.stream()
+        Set<String> creditedReferenceCodes = failedDetails.stream()
             .filter(detail -> detail.getType() == BalanceTransactionType.CREDIT)
             .map(CompanyBalanceDetail::getReferenceCode)
             .collect(Collectors.toSet());
 
-        List<CompanyBalanceDetail> balanceNeedRollback = companyBalanceDetails.stream()
+        List<CompanyBalanceDetail> balanceNeedRollback = originalDetails.stream()
             .filter(detail -> detail.getType() == BalanceTransactionType.DEBIT)
             .filter(detail -> !creditedReferenceCodes.contains(detail.getReferenceCode()))
             .toList();
@@ -200,7 +203,7 @@ public class BookingCommonService {
                 BalanceAdjustRequest.builder()
                     .companyId(booking.getCompanyId())
                     .code(detail.getBalance().getCode())
-                    .sourceType(detail.getSourceType())
+                    .sourceType(BalanceSourceType.BOOKING_FAILED)
                     .bookingType(detail.getBookingType())
                     .type(BalanceTransactionType.CREDIT)
                     .amount(detail.getAmount())
@@ -333,18 +336,21 @@ public class BookingCommonService {
             referenceCode = bookingHotel.getBookingCode();
         }
 
-        List<CompanyCreditDetail> companyBalanceDetails = creditService.getBalanceDetailByReferenceCode(
+        List<CompanyCreditDetail> originalDetails = creditService.getBalanceDetailByReferenceCode(
             CreditSourceType.BOOKING,
             referenceCode
         );
+        List<CompanyCreditDetail> failedDetails = creditService.getBalanceDetailByReferenceCode(
+            CreditSourceType.BOOKING_FAILED,
+            referenceCode
+        );
 
-
-        Set<String> creditedReferenceCodes = companyBalanceDetails.stream()
+        Set<String> creditedReferenceCodes = failedDetails.stream()
             .filter(detail -> detail.getType() == CreditTransactionType.CREDIT)
             .map(CompanyCreditDetail::getReferenceCode)
             .collect(Collectors.toSet());
 
-        List<CompanyCreditDetail> balanceNeedRollback = companyBalanceDetails.stream()
+        List<CompanyCreditDetail> balanceNeedRollback = originalDetails.stream()
             .filter(detail -> detail.getType() == CreditTransactionType.DEBIT)
             .filter(detail -> !creditedReferenceCodes.contains(detail.getReferenceCode()))
             .toList();
@@ -355,7 +361,7 @@ public class BookingCommonService {
                 CreditAdjustRequest.builder()
                     .companyId(booking.getCompanyId())
                     .code(detail.getBalance().getCode())
-                    .sourceType(detail.getSourceType())
+                    .sourceType(CreditSourceType.BOOKING_FAILED)
                     .bookingType(detail.getBookingType())
                     .type(CreditTransactionType.CREDIT)
                     .amount(detail.getAmount())
