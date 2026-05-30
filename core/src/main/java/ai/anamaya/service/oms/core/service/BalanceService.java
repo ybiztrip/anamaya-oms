@@ -1,6 +1,7 @@
 package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.context.SystemCallerContext;
 import ai.anamaya.service.oms.core.dto.request.BalanceAdjustRequest;
 import ai.anamaya.service.oms.core.dto.request.BalanceTopUpRequest;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
@@ -26,8 +27,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BalanceService {
 
+    private static final String CFG_BIZTRIP_ACCOUNT_ID = "BIZTRIP_ACCOUNT_ID";
+
     private final CompanyBalanceRepository balanceRepository;
     private final CompanyBalanceDetailRepository detailRepository;
+    private final CompanyConfigRepository companyConfigRepository;
 
     @Transactional
     public CompanyBalanceResponse adjustBalance(CallerContext callerContext, BalanceAdjustRequest request) {
@@ -135,6 +139,22 @@ public class BalanceService {
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public List<CompanyBalanceResponse> getBalancesByBiztripAccountId(String accountId) {
+        List<CompanyConfig> rows = companyConfigRepository
+                .findAllByCodeAndValueStr(CFG_BIZTRIP_ACCOUNT_ID, accountId);
+
+        if (rows.isEmpty()) {
+            throw new NotFoundException("No company mapped to biztrip accountId=" + accountId);
+        }
+        if (rows.size() > 1) {
+            throw new IllegalStateException(
+                    "Multiple companies mapped to biztrip accountId=" + accountId);
+        }
+
+        Long companyId = rows.get(0).getCompanyId();
+        return getBalancesByCompany(new SystemCallerContext(companyId));
     }
 
     @Transactional(readOnly = true)

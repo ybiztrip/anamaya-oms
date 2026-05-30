@@ -93,6 +93,23 @@ public class BalanceController {
         return ApiResponse.success(list);
     }
 
+    @PreAuthorize("hasRole('SYSTEM')")
+    @GetMapping("/external")
+    public ApiResponse<List<CompanyBalanceResponseRest>> getAllExternal(
+        @RequestParam String accountId
+    ) {
+        if (accountId == null || accountId.isBlank()) {
+            throw new IllegalArgumentException("accountId is required");
+        }
+
+        var list = balanceService.getBalancesByBiztripAccountId(accountId)
+            .stream()
+            .map(mapper::toRest)
+            .toList();
+
+        return ApiResponse.success(list);
+    }
+
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @PostMapping("/recap/daily")
     public ApiResponse<List<BalanceRecapDailyResponseRest>> recapDaily(
