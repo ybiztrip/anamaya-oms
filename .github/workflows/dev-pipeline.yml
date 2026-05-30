@@ -1,0 +1,34 @@
+name: Dev Pipeline
+
+on:
+  push:
+    tags:
+      - '*-dev'
+
+jobs:
+  # ── JOB 1: BUILD ────────────────────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get tag
+        id: tag
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Building service
+        run: echo "Building service with tag ${{ steps.tag.outputs.TAG }}..."
+
+  # ── JOB 2: DEPLOY ───────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build   # runs only after build succeeds
+
+    steps:
+      - name: Get tag
+        id: tag
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Deploying service
+        run: echo "Deploying service with tag ${{ steps.tag.outputs.TAG }}..."
