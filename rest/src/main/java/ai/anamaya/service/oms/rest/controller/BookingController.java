@@ -15,6 +15,9 @@ import ai.anamaya.service.oms.rest.dto.response.BookingResponseRest;
 import ai.anamaya.service.oms.rest.mapper.BookingMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +34,7 @@ public class BookingController {
     private final BookingAttachmentService bookingAttachmentService;
     private final BookingFlightService bookingFlightService;
     private final BookingHotelService bookingHotelService;
+    private final BookingHotelExportService bookingHotelExportService;
 
     private final BookingMapper mapper;
     private final JwtUtils jwtUtils;
@@ -309,6 +313,29 @@ public class BookingController {
             pageResult.getSize(),
             pageResult.getNumber()
         );
+    }
+
+    @GetMapping("/hotels/export")
+    public ResponseEntity<byte[]> exportListBookingHotels(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String sort,
+        @ModelAttribute BookingHotelListFilter filter
+    ) {
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
+
+        if (!isSuperAdmin) {
+            Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
+            filter.setCompanyId(companyIdFromToken);
+        }
+
+        byte[] csv = bookingHotelExportService.exportToCsv(sort, filter);
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .header(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=booking-hotels.csv")
+            .body(csv);
     }
 
     @PreAuthorize("hasAnyRole('OFFICELESS')")
