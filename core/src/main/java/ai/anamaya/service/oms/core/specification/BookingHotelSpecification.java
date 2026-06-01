@@ -44,6 +44,38 @@ public class BookingHotelSpecification {
                 predicates.add(cb.equal(root.get("paymentMethod"), filter.getPaymentMethod()));
             }
 
+            if (filter.getBookingCode() != null && !filter.getBookingCode().isBlank()) {
+                predicates.add(cb.equal(root.get("bookingCode"), filter.getBookingCode()));
+            }
+
+            if (filter.getCheckInStartDate() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(
+                    root.get("checkInDate"),
+                    filter.getCheckInStartDate()
+                ));
+            }
+
+            if (filter.getCheckInEndDate() != null) {
+                predicates.add(cb.lessThanOrEqualTo(
+                    root.get("checkInDate"),
+                    filter.getCheckInEndDate()
+                ));
+            }
+
+            if (filter.getCheckOutStartDate() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(
+                    root.get("checkOutDate"),
+                    filter.getCheckOutStartDate()
+                ));
+            }
+
+            if (filter.getCheckOutEndDate() != null) {
+                predicates.add(cb.lessThanOrEqualTo(
+                    root.get("checkOutDate"),
+                    filter.getCheckOutEndDate()
+                ));
+            }
+
             if (Boolean.TRUE.equals(filter.getInvoiceCandidate())) {
                 predicates.add(cb.equal(root.get("paymentMethod"), BookingPaymentMethod.LIMIT));
                 predicates.add(cb.isNull(root.get("invoiceId")));

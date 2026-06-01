@@ -23,4 +23,9 @@ public class BookingHotelListFilter {
     private LocalDate dateTo;
     private BookingPaymentMethod paymentMethod;
     private Boolean invoiceCandidate;
+    private String bookingCode;
+    private LocalDate checkInStartDate;
+    private LocalDate checkInEndDate;
+    private LocalDate checkOutStartDate;
+    private LocalDate checkOutEndDate;
 }
