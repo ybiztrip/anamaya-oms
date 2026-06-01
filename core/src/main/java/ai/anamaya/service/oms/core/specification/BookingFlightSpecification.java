@@ -43,6 +43,34 @@ public class BookingFlightSpecification {
                 predicates.add(cb.equal(root.get("paymentMethod"), filter.getPaymentMethod()));
             }
 
+            if (filter.getDepartureStartDate() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(
+                    root.get("departureDatetime"),
+                    filter.getDepartureStartDate().atStartOfDay()
+                ));
+            }
+
+            if (filter.getDepartureEndDate() != null) {
+                predicates.add(cb.lessThanOrEqualTo(
+                    root.get("departureDatetime"),
+                    filter.getDepartureEndDate().atTime(23, 59, 59)
+                ));
+            }
+
+            if (filter.getArrivalStartDate() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(
+                    root.get("arrivalDatetime"),
+                    filter.getArrivalStartDate().atStartOfDay()
+                ));
+            }
+
+            if (filter.getArrivalEndDate() != null) {
+                predicates.add(cb.lessThanOrEqualTo(
+                    root.get("arrivalDatetime"),
+                    filter.getArrivalEndDate().atTime(23, 59, 59)
+                ));
+            }
+
             if (Boolean.TRUE.equals(filter.getInvoiceCandidate())) {
                 predicates.add(cb.equal(root.get("paymentMethod"), BookingPaymentMethod.LIMIT));
                 predicates.add(cb.isNull(root.get("invoiceId")));
