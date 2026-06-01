@@ -33,6 +33,7 @@ public class BookingController {
     private final BookingApproveService bookingApproveService;
     private final BookingAttachmentService bookingAttachmentService;
     private final BookingFlightService bookingFlightService;
+    private final BookingFlightExportService bookingFlightExportService;
     private final BookingHotelService bookingHotelService;
     private final BookingHotelExportService bookingHotelExportService;
 
@@ -229,6 +230,29 @@ public class BookingController {
             pageResult.getSize(),
             pageResult.getNumber()
         );
+    }
+
+    @GetMapping("/flights/export")
+    public ResponseEntity<byte[]> exportListBookingFlights(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String sort,
+        @ModelAttribute BookingFlightListFilter filter
+    ) {
+        boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
+
+        if (!isSuperAdmin) {
+            Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
+            filter.setCompanyId(companyIdFromToken);
+        }
+
+        byte[] csv = bookingFlightExportService.exportToCsv(sort, filter);
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType("text/csv"))
+            .header(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=booking-flights.csv")
+            .body(csv);
     }
 
     @PreAuthorize("hasAnyRole('OFFICELESS')")
