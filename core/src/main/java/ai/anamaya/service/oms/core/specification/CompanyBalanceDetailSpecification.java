@@ -28,6 +28,10 @@ public class CompanyBalanceDetailSpecification {
                 predicates.add(cb.equal(root.get("bookingType"), f.getBookingType()));
             }
 
+            if (f.getReferenceCode() != null && !f.getReferenceCode().isBlank()) {
+                predicates.add(cb.equal(root.get("referenceCode"), f.getReferenceCode()));
+            }
+
             if (f.getStartDate() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(
                     root.get("createdAt"),
