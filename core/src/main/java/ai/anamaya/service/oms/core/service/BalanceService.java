@@ -57,6 +57,7 @@ public class BalanceService {
                 request.getBookingType(),
                 request.getReferenceId(),
                 request.getReferenceCode(),
+                request.getContactEmail(),
                 request.getRemarks(),
                 userId
         );
@@ -79,6 +80,7 @@ public class BalanceService {
                 null,
                 request.getReferenceId(),
                 request.getReferenceCode(),
+                null,
                 request.getRemarks() != null ? request.getRemarks() : "Balance top-up",
                 userId
         );
@@ -92,6 +94,7 @@ public class BalanceService {
             BookingType bookingType,
             Long referenceId,
             String referenceCode,
+            String contactEmail,
             String remarks,
             Long userId
     ) {
@@ -117,6 +120,7 @@ public class BalanceService {
                 .balance(balance)
                 .referenceId(referenceId)
                 .referenceCode(referenceCode)
+                .contactEmail(contactEmail)
                 .sourceType(sourceType)
                 .bookingType(bookingType)
                 .type(type)

@@ -10,11 +10,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpecificationExecutor<Booking> {
 
     List<Booking> findByIdInAndCompanyId(List<Long> ids, Long companyId);
+
+    Optional<Booking> findFirstByCode(String code);
 
     @Query("""
         SELECT DISTINCT b.id, b.createdAt FROM Booking b

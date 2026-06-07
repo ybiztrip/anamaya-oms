@@ -142,6 +142,7 @@ public class BookingCommonService {
                     .amount(flightTotalAmount)
                     .referenceId(booking.getId())
                     .referenceCode(referenceCode)
+                    .contactEmail(booking.getContactEmail())
                     .remarks("Buying flight ticket approved by " + booking.getApprovedByName())
                     .build());
         }
@@ -158,6 +159,7 @@ public class BookingCommonService {
                     .amount(hotelTotalAmount)
                     .referenceId(booking.getId())
                     .referenceCode(referenceCode)
+                    .contactEmail(booking.getContactEmail())
                     .remarks("Buying hotel ticket approved by " + booking.getApprovedByName())
                     .build());
         }
@@ -209,6 +211,7 @@ public class BookingCommonService {
                     .amount(detail.getAmount())
                     .referenceId(detail.getReferenceId())
                     .referenceCode(detail.getReferenceCode())
+                    .contactEmail(booking.getContactEmail())
                     .remarks("Rollback by system")
                     .build());
         }

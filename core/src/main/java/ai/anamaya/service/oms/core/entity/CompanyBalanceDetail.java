@@ -28,6 +28,9 @@ public class CompanyBalanceDetail extends BaseEntity {
     @Column(name = "reference_code")
     private String referenceCode;
 
+    @Column(name = "contact_email")
+    private String contactEmail;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "source_type")
     private BalanceSourceType sourceType; // e.g., Booking, Procurement

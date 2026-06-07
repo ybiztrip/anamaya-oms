@@ -32,6 +32,10 @@ public class CompanyBalanceDetailSpecification {
                 predicates.add(cb.equal(root.get("referenceCode"), f.getReferenceCode()));
             }
 
+            if (f.getContactEmail() != null && !f.getContactEmail().isBlank()) {
+                predicates.add(cb.equal(root.get("contactEmail"), f.getContactEmail()));
+            }
+
             if (f.getStartDate() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(
                     root.get("createdAt"),

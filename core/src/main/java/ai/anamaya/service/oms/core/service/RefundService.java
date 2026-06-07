@@ -9,6 +9,7 @@ import ai.anamaya.service.oms.core.dto.request.RefundFilter;
 import ai.anamaya.service.oms.core.dto.request.RefundPaidRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundProviderRequest;
 import ai.anamaya.service.oms.core.dto.response.RefundResponse;
+import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
 import ai.anamaya.service.oms.core.entity.BookingHotel;
 import ai.anamaya.service.oms.core.entity.Refund;
@@ -26,6 +27,7 @@ import ai.anamaya.service.oms.core.enums.RefundStatus;
 import ai.anamaya.service.oms.core.exception.NotFoundException;
 import ai.anamaya.service.oms.core.repository.BookingFlightRepository;
 import ai.anamaya.service.oms.core.repository.BookingHotelRepository;
+import ai.anamaya.service.oms.core.repository.BookingRepository;
 import ai.anamaya.service.oms.core.repository.RefundRepository;
 import ai.anamaya.service.oms.core.specification.RefundSpecification;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,7 @@ public class RefundService {
     private final RefundRepository refundRepository;
     private final BookingFlightRepository bookingFlightRepository;
     private final BookingHotelRepository bookingHotelRepository;
+    private final BookingRepository bookingRepository;
     private final BalanceService balanceService;
     private final CreditService creditService;
     private final java.util.Map<String, FlightProvider> flightProviders;
@@ -352,6 +355,10 @@ public class RefundService {
             return;
         }
 
+        String contactEmail = bookingRepository.findFirstByCode(refund.getBookingCode())
+            .map(Booking::getContactEmail)
+            .orElse(null);
+
         switch (method) {
             case DEPOSIT -> balanceService.adjustBalance(
                 callerContext,
@@ -366,6 +373,7 @@ public class RefundService {
                     .amount(refund.getPaidAmount())
                     .referenceId(refund.getId())
                     .referenceCode(refund.getCode())
+                    .contactEmail(contactEmail)
                     .remarks("Refund paid")
                     .build()
             );

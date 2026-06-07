@@ -91,6 +91,7 @@ public class BalanceMonitoringService {
             .balanceCode(d.getBalance() != null ? d.getBalance().getCode() : null)
             .referenceCode(d.getReferenceCode())
             .referenceId(d.getReferenceId())
+            .contactEmail(d.getContactEmail())
             .sourceType(d.getSourceType())
             .bookingType(d.getBookingType())
             .type(d.getType())

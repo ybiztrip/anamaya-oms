@@ -23,6 +23,7 @@ public class BalanceMonitoringResponse {
     private BalanceCodeType balanceCode;
     private String referenceCode;
     private Long referenceId;
+    private String contactEmail;
     private BalanceSourceType sourceType;
     private BookingType bookingType;
     private BalanceTransactionType type;

@@ -20,5 +20,6 @@ public class BalanceAdjustRequest {
     private BigDecimal amount;
     private Long referenceId;
     private String referenceCode;
+    private String contactEmail;
     private String remarks;
 }

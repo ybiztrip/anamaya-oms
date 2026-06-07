@@ -22,4 +22,5 @@ public class BalanceMonitoringFilter {
     private BalanceSourceType sourceType;
     private BookingType bookingType;
     private String referenceCode;
+    private String contactEmail;
 }
