@@ -21,5 +21,7 @@ public class CreditAdjustRequest {
     private BigDecimal amount;
     private Long referenceId;
     private String referenceCode;
+    private String contactEmail;
+    private String triggeredByEmail;
     private String remarks;
 }

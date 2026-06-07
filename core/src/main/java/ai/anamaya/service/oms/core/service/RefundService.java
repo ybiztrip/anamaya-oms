@@ -374,6 +374,7 @@ public class RefundService {
                     .referenceId(refund.getId())
                     .referenceCode(refund.getCode())
                     .contactEmail(contactEmail)
+                    .triggeredByEmail(callerContext.userEmail())
                     .remarks("Refund paid")
                     .build()
             );
@@ -390,6 +391,8 @@ public class RefundService {
                     .amount(refund.getPaidAmount())
                     .referenceId(refund.getId())
                     .referenceCode(refund.getCode())
+                    .contactEmail(contactEmail)
+                    .triggeredByEmail(callerContext.userEmail())
                     .remarks("Refund paid")
                     .build()
             );

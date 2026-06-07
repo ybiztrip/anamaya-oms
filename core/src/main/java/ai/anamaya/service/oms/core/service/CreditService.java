@@ -64,6 +64,8 @@ public class CreditService {
                 request.getBookingType(),
                 request.getReferenceId(),
                 request.getReferenceCode(),
+                request.getContactEmail(),
+                request.getTriggeredByEmail(),
                 request.getRemarks(),
                 userId
         );
@@ -86,6 +88,8 @@ public class CreditService {
                 null,
                 request.getReferenceId(),
                 request.getReferenceCode(),
+                null,
+                callerContext.userEmail(),
                 request.getRemarks() != null ? request.getRemarks() : "Credit top-up",
                 userId
         );
@@ -99,6 +103,8 @@ public class CreditService {
             BookingType bookingType,
             Long referenceId,
             String referenceCode,
+            String contactEmail,
+            String triggeredByEmail,
             String remarks,
             Long userId
     ) {
@@ -124,6 +130,8 @@ public class CreditService {
                 .balance(balance)
                 .referenceId(referenceId)
                 .referenceCode(referenceCode)
+                .contactEmail(contactEmail)
+                .triggeredByEmail(triggeredByEmail)
                 .sourceType(sourceType)
                 .bookingType(bookingType)
                 .type(type)

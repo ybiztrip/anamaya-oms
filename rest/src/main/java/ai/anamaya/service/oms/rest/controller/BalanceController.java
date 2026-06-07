@@ -59,6 +59,7 @@ public class BalanceController {
         UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
 
         var reqCore = mapper.toCore(reqRest);
+        reqCore.setTriggeredByEmail(userEmail);
         var result = balanceService.adjustBalance(userCallerContext, reqCore);
 
         return ApiResponse.success(mapper.toRest(result));

@@ -31,6 +31,9 @@ public class CompanyBalanceDetail extends BaseEntity {
     @Column(name = "contact_email")
     private String contactEmail;
 
+    @Column(name = "triggered_by_email")
+    private String triggeredByEmail;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "source_type")
     private BalanceSourceType sourceType; // e.g., Booking, Procurement

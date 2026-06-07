@@ -97,6 +97,10 @@ public class BookingCommonService {
         bookingTravelPolicyRepository.save(bookingTravelPolicy);
     }
 
+    private String resolveApprover(String approvedByEmail) {
+        return (approvedByEmail != null && !approvedByEmail.isBlank()) ? approvedByEmail : "SYSTEM";
+    }
+
     public void bookingDebitBalance(
         CallerContext callerContext,
         Booking booking,
@@ -143,7 +147,8 @@ public class BookingCommonService {
                     .referenceId(booking.getId())
                     .referenceCode(referenceCode)
                     .contactEmail(booking.getContactEmail())
-                    .remarks("Buying flight ticket approved by " + booking.getApprovedByName())
+                    .triggeredByEmail(resolveApprover(bookingFlights.get(0).getApprovedByEmail()))
+                    .remarks("Buying flight ticket approved by " + resolveApprover(bookingFlights.get(0).getApprovedByEmail()))
                     .build());
         }
 
@@ -160,7 +165,8 @@ public class BookingCommonService {
                     .referenceId(booking.getId())
                     .referenceCode(referenceCode)
                     .contactEmail(booking.getContactEmail())
-                    .remarks("Buying hotel ticket approved by " + booking.getApprovedByName())
+                    .triggeredByEmail(resolveApprover(bookingHotel.getApprovedByEmail()))
+                    .remarks("Buying hotel ticket approved by " + resolveApprover(bookingHotel.getApprovedByEmail()))
                     .build());
         }
     }
@@ -212,6 +218,7 @@ public class BookingCommonService {
                     .referenceId(detail.getReferenceId())
                     .referenceCode(detail.getReferenceCode())
                     .contactEmail(booking.getContactEmail())
+                    .triggeredByEmail("SYSTEM")
                     .remarks("Rollback by system")
                     .build());
         }
@@ -270,7 +277,9 @@ public class BookingCommonService {
                     .amount(flightTotalAmount.add(flightFee))
                     .referenceId(booking.getId())
                     .referenceCode(referenceCode)
-                    .remarks("Buying flight ticket approved by " + booking.getApprovedByName())
+                    .contactEmail(booking.getContactEmail())
+                    .triggeredByEmail(resolveApprover(bookingFlights.get(0).getApprovedByEmail()))
+                    .remarks("Buying flight ticket approved by " + resolveApprover(bookingFlights.get(0).getApprovedByEmail()))
                     .build());
         }
 
@@ -292,7 +301,9 @@ public class BookingCommonService {
                     .amount(hotelSellAmount.add(hotelFee))
                     .referenceId(booking.getId())
                     .referenceCode(referenceCode)
-                    .remarks("Buying hotel ticket approved by " + booking.getApprovedByName())
+                    .contactEmail(booking.getContactEmail())
+                    .triggeredByEmail(resolveApprover(bookingHotel.getApprovedByEmail()))
+                    .remarks("Buying hotel ticket approved by " + resolveApprover(bookingHotel.getApprovedByEmail()))
                     .build());
         }
     }
@@ -370,6 +381,8 @@ public class BookingCommonService {
                     .amount(detail.getAmount())
                     .referenceId(detail.getReferenceId())
                     .referenceCode(detail.getReferenceCode())
+                    .contactEmail(booking.getContactEmail())
+                    .triggeredByEmail("SYSTEM")
                     .remarks("Rollback by system")
                     .build());
         }

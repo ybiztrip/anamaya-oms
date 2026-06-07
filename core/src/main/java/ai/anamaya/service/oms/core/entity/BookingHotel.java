@@ -105,7 +105,10 @@ public class BookingHotel extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private BookingHotelStatus status;
-    
+
+    @Column(name = "approved_by_email")
+    private String approvedByEmail;
+
     @Column(columnDefinition = "json")
     private String metadata;
 

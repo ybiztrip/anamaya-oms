@@ -21,5 +21,6 @@ public class BalanceAdjustRequest {
     private Long referenceId;
     private String referenceCode;
     private String contactEmail;
+    private String triggeredByEmail;
     private String remarks;
 }

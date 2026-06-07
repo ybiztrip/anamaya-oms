@@ -65,7 +65,7 @@ public class BookingApproveService {
         if (booking.getStatus() == BookingStatus.CREATED){
             booking.setStatus(BookingStatus.APPROVED);
             booking.setApprovedBy(userId);
-            booking.setApprovedByName(userEmail);
+            booking.setApprovedByEmail(userEmail);
             bookingRepository.save(booking);
         }
 
@@ -87,6 +87,7 @@ public class BookingApproveService {
 
             bookingFlights.forEach(h -> {
                 h.setStatus(BookingFlightStatus.APPROVED);
+                h.setApprovedByEmail(userEmail);
                 h.setUpdatedBy(userId);
             });
             bookingFlightRepository.saveAll(bookingFlights);
@@ -140,6 +141,7 @@ public class BookingApproveService {
 
             bookingHotels.forEach(h -> {
                 h.setStatus(BookingHotelStatus.APPROVED);
+                h.setApprovedByEmail(userEmail);
                 h.setUpdatedBy(userId);
             });
             bookingHotelRepository.saveAll(bookingHotels);
@@ -211,7 +213,7 @@ public class BookingApproveService {
         if (booking.getStatus() == BookingStatus.CREATED){
             booking.setStatus(BookingStatus.REJECTED);
             booking.setRejectedBy(userId);
-            booking.setRejectedByName(userEmail);
+            booking.setRejectedByEmail(userEmail);
             bookingRepository.save(booking);
         }
 

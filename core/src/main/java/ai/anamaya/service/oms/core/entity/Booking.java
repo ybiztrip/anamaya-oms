@@ -81,14 +81,14 @@ public class Booking extends BaseEntity {
     @Column(name = "approved_by")
     private Long approvedBy;
 
-    @Column(name = "approved_by_name")
-    private String approvedByName;
+    @Column(name = "approved_by_email")
+    private String approvedByEmail;
 
     @Column(name = "rejected_by")
     private Long rejectedBy;
 
-    @Column(name = "rejected_by_name")
-    private String rejectedByName;
+    @Column(name = "rejected_by_email")
+    private String rejectedByEmail;
 
     @OneToMany(mappedBy = "booking", fetch = FetchType.LAZY)
     private List<BookingFlight> flights;

@@ -31,6 +31,12 @@ public class CompanyCreditDetail extends BaseEntity {
     @Column(name = "reference_code")
     private String referenceCode;
 
+    @Column(name = "contact_email")
+    private String contactEmail;
+
+    @Column(name = "triggered_by_email")
+    private String triggeredByEmail;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "source_type")
     private CreditSourceType sourceType; // e.g., Booking, Procurement

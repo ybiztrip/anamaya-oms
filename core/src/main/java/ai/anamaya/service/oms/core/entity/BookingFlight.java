@@ -103,6 +103,9 @@ public class BookingFlight extends BaseEntity {
     @Column(name = "status")
     private BookingFlightStatus status;
 
+    @Column(name = "approved_by_email")
+    private String approvedByEmail;
+
     @Column(columnDefinition = "json")
     private String metadata;
 
