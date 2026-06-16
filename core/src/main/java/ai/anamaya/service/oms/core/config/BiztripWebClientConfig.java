@@ -29,6 +29,7 @@ public class BiztripWebClientConfig {
 
         return WebClient.builder()
                 .baseUrl(baseUrl)
+                .defaultHeader("source", "oms")
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .exchangeStrategies(ExchangeStrategies.builder()
                         .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
