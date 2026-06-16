@@ -425,7 +425,10 @@ public class BookingService {
                 .additionalInfo(booking.getAdditionalInfo())
                 .clientAdditionalInfo(booking.getClientAdditionalInfo())
                 .status(booking.getStatus())
-                .createdAt(booking.getCreatedAt())
+                .approvedByName(booking.getApprovedByEmail())
+                .approvedAt(booking.getApprovedAt())
+                .rejectedByName(booking.getRejectedByEmail())
+                .rejectedAt(booking.getRejectedAt())
                 .createdAt(booking.getCreatedAt());
 
         if (detail) {
@@ -479,7 +482,12 @@ public class BookingService {
             .contactDob(booking.getContactDob())
             .additionalInfo(booking.getAdditionalInfo())
             .clientAdditionalInfo(booking.getClientAdditionalInfo())
-            .status(booking.getStatus());
+            .status(booking.getStatus())
+            .approvedByName(booking.getApprovedByEmail())
+            .approvedAt(booking.getApprovedAt())
+            .rejectedByName(booking.getRejectedByEmail())
+            .rejectedAt(booking.getRejectedAt())
+            .createdAt(booking.getCreatedAt());
 
         builder.flights(
             flights.stream()
@@ -541,6 +549,10 @@ public class BookingService {
             .arrivalDatetime(f.getArrivalDatetime())
             .paymentUrl(f.getPaymentUrl())
             .status(f.getStatus())
+            .approvedByName(f.getApprovedByEmail())
+            .approvedAt(f.getApprovedAt())
+            .rejectedByName(f.getRejectedByEmail())
+            .rejectedAt(f.getRejectedAt())
             .createdAt(f.getCreatedAt())
             .metadata(
                 f.getMetadata() != null
@@ -575,6 +587,10 @@ public class BookingService {
             .specialRequest(h.getSpecialRequest())
             .paymentUrl(h.getPaymentUrl())
             .status(h.getStatus())
+            .approvedByName(h.getApprovedByEmail())
+            .approvedAt(h.getApprovedAt())
+            .rejectedByName(h.getRejectedByEmail())
+            .rejectedAt(h.getRejectedAt())
             .createdAt(h.getCreatedAt())
             .metadata(
                 h.getMetadata() != null

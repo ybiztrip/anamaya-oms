@@ -522,6 +522,11 @@ public class BookingFlightService {
             .invoiceId(f.getInvoiceId())
             .errorMessage(f.getErrorMessage())
             .status(f.getStatus())
+            .approvedByName(f.getApprovedByEmail())
+            .approvedAt(f.getApprovedAt())
+            .rejectedByName(f.getRejectedByEmail())
+            .rejectedAt(f.getRejectedAt())
+            .createdAt(f.getCreatedAt())
             .metadata(
                 f.getMetadata() != null
                     ? jsonHelper.toJsonNode(f.getMetadata())

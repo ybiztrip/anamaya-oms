@@ -37,6 +37,10 @@ public class BookingHotelResponse {
     private BookingHotelStatus status;
     private JsonNode metadata;
     private String errorMessage;
+    private String approvedByName;
+    private LocalDateTime approvedAt;
+    private String rejectedByName;
+    private LocalDateTime rejectedAt;
     private LocalDateTime createdAt;
 
     private List<BookingPaxResponse> paxs;

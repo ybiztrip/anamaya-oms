@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "booking_hotel")
@@ -106,8 +107,23 @@ public class BookingHotel extends BaseEntity {
     @Column(name = "status")
     private BookingHotelStatus status;
 
+    @Column(name = "approved_by")
+    private Long approvedBy;
+
     @Column(name = "approved_by_email")
     private String approvedByEmail;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "rejected_by")
+    private Long rejectedBy;
+
+    @Column(name = "rejected_by_email")
+    private String rejectedByEmail;
+
+    @Column(name = "rejected_at")
+    private LocalDateTime rejectedAt;
 
     @Column(columnDefinition = "json")
     private String metadata;

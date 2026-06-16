@@ -103,8 +103,23 @@ public class BookingFlight extends BaseEntity {
     @Column(name = "status")
     private BookingFlightStatus status;
 
+    @Column(name = "approved_by")
+    private Long approvedBy;
+
     @Column(name = "approved_by_email")
     private String approvedByEmail;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "rejected_by")
+    private Long rejectedBy;
+
+    @Column(name = "rejected_by_email")
+    private String rejectedByEmail;
+
+    @Column(name = "rejected_at")
+    private LocalDateTime rejectedAt;
 
     @Column(columnDefinition = "json")
     private String metadata;

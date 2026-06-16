@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -84,11 +85,17 @@ public class Booking extends BaseEntity {
     @Column(name = "approved_by_email")
     private String approvedByEmail;
 
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
     @Column(name = "rejected_by")
     private Long rejectedBy;
 
     @Column(name = "rejected_by_email")
     private String rejectedByEmail;
+
+    @Column(name = "rejected_at")
+    private LocalDateTime rejectedAt;
 
     @OneToMany(mappedBy = "booking", fetch = FetchType.LAZY)
     private List<BookingFlight> flights;

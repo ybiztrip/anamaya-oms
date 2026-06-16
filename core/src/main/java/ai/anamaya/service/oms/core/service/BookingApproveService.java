@@ -16,6 +16,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -62,10 +63,13 @@ public class BookingApproveService {
             throw new AccessDeniedException("You are not authorized to modify this booking");
         }
 
+        LocalDateTime now = LocalDateTime.now();
+
         if (booking.getStatus() == BookingStatus.CREATED){
             booking.setStatus(BookingStatus.APPROVED);
             booking.setApprovedBy(userId);
             booking.setApprovedByEmail(userEmail);
+            booking.setApprovedAt(now);
             bookingRepository.save(booking);
         }
 
@@ -87,7 +91,9 @@ public class BookingApproveService {
 
             bookingFlights.forEach(h -> {
                 h.setStatus(BookingFlightStatus.APPROVED);
+                h.setApprovedBy(userId);
                 h.setApprovedByEmail(userEmail);
+                h.setApprovedAt(now);
                 h.setUpdatedBy(userId);
             });
             bookingFlightRepository.saveAll(bookingFlights);
@@ -141,7 +147,9 @@ public class BookingApproveService {
 
             bookingHotels.forEach(h -> {
                 h.setStatus(BookingHotelStatus.APPROVED);
+                h.setApprovedBy(userId);
                 h.setApprovedByEmail(userEmail);
+                h.setApprovedAt(now);
                 h.setUpdatedBy(userId);
             });
             bookingHotelRepository.saveAll(bookingHotels);
@@ -210,10 +218,13 @@ public class BookingApproveService {
             throw new AccessDeniedException("You are not authorized to modify this booking");
         }
 
+        LocalDateTime now = LocalDateTime.now();
+
         if (booking.getStatus() == BookingStatus.CREATED){
             booking.setStatus(BookingStatus.REJECTED);
             booking.setRejectedBy(userId);
             booking.setRejectedByEmail(userEmail);
+            booking.setRejectedAt(now);
             bookingRepository.save(booking);
         }
 
@@ -242,6 +253,9 @@ public class BookingApproveService {
 
             bookingFlights.forEach(h -> {
                 h.setStatus(BookingFlightStatus.REJECTED);
+                h.setRejectedBy(userId);
+                h.setRejectedByEmail(userEmail);
+                h.setRejectedAt(now);
                 h.setUpdatedBy(userId);
             });
             bookingFlightRepository.saveAll(bookingFlights);
@@ -277,6 +291,9 @@ public class BookingApproveService {
 
             bookingHotels.forEach(h -> {
                 h.setStatus(BookingHotelStatus.REJECTED);
+                h.setRejectedBy(userId);
+                h.setRejectedByEmail(userEmail);
+                h.setRejectedAt(now);
                 h.setUpdatedBy(userId);
             });
             bookingHotelRepository.saveAll(bookingHotels);

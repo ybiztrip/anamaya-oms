@@ -30,6 +30,10 @@ public class BookingResponse {
     private Map<String, Object> additionalInfo;
     private Map<String, Object> clientAdditionalInfo;
     private BookingStatus status;
+    private String approvedByName;
+    private LocalDateTime approvedAt;
+    private String rejectedByName;
+    private LocalDateTime rejectedAt;
     private LocalDateTime createdAt;
 
     private List<BookingAttachmentResponse> attachments;

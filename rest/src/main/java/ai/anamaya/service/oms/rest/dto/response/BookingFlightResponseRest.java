@@ -38,6 +38,10 @@ public class BookingFlightResponseRest {
     private String errorMessage;
     private BookingFlightStatus status;
     private JsonNode metadata;
+    private String approvedByName;
+    private LocalDateTime approvedAt;
+    private String rejectedByName;
+    private LocalDateTime rejectedAt;
     private LocalDateTime createdAt;
 
     private List<BookingPaxResponseRest> paxs;

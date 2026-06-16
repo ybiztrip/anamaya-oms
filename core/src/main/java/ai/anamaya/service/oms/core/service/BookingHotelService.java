@@ -471,6 +471,11 @@ public class BookingHotelService {
             .invoiceId(h.getInvoiceId())
             .errorMessage(h.getErrorMessage())
             .status(h.getStatus())
+            .approvedByName(h.getApprovedByEmail())
+            .approvedAt(h.getApprovedAt())
+            .rejectedByName(h.getRejectedByEmail())
+            .rejectedAt(h.getRejectedAt())
+            .createdAt(h.getCreatedAt())
             .metadata(
                 h.getMetadata() != null
                     ? jsonHelper.toJsonNode(h.getMetadata())

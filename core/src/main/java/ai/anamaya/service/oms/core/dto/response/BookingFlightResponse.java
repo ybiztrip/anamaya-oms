@@ -33,6 +33,10 @@ public class BookingFlightResponse {
     private JsonNode metadata;
     private String paymentUrl;
     private String errorMessage;
+    private String approvedByName;
+    private LocalDateTime approvedAt;
+    private String rejectedByName;
+    private LocalDateTime rejectedAt;
     private LocalDateTime createdAt;
 
     private List<BookingPaxResponse> paxs;
