@@ -98,16 +98,10 @@ public class UserController {
         @ModelAttribute UserGetListRequestRest requestRest
     ) {
         Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
-        Long userIdFromToken = jwtUtils.getUserIdFromToken();
 
         boolean isSuperAdmin = SecurityUtil.hasRole("SUPER_ADMIN");
-        boolean isAdmin = SecurityUtil.hasRole("COMPANY_ADMIN");
         if (!isSuperAdmin) {
             requestRest.setCompanyId(companyIdFromToken);
-        }
-
-        if (!isAdmin) {
-            requestRest.setUserId(userIdFromToken);
         }
 
         UserGetListRequest request = mapper.toCore(requestRest);

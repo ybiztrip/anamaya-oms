@@ -43,6 +43,10 @@ public class BookingFlightSpecification {
                 predicates.add(cb.equal(root.get("paymentMethod"), filter.getPaymentMethod()));
             }
 
+            if (filter.getBookingCode() != null && !filter.getBookingCode().isBlank()) {
+                predicates.add(cb.equal(root.get("bookingCode"), filter.getBookingCode()));
+            }
+
             if (filter.getDepartureStartDate() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(
                     root.get("departureDatetime"),
