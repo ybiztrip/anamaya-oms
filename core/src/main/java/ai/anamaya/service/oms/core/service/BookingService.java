@@ -136,6 +136,7 @@ public class BookingService {
 
     public Page<BookingResponse> getMyApproved(
         CallerContext callerContext,
+        List<ApprovalAction> actions,
         int page,
         int size,
         String sort
@@ -158,8 +159,11 @@ public class BookingService {
 
         Pageable pageable = PageRequest.of(page, size);
 
+        List<ApprovalAction> actionFilter =
+            (actions == null || actions.isEmpty()) ? null : actions;
+
         Page<Long> idPage = bookingApprovalRepository
-            .findMyApprovedBookingIds(userId, ApprovalAction.APPROVED, pageable);
+            .findMyBookingIds(userId, actionFilter, pageable);
 
         if (idPage.isEmpty()) {
             return new PageImpl<>(List.of(), pageable, 0);

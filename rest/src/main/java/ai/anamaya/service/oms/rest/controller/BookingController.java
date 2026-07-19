@@ -22,6 +22,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import ai.anamaya.service.oms.core.enums.ApprovalAction;
+
 import java.util.List;
 
 @RestController
@@ -154,6 +156,7 @@ public class BookingController {
 
     @GetMapping("/my-approved")
     public ApiResponse<List<BookingResponseRest>> getMyApproved(
+        @RequestParam(required = false) List<ApprovalAction> actions,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) String sort
@@ -165,6 +168,7 @@ public class BookingController {
 
         var pageResult = bookingService.getMyApproved(
             userCallerContext,
+            actions,
             page,
             size,
             sort

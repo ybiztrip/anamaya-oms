@@ -10,19 +10,21 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface BookingApprovalRepository extends JpaRepository<BookingApproval, Long>, JpaSpecificationExecutor<BookingApproval> {
     @Query("""
     SELECT ba.bookingId
     FROM BookingApproval ba
     WHERE ba.createdBy = :userId
-    AND ba.action = :action
+    AND (:actions IS NULL OR ba.action IN :actions)
     GROUP BY ba.bookingId
     ORDER BY MAX(ba.createdAt) DESC
     """)
-    Page<Long> findMyApprovedBookingIds(
+    Page<Long> findMyBookingIds(
         @Param("userId") Long userId,
-        @Param("action") ApprovalAction action,
+        @Param("actions") List<ApprovalAction> actions,
         Pageable pageable
     );
 }
