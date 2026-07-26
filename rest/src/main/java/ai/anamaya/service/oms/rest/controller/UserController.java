@@ -95,6 +95,7 @@ public class UserController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) String sort,
+        @RequestParam(defaultValue = "false") boolean includeRoles,
         @ModelAttribute UserGetListRequestRest requestRest
     ) {
         Long companyIdFromToken = jwtUtils.getCompanyIdFromToken();
@@ -111,7 +112,7 @@ public class UserController {
         }
 
         UserGetListRequest request = mapper.toCore(requestRest);
-        var pageResult = service.getAll(page, size, sort, request);
+        var pageResult = service.getAll(page, size, sort, request, includeRoles);
 
         List<UserResponseRest> listRest = pageResult
             .getContent()

@@ -179,6 +179,10 @@ public class UserService {
     }
 
     public Page<UserResponse> getAll(int page, int size, String sort, UserGetListRequest filter) {
+        return getAll(page, size, sort, filter, false);
+    }
+
+    public Page<UserResponse> getAll(int page, int size, String sort, UserGetListRequest filter, boolean includeRoles) {
 
         Sort sorting = Sort.by("createdAt").descending();
 
@@ -201,7 +205,13 @@ public class UserService {
         );
 
         List<UserResponse> mapped = users.getContent().stream()
-            .map(this::toResponse)
+            .map(user -> {
+                UserResponse response = toResponse(user);
+                if (includeRoles) {
+                    response.setRoles(getUserRoles(user.getId()));
+                }
+                return response;
+            })
             .toList();
 
         return new PageImpl<>(mapped, pageable, users.getTotalElements());
