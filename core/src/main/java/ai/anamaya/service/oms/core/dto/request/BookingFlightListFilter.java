@@ -23,6 +23,7 @@ public class BookingFlightListFilter {
     private LocalDate dateTo;
     private BookingPaymentMethod paymentMethod;
     private Boolean invoiceCandidate;
+    private String bookingCode;
     private LocalDate departureStartDate;
     private LocalDate departureEndDate;
     private LocalDate arrivalStartDate;
