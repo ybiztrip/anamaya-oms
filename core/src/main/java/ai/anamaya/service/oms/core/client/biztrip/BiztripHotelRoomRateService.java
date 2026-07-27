@@ -29,7 +29,6 @@ public class BiztripHotelRoomRateService {
     public List<HotelRoomRateResponse> getHotelRoomRate(CallerContext callerContext, HotelRoomRateRequest request) {
         try {
             String token = authService.getAccessToken(callerContext.companyId());
-
             String rawResponse  = biztripWebClient.post()
                 .uri("/hotel/room-rate")
                 .header(HttpHeaders.AUTHORIZATION, token)
@@ -52,6 +51,28 @@ public class BiztripHotelRoomRateService {
         } catch (Exception e) {
             log.error("Search hotel room rate to Biztrip failed", e);
             throw new RuntimeException("Search hotel room rate failed: " + e.getMessage());
+        }
+    }
+
+    private void logRequestAsCurl(
+            HotelRoomRateRequest request,
+            String token
+    ) {
+        try {
+            String json = mapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(request);
+
+            String curl = "curl -X POST \"" +
+                    "https://dev-affiliate.biztrip.id/hotel/room-rate" +
+                    "\" \\\n" +
+                    "-H \"Authorization: " + token + "\" \\\n" +
+                    "-H \"Content-Type: application/json\" \\\n" +
+                    "-d '" + json + "'";
+
+            log.info("Biztrip Hotel Request as cURL:\n{}", curl);
+
+        } catch (Exception ex) {
+            log.error("Failed to log Biztrip hotel cURL request", ex);
         }
     }
 

@@ -4,11 +4,11 @@
     <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
     <include resource="org/springframework/boot/logging/logback/file-appender.xml"/>
 
-    <appender name="CLOUD" class="com.google.cloud.spring.logging.LoggingAppender">
-        <log>anamaya-oms-rest</log>
-    </appender>
-
     <springProfile name="!local">
+        <appender name="CLOUD" class="com.google.cloud.spring.logging.LoggingAppender">
+            <log>anamaya-oms-rest</log>
+        </appender>
+
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="CLOUD"/>
