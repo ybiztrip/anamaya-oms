@@ -48,11 +48,13 @@ public class BiztripFlightBookingSubmitService {
 
             JsonNode root = mapper.readTree(rawResponse);
             boolean success = root.path("success").asBoolean(false);
+            String message = root.path("errorMessage").asText(null);
             JsonNode dataNode = root.get("data");
-            BiztripSubmitResponse biztripResponse =
-                mapper.treeToValue(dataNode, BiztripSubmitResponse.class);
+            BiztripSubmitResponse biztripResponse = dataNode == null || dataNode.isNull()
+                ? null
+                : mapper.treeToValue(dataNode, BiztripSubmitResponse.class);
 
-            return submitResponseMapper.map(success, biztripResponse);
+            return submitResponseMapper.map(success, message, biztripResponse);
 
         } catch (Exception e) {
             log.error("Submit booking to Biztrip failed", e);

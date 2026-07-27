@@ -366,6 +366,11 @@ public class BookingFlightService {
         FlightProvider provider = getProvider("biztrip");
 
         BookingFlightSubmitResponse response = provider.submitBooking(callerContext, request);
+        if (response.isError() || response.getBookingId() == null) {
+            throw new IllegalStateException(response.getErrorMessage() != null
+                ? response.getErrorMessage()
+                : "Flight booking submission failed");
+        }
         BookingFlightStatus bookingFlightStatus = BookingFlightStatus.fromBookingPartnerStatus(response.getBookingSubmissionStatus());
         bookingFlightHistoryRepository.save(
             BookingFlightHistory.builder()
