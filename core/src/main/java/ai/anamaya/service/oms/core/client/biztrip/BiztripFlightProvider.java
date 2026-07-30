@@ -38,6 +38,11 @@ public class BiztripFlightProvider implements FlightProvider {
     }
 
     @Override
+    public ApiResponse<List<FlightCityMultipleAirportResponse>> getCityMultipleAirports() {
+        return airportService.getCityMultipleAirports();
+    }
+
+    @Override
     public ApiResponse<List<FlightAirlineResponse>> getAirlines() {
         return airlineService.getAirlines();
     }

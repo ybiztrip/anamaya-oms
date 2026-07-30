@@ -16,6 +16,7 @@ import java.util.List;
 
 public interface FlightProvider {
     ApiResponse<List<FlightAirportResponse>> getAirports();
+    ApiResponse<List<FlightCityMultipleAirportResponse>> getCityMultipleAirports();
     ApiResponse<List<FlightAirlineResponse>> getAirlines();
     ApiResponse<FlightBookingRuleResponse> getBookingRules(String airlineCode);
     FlightAddOnsResponse getAddOns(CallerContext callerContext, FlightAddOnsRequest request);

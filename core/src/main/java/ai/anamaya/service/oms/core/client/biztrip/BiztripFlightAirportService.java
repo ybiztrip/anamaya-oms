@@ -2,6 +2,7 @@ package ai.anamaya.service.oms.core.client.biztrip;
 
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.dto.response.FlightAirportResponse;
+import ai.anamaya.service.oms.core.dto.response.FlightCityMultipleAirportResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -64,6 +65,49 @@ public class BiztripFlightAirportService {
             log.error("Unexpected error fetching airports", e);
             return ApiResponse.error("Unexpected error: " + e.getMessage());
         }
+    }
+
+    public ApiResponse<List<FlightCityMultipleAirportResponse>> getCityMultipleAirports() {
+        try {
+            Long companyId = jwtUtils.getCompanyIdFromToken();
+            String accessToken = authService.getAccessToken(companyId);
+
+            Map<String, Object> response = webClient.get()
+                    .uri("/flight/data/airports/city/multiple-airport")
+                    .header(HttpHeaders.AUTHORIZATION, accessToken)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                    .timeout(Duration.ofSeconds(10))
+                    .block();
+
+            if (response == null || response.get("data") == null) {
+                return ApiResponse.error("No airport data found");
+            }
+
+            List<FlightCityMultipleAirportResponse> airports = ((List<Map<String, Object>>) response.get("data"))
+                    .stream()
+                    .map(this::mapToCityMultipleAirportResponse)
+                    .toList();
+
+            return ApiResponse.success(airports);
+
+        } catch (WebClientResponseException e) {
+            log.error("BizTrip API error: {} - {}", e.getStatusCode().value(), e.getResponseBodyAsString());
+            return ApiResponse.error("External API error: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error fetching city multiple airports", e);
+            return ApiResponse.error("Unexpected error: " + e.getMessage());
+        }
+    }
+
+    private FlightCityMultipleAirportResponse mapToCityMultipleAirportResponse(Map<String, Object> m) {
+        return FlightCityMultipleAirportResponse.builder()
+                .city((String) m.get("city"))
+                .cityCode((String) m.get("cityCode"))
+                .airports((List<String>) m.get("airports"))
+                .country((String) m.get("country"))
+                .build();
     }
 
     private FlightAirportResponse mapToAirportResponse(Map<String, Object> m) {

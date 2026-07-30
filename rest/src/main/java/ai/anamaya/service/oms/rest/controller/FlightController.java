@@ -27,6 +27,13 @@ public class FlightController {
         return flightService.getAirports(source);
     }
 
+    @GetMapping("/airports/city/multiple-airport")
+    public ApiResponse<List<FlightCityMultipleAirportResponse>> getCityMultipleAirports(
+            @RequestParam(defaultValue = "biztrip") String source
+    ) {
+        return flightService.getCityMultipleAirports(source);
+    }
+
     @GetMapping("/airlines")
     public ApiResponse<List<FlightAirlineResponse>> getAllAirlines(
             @RequestParam(defaultValue = "biztrip") String source

@@ -36,6 +36,10 @@ public class FlightService {
         return getProvider(source).getAirports();
     }
 
+    public ApiResponse<List<FlightCityMultipleAirportResponse>> getCityMultipleAirports(String source) {
+        return getProvider(source).getCityMultipleAirports();
+    }
+
     public ApiResponse<List<FlightAirlineResponse>> getAirlines(String source) {
         return getProvider(source).getAirlines();
     }
