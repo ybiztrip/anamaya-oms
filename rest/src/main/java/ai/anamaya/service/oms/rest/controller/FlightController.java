@@ -22,9 +22,10 @@ public class FlightController {
 
     @GetMapping("/airports")
     public ApiResponse<List<FlightAirportResponse>> getAllAirports(
-            @RequestParam(defaultValue = "biztrip") String source
+            @RequestParam(defaultValue = "biztrip") String source,
+            @RequestParam(required = false) String search
     ) {
-        return flightService.getAirports(source);
+        return flightService.getAirports(source, search);
     }
 
     @GetMapping("/airports/city/multiple-airport")
