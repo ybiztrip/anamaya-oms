@@ -135,6 +135,7 @@ public class BalanceMonitoringService {
             .managementFeeAmount(f.getManagementFeeAmount())
             .paymentMethod(f.getPaymentMethod())
             .invoiceId(f.getInvoiceId())
+            .refundId(f.getRefundId())
             .errorMessage(f.getErrorMessage())
             .status(f.getStatus())
             .metadata(
@@ -166,6 +167,7 @@ public class BalanceMonitoringService {
             .managementFeeAmount(h.getManagementFeeAmount())
             .paymentMethod(h.getPaymentMethod())
             .invoiceId(h.getInvoiceId())
+            .refundId(h.getRefundId())
             .errorMessage(h.getErrorMessage())
             .status(h.getStatus())
             .metadata(

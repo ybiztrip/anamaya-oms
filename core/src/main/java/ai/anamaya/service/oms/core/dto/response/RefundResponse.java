@@ -17,6 +17,7 @@ public class RefundResponse {
     private String code;
     private BookingType bookingType;
     private String bookingCode;
+    private String otaReference;
     private BookingPaymentMethod paymentMethod;
     private BigDecimal requestedAmount;
     private BigDecimal paidAmount;

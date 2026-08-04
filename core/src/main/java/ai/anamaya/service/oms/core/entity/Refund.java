@@ -35,6 +35,9 @@ public class Refund extends BaseEntity {
     @Column(name = "booking_code", nullable = false)
     private String bookingCode;
 
+    @Column(name = "ota_reference")
+    private String otaReference;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
     private BookingPaymentMethod paymentMethod;
