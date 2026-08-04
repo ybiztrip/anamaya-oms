@@ -34,6 +34,7 @@ public class BookingHotelResponse {
     private BigDecimal managementFeeAmount;
     private BookingPaymentMethod paymentMethod;
     private Long invoiceId;
+    private Long refundId;
     private BookingHotelStatus status;
     private JsonNode metadata;
     private String errorMessage;

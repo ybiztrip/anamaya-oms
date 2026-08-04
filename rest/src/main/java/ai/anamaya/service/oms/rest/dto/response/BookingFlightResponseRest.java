@@ -34,6 +34,7 @@ public class BookingFlightResponseRest {
     private BigDecimal managementFeeAmount;
     private BookingPaymentMethod paymentMethod;
     private Long invoiceId;
+    private Long refundId;
     private String paymentUrl;
     private String errorMessage;
     private BookingFlightStatus status;

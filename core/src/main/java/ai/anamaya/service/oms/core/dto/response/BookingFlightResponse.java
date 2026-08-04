@@ -29,6 +29,7 @@ public class BookingFlightResponse {
     private BigDecimal managementFeeAmount;
     private BookingPaymentMethod paymentMethod;
     private Long invoiceId;
+    private Long refundId;
     private BookingFlightStatus status;
     private JsonNode metadata;
     private String paymentUrl;

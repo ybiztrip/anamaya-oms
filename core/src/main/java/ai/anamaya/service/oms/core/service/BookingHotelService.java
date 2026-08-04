@@ -469,6 +469,7 @@ public class BookingHotelService {
             .managementFeeAmount(h.getManagementFeeAmount())
             .paymentMethod(h.getPaymentMethod())
             .invoiceId(h.getInvoiceId())
+            .refundId(h.getRefundId())
             .errorMessage(h.getErrorMessage())
             .status(h.getStatus())
             .approvedByName(h.getApprovedByEmail())

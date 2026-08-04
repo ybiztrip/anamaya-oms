@@ -525,6 +525,7 @@ public class BookingFlightService {
             .managementFeeAmount(f.getManagementFeeAmount())
             .paymentMethod(f.getPaymentMethod())
             .invoiceId(f.getInvoiceId())
+            .refundId(f.getRefundId())
             .errorMessage(f.getErrorMessage())
             .status(f.getStatus())
             .approvedByName(f.getApprovedByEmail())
