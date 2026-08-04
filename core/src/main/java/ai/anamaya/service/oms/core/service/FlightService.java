@@ -86,6 +86,31 @@ public class FlightService {
         return getProvider(source).getCityMultipleAirports();
     }
 
+    public ApiResponse<List<FlightAirportCityResponse>> getAirportsCity(String source, String search) {
+        List<FlightAirportCityResponse> result = new java.util.ArrayList<>();
+
+        for (FlightCityMultipleAirportResponse c : getProvider(source).getCityMultipleAirports().getData()) {
+            result.add(FlightAirportCityResponse.builder()
+                    .airportCode(c.getCityCode())
+                    .name(c.getCity() + " - " + c.getCountry())
+                    .build());
+        }
+        for (FlightAirportResponse a : getCachedAirports(source)) {
+            result.add(FlightAirportCityResponse.builder()
+                    .airportCode(a.getAirportCode())
+                    .name(a.getInternationalAirportName() + " - (" + a.getCity() + " - " + a.getAirportCode() + ")")
+                    .build());
+        }
+
+        if (search == null || search.isBlank()) {
+            return ApiResponse.success(result);
+        }
+        String q = search.toLowerCase();
+        return ApiResponse.success(result.stream()
+                .filter(r -> contains(r.getAirportCode(), q) || contains(r.getName(), q))
+                .toList());
+    }
+
     public ApiResponse<List<FlightAirlineResponse>> getAirlines(String source) {
         return getProvider(source).getAirlines();
     }
