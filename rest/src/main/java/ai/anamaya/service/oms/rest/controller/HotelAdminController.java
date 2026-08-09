@@ -8,6 +8,7 @@ import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.HotelAdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,6 +19,7 @@ public class HotelAdminController {
     private final HotelAdminService hotelAdminService;
     private final JwtUtils jwtUtils;
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @GetMapping("/{id}")
     public ApiResponse<HotelOpenSearchResponse> getOpenSearch(@PathVariable String id) {
         UserCallerContext callerContext = buildCallerContext();
@@ -25,6 +27,7 @@ public class HotelAdminController {
         return ApiResponse.success(response);
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @PutMapping("/{id}")
     public ApiResponse<HotelOpenSearchResponse> updateOpenSearch(
         @PathVariable String id,

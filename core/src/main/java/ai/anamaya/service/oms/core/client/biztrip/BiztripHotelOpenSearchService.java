@@ -30,7 +30,6 @@ public class BiztripHotelOpenSearchService {
     private final BiztripAuthService authService;
     private final ObjectMapper mapper;
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public HotelOpenSearchResponse getOpenSearch(CallerContext callerContext, String id) {
         String token = authService.getAccessToken(callerContext.companyId());
 
@@ -44,7 +43,6 @@ public class BiztripHotelOpenSearchService {
         return parseResponse(rawResponse);
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public HotelOpenSearchResponse updateOpenSearch(CallerContext callerContext, String id, UpdateHotelOpenSearchRequest request) {
         String token = authService.getAccessToken(callerContext.companyId());
 

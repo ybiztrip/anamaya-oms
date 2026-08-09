@@ -9,6 +9,7 @@ import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.HotelAdminService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class HotelPropertyMappingController {
     private final HotelAdminService hotelAdminService;
     private final JwtUtils jwtUtils;
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @GetMapping("/{id}")
     public ApiResponse<List<HotelPropertyMappingResponse>> getPropertyMapping(@PathVariable String id) {
         UserCallerContext callerContext = buildCallerContext();
@@ -28,6 +30,7 @@ public class HotelPropertyMappingController {
         return ApiResponse.success(response);
     }
 
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     @PostMapping("/{id}")
     public ApiResponse<HotelPropertyMappingUpdateResponse> updatePropertyMapping(
         @PathVariable String id,

@@ -33,7 +33,6 @@ public class BiztripHotelPropertyMappingService {
     private final BiztripAuthService authService;
     private final ObjectMapper mapper;
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public List<HotelPropertyMappingResponse> getPropertyMapping(CallerContext callerContext, String id) {
         String token = authService.getAccessToken(callerContext.companyId());
 
@@ -55,7 +54,6 @@ public class BiztripHotelPropertyMappingService {
         }
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public HotelPropertyMappingUpdateResponse updatePropertyMapping(CallerContext callerContext, String id, PropertyMappingRequest request) {
         String token = authService.getAccessToken(callerContext.companyId());
 
