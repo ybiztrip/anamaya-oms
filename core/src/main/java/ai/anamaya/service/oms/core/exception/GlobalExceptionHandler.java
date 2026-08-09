@@ -75,6 +75,16 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(message));
     }
 
+    @ExceptionHandler(BiztripIntegrationException.class)
+    public ResponseEntity<ApiResponse<?>> handleBiztripIntegration(BiztripIntegrationException ex) {
+        ApiResponse<?> response = ApiResponse.<Object>builder()
+                .success(false)
+                .message(ex.getMessage() != null ? ex.getMessage() : "Biztrip request failed")
+                .data(null)
+                .build();
+        return new ResponseEntity<>(response, ex.getStatus());
+    }
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiResponse<?>> handleNotFound(NotFoundException ex) {
         ApiResponse<?> response = ApiResponse.<Object>builder()
