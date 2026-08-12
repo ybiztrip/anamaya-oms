@@ -100,6 +100,7 @@ class HotelPropertyMappingControllerTest {
         mockJwt();
         PropertyMappingRequest request = PropertyMappingRequest.builder()
             .providerPropertyId(List.of(100567384L, 91425335L))
+            .providerAliasName("Hotel Daisy")
             .build();
 
         when(hotelAdminService.updatePropertyMapping(any(CallerContext.class), eq("9409190"), eq(request)))
@@ -116,6 +117,20 @@ class HotelPropertyMappingControllerTest {
 
         assertThat(idCaptor.getValue()).isEqualTo("9409190");
         assertThat(bodyCaptor.getValue().getProviderPropertyId()).containsExactly(100567384L, 91425335L);
+        assertThat(bodyCaptor.getValue().getProviderAliasName()).isEqualTo("Hotel Daisy");
+    }
+
+    @Test
+    void updatePropertyMapping_withoutProviderAliasName_passesBeanValidation() {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+        PropertyMappingRequest valid = PropertyMappingRequest.builder()
+            .providerPropertyId(List.of(100567384L))
+            .build();
+
+        Set<ConstraintViolation<PropertyMappingRequest>> violations = validator.validate(valid);
+
+        assertThat(violations).isEmpty();
     }
 
     @Test

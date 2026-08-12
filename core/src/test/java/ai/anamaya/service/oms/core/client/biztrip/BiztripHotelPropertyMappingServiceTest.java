@@ -205,6 +205,7 @@ class BiztripHotelPropertyMappingServiceTest {
 
         PropertyMappingRequest request = PropertyMappingRequest.builder()
             .providerPropertyId(List.of(100567384L, 91425335L))
+            .providerAliasName("Hotel Daisy")
             .build();
 
         HotelPropertyMappingUpdateResponse result = service.updatePropertyMapping(callerContext, "9409190", request);
@@ -219,6 +220,7 @@ class BiztripHotelPropertyMappingServiceTest {
         verify(postBodySpec).bodyValue(bodyCaptor.capture());
         PropertyMappingRequest forwarded = (PropertyMappingRequest) bodyCaptor.getValue();
         assertThat(forwarded.getProviderPropertyId()).containsExactly(100567384L, 91425335L);
+        assertThat(forwarded.getProviderAliasName()).isEqualTo("Hotel Daisy");
         assertThat(forwarded).isSameAs(request);
     }
 

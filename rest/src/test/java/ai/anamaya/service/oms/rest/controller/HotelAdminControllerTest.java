@@ -89,8 +89,18 @@ class HotelAdminControllerTest {
         controller = new HotelAdminController(hotelAdminService, jwtUtils);
         mockJwt();
         UpdateHotelOpenSearchRequest request = UpdateHotelOpenSearchRequest.builder()
+            .name("Hotel Daisy")
             .star(3)
             .estimationPrice(new BigDecimal("300000"))
+            .address("[\"Via Dott. F. Garofoli, 294\"]")
+            .province("VR")
+            .city("San Giovanni Lupatoto")
+            .countryCode("IT")
+            .postalCode("37057")
+            .latitude(45.396868)
+            .longitude(11.025483)
+            .rank(286700)
+            .accommodationType("INN")
             .build();
 
         when(hotelAdminService.updateOpenSearch(any(CallerContext.class), eq("9409190"), eq(request)))
@@ -121,6 +131,8 @@ class HotelAdminControllerTest {
 
         assertThat(violations).extracting(ConstraintViolation::getPropertyPath)
             .extracting(Object::toString)
-            .containsExactlyInAnyOrder("star", "estimationPrice");
+            .containsExactlyInAnyOrder(
+                "name", "star", "estimationPrice", "address", "province", "city",
+                "countryCode", "postalCode", "latitude", "longitude", "rank", "accommodationType");
     }
 }

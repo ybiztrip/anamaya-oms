@@ -180,10 +180,7 @@ class BiztripHotelOpenSearchServiceTest {
     void updateOpenSearch_forwardsIdAndBodyFields_returnsMappedResponse() {
         stubPut(Mono.just(successJson()));
 
-        UpdateHotelOpenSearchRequest request = UpdateHotelOpenSearchRequest.builder()
-            .star(3)
-            .estimationPrice(new BigDecimal("300000"))
-            .build();
+        UpdateHotelOpenSearchRequest request = sampleUpdateRequest();
 
         HotelOpenSearchResponse result = service.updateOpenSearch(callerContext, "9409190", request);
 
@@ -209,10 +206,7 @@ class BiztripHotelOpenSearchServiceTest {
             404, "Not Found", new HttpHeaders(), new byte[0], null);
         stubPut(Mono.error(notFound));
 
-        UpdateHotelOpenSearchRequest request = UpdateHotelOpenSearchRequest.builder()
-            .star(3)
-            .estimationPrice(new BigDecimal("300000"))
-            .build();
+        UpdateHotelOpenSearchRequest request = sampleUpdateRequest();
 
         assertThatThrownBy(() -> service.updateOpenSearch(callerContext, "unknown-id", request))
             .isInstanceOf(BiztripIntegrationException.class)
@@ -225,13 +219,27 @@ class BiztripHotelOpenSearchServiceTest {
             503, "Service Unavailable", new HttpHeaders(), new byte[0], null);
         stubPut(Mono.error(serverError));
 
-        UpdateHotelOpenSearchRequest request = UpdateHotelOpenSearchRequest.builder()
-            .star(3)
-            .estimationPrice(new BigDecimal("300000"))
-            .build();
+        UpdateHotelOpenSearchRequest request = sampleUpdateRequest();
 
         assertThatThrownBy(() -> service.updateOpenSearch(callerContext, "9409190", request))
             .isInstanceOf(BiztripIntegrationException.class)
             .satisfies(ex -> assertThat(((BiztripIntegrationException) ex).getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY));
+    }
+
+    private static UpdateHotelOpenSearchRequest sampleUpdateRequest() {
+        return UpdateHotelOpenSearchRequest.builder()
+            .name("Hotel Daisy")
+            .star(3)
+            .estimationPrice(new BigDecimal("300000"))
+            .address("[\"Via Dott. F. Garofoli, 294\"]")
+            .province("VR")
+            .city("San Giovanni Lupatoto")
+            .countryCode("IT")
+            .postalCode("37057")
+            .latitude(45.396868)
+            .longitude(11.025483)
+            .rank(286700)
+            .accommodationType("INN")
+            .build();
     }
 }

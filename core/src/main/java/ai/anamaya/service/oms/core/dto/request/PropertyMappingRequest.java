@@ -16,4 +16,6 @@ public class PropertyMappingRequest {
 
     @NotEmpty(message = "providerPropertyId is required")
     private List<Long> providerPropertyId;
+
+    private String providerAliasName;
 }
