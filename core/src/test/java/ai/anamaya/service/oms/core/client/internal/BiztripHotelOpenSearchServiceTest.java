@@ -1,10 +1,10 @@
-package ai.anamaya.service.oms.core.client.biztrip;
+package ai.anamaya.service.oms.core.client.internal;
 
+import ai.anamaya.service.oms.core.client.biztrip.BiztripAuthService;
+import ai.anamaya.service.oms.core.client.internal.dto.request.UpdateHotelOpenSearchRequest;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelOpenSearchResponse;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.context.UserCallerContext;
-import ai.anamaya.service.oms.core.dto.request.PropertyMappingRequest;
-import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingResponse;
-import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingUpdateResponse;
 import ai.anamaya.service.oms.core.exception.BiztripIntegrationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,8 +23,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -34,9 +34,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class BiztripHotelPropertyMappingServiceTest {
+class BiztripHotelOpenSearchServiceTest {
 
-    private static final String PATH = "/hotel/admin/property-mapping/{id}";
+    private static final String PATH = "/hotel/admin/opensearch/{id}";
     private static final String TOKEN = "Bearer test-token";
 
     @Mock
@@ -63,11 +63,11 @@ class BiztripHotelPropertyMappingServiceTest {
 
     private final CallerContext callerContext = new UserCallerContext(1L, 2L, "user@test.com");
 
-    private BiztripHotelPropertyMappingService service;
+    private BiztripHotelOpenSearchService service;
 
     @BeforeEach
     void setUp() {
-        service = new BiztripHotelPropertyMappingService(webClient, authService, new ObjectMapper());
+        service = new BiztripHotelOpenSearchService(webClient, authService, new ObjectMapper());
     }
 
     @SuppressWarnings("unchecked")
@@ -81,9 +81,9 @@ class BiztripHotelPropertyMappingServiceTest {
     }
 
     @SuppressWarnings("unchecked")
-    private void stubPost(Mono<String> response) {
+    private void stubPut(Mono<String> response) {
         when(authService.getAccessToken(1L)).thenReturn(TOKEN);
-        when(webClient.post()).thenReturn(postUriSpec);
+        when(webClient.put()).thenReturn(postUriSpec);
         when(postUriSpec.uri(eq(PATH), any(Object[].class))).thenReturn(postBodySpec);
         when(postBodySpec.header(eq(HttpHeaders.AUTHORIZATION), eq(TOKEN))).thenReturn(postBodySpec);
         when(postBodySpec.contentType(MediaType.APPLICATION_JSON)).thenReturn(postBodySpec);
@@ -92,41 +92,24 @@ class BiztripHotelPropertyMappingServiceTest {
         when(postResponseSpec.bodyToMono(String.class)).thenReturn(response);
     }
 
-    private static String successListJson() {
-        return """
-            {
-              "success": true,
-              "data": [
-                {
-                  "id": 428433,
-                  "propertyId": 9409190,
-                  "providerPropertyId": "100567384",
-                  "providerAliasName": "Hotel Daisy",
-                  "provider": "EXPEDIA",
-                  "status": null,
-                  "createdOn": null,
-                  "updatedOn": 1764569045000
-                }
-              ]
-            }
-            """;
-    }
-
-    private static String successEmptyListJson() {
-        return """
-            {
-              "success": true,
-              "data": []
-            }
-            """;
-    }
-
-    private static String successUpdateJson() {
+    private static String successJson() {
         return """
             {
               "success": true,
               "data": {
-                "updatedCount": 2
+                "id": "9409190",
+                "name": "Hotel Daisy",
+                "star": 3,
+                "estimationPrice": 300000,
+                "address": "[\\"Via Dott. F. Garofoli, 294\\"]",
+                "province": "VR",
+                "city": "San Giovanni Lupatoto",
+                "countryCode": "IT",
+                "postalCode": "37057",
+                "latitude": 45.396868,
+                "longitude": 11.025483,
+                "rank": 286700,
+                "accommodationType": "INN"
               }
             }
             """;
@@ -134,21 +117,16 @@ class BiztripHotelPropertyMappingServiceTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    void getPropertyMapping_callsBiztripAndReturnsMappedList() {
-        stubGet(Mono.just(successListJson()));
+    void getOpenSearch_callsBiztripAndReturnsMappedResponse() {
+        stubGet(Mono.just(successJson()));
 
-        List<HotelPropertyMappingResponse> result = service.getPropertyMapping(callerContext, "9409190");
+        HotelOpenSearchResponse result = service.getOpenSearch(callerContext, "9409190");
 
-        assertThat(result).hasSize(1);
-        HotelPropertyMappingResponse item = result.get(0);
-        assertThat(item.getId()).isEqualTo(428433L);
-        assertThat(item.getPropertyId()).isEqualTo(9409190L);
-        assertThat(item.getProviderPropertyId()).isEqualTo("100567384");
-        assertThat(item.getProviderAliasName()).isEqualTo("Hotel Daisy");
-        assertThat(item.getProvider()).isEqualTo("EXPEDIA");
-        assertThat(item.getStatus()).isNull();
-        assertThat(item.getCreatedOn()).isNull();
-        assertThat(item.getUpdatedOn()).isEqualTo(1764569045000L);
+        assertThat(result.getId()).isEqualTo("9409190");
+        assertThat(result.getName()).isEqualTo("Hotel Daisy");
+        assertThat(result.getStar()).isEqualTo(3);
+        assertThat(result.getEstimationPrice()).isEqualByComparingTo(new BigDecimal("300000"));
+        assertThat(result.getAccommodationType()).isEqualTo("INN");
 
         ArgumentCaptor<Object[]> idCaptor = ArgumentCaptor.forClass(Object[].class);
         verify(getUriSpec).uri(eq(PATH), idCaptor.capture());
@@ -156,61 +134,60 @@ class BiztripHotelPropertyMappingServiceTest {
     }
 
     @Test
-    void getPropertyMapping_emptyDataList_returnsEmptyList() {
-        stubGet(Mono.just(successEmptyListJson()));
-
-        List<HotelPropertyMappingResponse> result = service.getPropertyMapping(callerContext, "9409190");
-
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void getPropertyMapping_biztrip404_throwsNotFoundIntegrationException() {
+    void getOpenSearch_biztrip404_throwsNotFoundIntegrationException() {
         WebClientResponseException notFound = WebClientResponseException.create(
             404, "Not Found", new HttpHeaders(), new byte[0], null);
         stubGet(Mono.error(notFound));
 
-        assertThatThrownBy(() -> service.getPropertyMapping(callerContext, "unknown-id"))
+        assertThatThrownBy(() -> service.getOpenSearch(callerContext, "unknown-id"))
             .isInstanceOf(BiztripIntegrationException.class)
             .satisfies(ex -> assertThat(((BiztripIntegrationException) ex).getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
     }
 
     @Test
-    void getPropertyMapping_biztrip5xx_throwsIntegrationException() {
+    void getOpenSearch_biztrip5xx_throwsIntegrationException() {
         WebClientResponseException serverError = WebClientResponseException.create(
             500, "Internal Server Error", new HttpHeaders(), new byte[0], null);
         stubGet(Mono.error(serverError));
 
-        assertThatThrownBy(() -> service.getPropertyMapping(callerContext, "9409190"))
+        assertThatThrownBy(() -> service.getOpenSearch(callerContext, "9409190"))
             .isInstanceOf(BiztripIntegrationException.class)
             .satisfies(ex -> assertThat(((BiztripIntegrationException) ex).getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY));
     }
 
     @Test
-    void getPropertyMapping_connectionFailure_throwsServiceUnavailable() {
+    void getOpenSearch_connectionFailure_throwsServiceUnavailable() {
         WebClientRequestException connectionFailure = new WebClientRequestException(
             new IOException("Connection refused"), HttpMethod.GET,
-            URI.create("http://biztrip.test/hotel/admin/property-mapping/9409190"), new HttpHeaders());
+            URI.create("http://biztrip.test/hotel/admin/opensearch/9409190"), new HttpHeaders());
         stubGet(Mono.error(connectionFailure));
 
-        assertThatThrownBy(() -> service.getPropertyMapping(callerContext, "9409190"))
+        assertThatThrownBy(() -> service.getOpenSearch(callerContext, "9409190"))
             .isInstanceOf(BiztripIntegrationException.class)
             .satisfies(ex -> assertThat(((BiztripIntegrationException) ex).getStatus()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
     }
 
+    @Test
+    void getOpenSearch_invalidJsonResponse_throwsBadGateway() {
+        stubGet(Mono.just("not-json"));
+
+        assertThatThrownBy(() -> service.getOpenSearch(callerContext, "9409190"))
+            .isInstanceOf(BiztripIntegrationException.class)
+            .satisfies(ex -> assertThat(((BiztripIntegrationException) ex).getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY));
+    }
+
     @SuppressWarnings("unchecked")
     @Test
-    void updatePropertyMapping_forwardsIdAndBody_returnsUpdatedCount() {
-        stubPost(Mono.just(successUpdateJson()));
+    void updateOpenSearch_forwardsIdAndBodyFields_returnsMappedResponse() {
+        stubPut(Mono.just(successJson()));
 
-        PropertyMappingRequest request = PropertyMappingRequest.builder()
-            .providerPropertyId(List.of(100567384L, 91425335L))
-            .providerAliasName("Hotel Daisy")
-            .build();
+        UpdateHotelOpenSearchRequest request = sampleUpdateRequest();
 
-        HotelPropertyMappingUpdateResponse result = service.updatePropertyMapping(callerContext, "9409190", request);
+        HotelOpenSearchResponse result = service.updateOpenSearch(callerContext, "9409190", request);
 
-        assertThat(result.getUpdatedCount()).isEqualTo(2);
+        assertThat(result.getId()).isEqualTo("9409190");
+        assertThat(result.getStar()).isEqualTo(3);
+        assertThat(result.getEstimationPrice()).isEqualByComparingTo(new BigDecimal("300000"));
 
         ArgumentCaptor<Object[]> idCaptor = ArgumentCaptor.forClass(Object[].class);
         verify(postUriSpec).uri(eq(PATH), idCaptor.capture());
@@ -218,39 +195,52 @@ class BiztripHotelPropertyMappingServiceTest {
 
         ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
         verify(postBodySpec).bodyValue(bodyCaptor.capture());
-        PropertyMappingRequest forwarded = (PropertyMappingRequest) bodyCaptor.getValue();
-        assertThat(forwarded.getProviderPropertyId()).containsExactly(100567384L, 91425335L);
-        assertThat(forwarded.getProviderAliasName()).isEqualTo("Hotel Daisy");
+        UpdateHotelOpenSearchRequest forwarded = (UpdateHotelOpenSearchRequest) bodyCaptor.getValue();
+        assertThat(forwarded.getStar()).isEqualTo(3);
+        assertThat(forwarded.getEstimationPrice()).isEqualByComparingTo(new BigDecimal("300000"));
         assertThat(forwarded).isSameAs(request);
     }
 
     @Test
-    void updatePropertyMapping_biztrip404_throwsNotFoundIntegrationException() {
+    void updateOpenSearch_biztrip404_throwsNotFoundIntegrationException() {
         WebClientResponseException notFound = WebClientResponseException.create(
             404, "Not Found", new HttpHeaders(), new byte[0], null);
-        stubPost(Mono.error(notFound));
+        stubPut(Mono.error(notFound));
 
-        PropertyMappingRequest request = PropertyMappingRequest.builder()
-            .providerPropertyId(List.of(100567384L))
-            .build();
+        UpdateHotelOpenSearchRequest request = sampleUpdateRequest();
 
-        assertThatThrownBy(() -> service.updatePropertyMapping(callerContext, "unknown-id", request))
+        assertThatThrownBy(() -> service.updateOpenSearch(callerContext, "unknown-id", request))
             .isInstanceOf(BiztripIntegrationException.class)
             .satisfies(ex -> assertThat(((BiztripIntegrationException) ex).getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
     }
 
     @Test
-    void updatePropertyMapping_biztrip5xx_throwsIntegrationException() {
+    void updateOpenSearch_biztrip5xx_throwsIntegrationException() {
         WebClientResponseException serverError = WebClientResponseException.create(
             503, "Service Unavailable", new HttpHeaders(), new byte[0], null);
-        stubPost(Mono.error(serverError));
+        stubPut(Mono.error(serverError));
 
-        PropertyMappingRequest request = PropertyMappingRequest.builder()
-            .providerPropertyId(List.of(100567384L))
-            .build();
+        UpdateHotelOpenSearchRequest request = sampleUpdateRequest();
 
-        assertThatThrownBy(() -> service.updatePropertyMapping(callerContext, "9409190", request))
+        assertThatThrownBy(() -> service.updateOpenSearch(callerContext, "9409190", request))
             .isInstanceOf(BiztripIntegrationException.class)
             .satisfies(ex -> assertThat(((BiztripIntegrationException) ex).getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY));
+    }
+
+    private static UpdateHotelOpenSearchRequest sampleUpdateRequest() {
+        return UpdateHotelOpenSearchRequest.builder()
+            .name("Hotel Daisy")
+            .star(3)
+            .estimationPrice(new BigDecimal("300000"))
+            .address("[\"Via Dott. F. Garofoli, 294\"]")
+            .province("VR")
+            .city("San Giovanni Lupatoto")
+            .countryCode("IT")
+            .postalCode("37057")
+            .latitude(45.396868)
+            .longitude(11.025483)
+            .rank(286700)
+            .accommodationType("INN")
+            .build();
     }
 }

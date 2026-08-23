@@ -1,9 +1,9 @@
 package ai.anamaya.service.oms.rest.controller;
 
+import ai.anamaya.service.oms.core.client.internal.dto.request.UpdateHotelOpenSearchRequest;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelOpenSearchResponse;
 import ai.anamaya.service.oms.core.context.CallerContext;
-import ai.anamaya.service.oms.core.dto.request.UpdateHotelOpenSearchRequest;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
-import ai.anamaya.service.oms.core.dto.response.HotelOpenSearchResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.HotelAdminService;
 import jakarta.validation.ConstraintViolation;

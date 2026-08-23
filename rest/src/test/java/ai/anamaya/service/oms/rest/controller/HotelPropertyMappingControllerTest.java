@@ -1,10 +1,10 @@
 package ai.anamaya.service.oms.rest.controller;
 
+import ai.anamaya.service.oms.core.client.internal.dto.request.PropertyMappingRequest;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelPropertyMappingResponse;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelPropertyMappingUpdateResponse;
 import ai.anamaya.service.oms.core.context.CallerContext;
-import ai.anamaya.service.oms.core.dto.request.PropertyMappingRequest;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
-import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingResponse;
-import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingUpdateResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.HotelAdminService;
 import jakarta.validation.ConstraintViolation;
@@ -98,10 +98,18 @@ class HotelPropertyMappingControllerTest {
     void updatePropertyMapping_forwardsIdAndBody_returnsSuccessResponse() {
         controller = new HotelPropertyMappingController(hotelAdminService, jwtUtils);
         mockJwt();
-        PropertyMappingRequest request = PropertyMappingRequest.builder()
-            .providerPropertyId(List.of(100567384L, 91425335L))
-            .providerAliasName("Hotel Daisy")
-            .build();
+        List<PropertyMappingRequest> request = List.of(
+            PropertyMappingRequest.builder()
+                .provider("EXPEDIA")
+                .providerPropertyId(100567384L)
+                .providerAliasName("Hotel Daisy")
+                .build(),
+            PropertyMappingRequest.builder()
+                .provider("EXPEDIA")
+                .providerPropertyId(91425335L)
+                .providerAliasName("Hotel Daisy")
+                .build()
+        );
 
         when(hotelAdminService.updatePropertyMapping(any(CallerContext.class), eq("9409190"), eq(request)))
             .thenReturn(HotelPropertyMappingUpdateResponse.builder().updatedCount(2).build());
@@ -112,12 +120,14 @@ class HotelPropertyMappingControllerTest {
         assertThat(response.getData().getUpdatedCount()).isEqualTo(2);
 
         ArgumentCaptor<String> idCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<PropertyMappingRequest> bodyCaptor = ArgumentCaptor.forClass(PropertyMappingRequest.class);
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<PropertyMappingRequest>> bodyCaptor = ArgumentCaptor.forClass(List.class);
         verify(hotelAdminService).updatePropertyMapping(any(CallerContext.class), idCaptor.capture(), bodyCaptor.capture());
 
         assertThat(idCaptor.getValue()).isEqualTo("9409190");
-        assertThat(bodyCaptor.getValue().getProviderPropertyId()).containsExactly(100567384L, 91425335L);
-        assertThat(bodyCaptor.getValue().getProviderAliasName()).isEqualTo("Hotel Daisy");
+        assertThat(bodyCaptor.getValue()).extracting(PropertyMappingRequest::getProviderPropertyId)
+            .containsExactly(100567384L, 91425335L);
+        assertThat(bodyCaptor.getValue()).allSatisfy(item -> assertThat(item.getProviderAliasName()).isEqualTo("Hotel Daisy"));
     }
 
     @Test
@@ -125,7 +135,8 @@ class HotelPropertyMappingControllerTest {
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
         PropertyMappingRequest valid = PropertyMappingRequest.builder()
-            .providerPropertyId(List.of(100567384L))
+            .provider("EXPEDIA")
+            .providerPropertyId(100567384L)
             .build();
 
         Set<ConstraintViolation<PropertyMappingRequest>> violations = validator.validate(valid);
@@ -134,11 +145,11 @@ class HotelPropertyMappingControllerTest {
     }
 
     @Test
-    void updatePropertyMapping_emptyProviderPropertyId_failsBeanValidation() {
+    void updatePropertyMapping_missingProviderPropertyId_failsBeanValidation() {
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
         PropertyMappingRequest invalid = PropertyMappingRequest.builder()
-            .providerPropertyId(List.of())
+            .provider("EXPEDIA")
             .build();
 
         Set<ConstraintViolation<PropertyMappingRequest>> violations = validator.validate(invalid);
@@ -149,7 +160,7 @@ class HotelPropertyMappingControllerTest {
     }
 
     @Test
-    void updatePropertyMapping_nullProviderPropertyId_failsBeanValidation() {
+    void updatePropertyMapping_emptyRequest_failsBeanValidation() {
         Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
         PropertyMappingRequest invalid = new PropertyMappingRequest();
@@ -158,6 +169,6 @@ class HotelPropertyMappingControllerTest {
 
         assertThat(violations).extracting(ConstraintViolation::getPropertyPath)
             .extracting(Object::toString)
-            .containsExactly("providerPropertyId");
+            .containsExactlyInAnyOrder("provider", "providerPropertyId");
     }
 }
