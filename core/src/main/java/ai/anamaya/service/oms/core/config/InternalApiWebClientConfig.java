@@ -5,7 +5,6 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -14,14 +13,13 @@ import reactor.netty.http.client.HttpClient;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-public class BiztripWebClientConfig {
+public class InternalApiWebClientConfig {
 
-    @Value("${external.biztrip-api.base-url}")
+    @Value("${external.internal-api.base-url}")
     private String baseUrl;
 
-    @Primary
-    @Bean("biztripWebClient")
-    public WebClient biztripWebClient() {
+    @Bean("internalApiWebClient")
+    public WebClient internalApiWebClient() {
         HttpClient httpClient = HttpClient.create()
                 .followRedirect(false)
                 .responseTimeout(java.time.Duration.ofSeconds(180))

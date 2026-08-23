@@ -1,11 +1,11 @@
 package ai.anamaya.service.oms.core.service;
 
-import ai.anamaya.service.oms.core.client.biztrip.BiztripHotelOpenSearchService;
+import ai.anamaya.service.oms.core.client.internal.BiztripHotelOpenSearchService;
 import ai.anamaya.service.oms.core.client.biztrip.BiztripHotelPropertyMappingService;
 import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.client.internal.dto.request.UpdateHotelOpenSearchRequest;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelOpenSearchResponse;
 import ai.anamaya.service.oms.core.dto.request.PropertyMappingRequest;
-import ai.anamaya.service.oms.core.dto.request.UpdateHotelOpenSearchRequest;
-import ai.anamaya.service.oms.core.dto.response.HotelOpenSearchResponse;
 import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingResponse;
 import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingUpdateResponse;
 import lombok.RequiredArgsConstructor;

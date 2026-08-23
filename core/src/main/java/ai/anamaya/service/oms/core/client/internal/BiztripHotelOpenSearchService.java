@@ -1,13 +1,15 @@
-package ai.anamaya.service.oms.core.client.biztrip;
+package ai.anamaya.service.oms.core.client.internal;
 
+import ai.anamaya.service.oms.core.client.biztrip.BiztripAuthService;
+import ai.anamaya.service.oms.core.client.internal.dto.request.UpdateHotelOpenSearchRequest;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelOpenSearchResponse;
 import ai.anamaya.service.oms.core.context.CallerContext;
-import ai.anamaya.service.oms.core.dto.request.UpdateHotelOpenSearchRequest;
-import ai.anamaya.service.oms.core.dto.response.HotelOpenSearchResponse;
 import ai.anamaya.service.oms.core.exception.BiztripIntegrationException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,14 +28,15 @@ public class BiztripHotelOpenSearchService {
 
     private static final String PATH = "/hotel/admin/opensearch/{id}";
 
-    private final WebClient biztripWebClient;
+    @Qualifier("internalApiWebClient")
+    private final WebClient webClient;
     private final BiztripAuthService authService;
     private final ObjectMapper mapper;
 
     public HotelOpenSearchResponse getOpenSearch(CallerContext callerContext, String id) {
         String token = authService.getAccessToken(callerContext.companyId());
 
-        String rawResponse = call(() -> biztripWebClient.get()
+        String rawResponse = call(() -> webClient.get()
                 .uri(PATH, id)
                 .header(HttpHeaders.AUTHORIZATION, token)
                 .retrieve()
@@ -46,7 +49,7 @@ public class BiztripHotelOpenSearchService {
     public HotelOpenSearchResponse updateOpenSearch(CallerContext callerContext, String id, UpdateHotelOpenSearchRequest request) {
         String token = authService.getAccessToken(callerContext.companyId());
 
-        String rawResponse = call(() -> biztripWebClient.put()
+        String rawResponse = call(() -> webClient.put()
                 .uri(PATH, id)
                 .header(HttpHeaders.AUTHORIZATION, token)
                 .contentType(MediaType.APPLICATION_JSON)

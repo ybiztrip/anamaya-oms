@@ -1,4 +1,4 @@
-package ai.anamaya.service.oms.core.dto.request;
+package ai.anamaya.service.oms.core.client.internal.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
