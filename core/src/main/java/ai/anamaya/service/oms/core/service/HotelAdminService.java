@@ -1,13 +1,13 @@
 package ai.anamaya.service.oms.core.service;
 
 import ai.anamaya.service.oms.core.client.internal.BiztripHotelOpenSearchService;
-import ai.anamaya.service.oms.core.client.biztrip.BiztripHotelPropertyMappingService;
-import ai.anamaya.service.oms.core.context.CallerContext;
+import ai.anamaya.service.oms.core.client.internal.BiztripHotelPropertyMappingService;
+import ai.anamaya.service.oms.core.client.internal.dto.request.PropertyMappingRequest;
 import ai.anamaya.service.oms.core.client.internal.dto.request.UpdateHotelOpenSearchRequest;
 import ai.anamaya.service.oms.core.client.internal.dto.response.HotelOpenSearchResponse;
-import ai.anamaya.service.oms.core.dto.request.PropertyMappingRequest;
-import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingResponse;
-import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingUpdateResponse;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelPropertyMappingResponse;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelPropertyMappingUpdateResponse;
+import ai.anamaya.service.oms.core.context.CallerContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +32,7 @@ public class HotelAdminService {
         return biztripHotelPropertyMappingService.getPropertyMapping(callerContext, id);
     }
 
-    public HotelPropertyMappingUpdateResponse updatePropertyMapping(CallerContext callerContext, String id, PropertyMappingRequest request) {
+    public HotelPropertyMappingUpdateResponse updatePropertyMapping(CallerContext callerContext, String id, List<PropertyMappingRequest> request) {
         return biztripHotelPropertyMappingService.updatePropertyMapping(callerContext, id, request);
     }
 }

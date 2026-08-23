@@ -7,13 +7,11 @@ import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.exception.BiztripIntegrationException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
@@ -22,16 +20,22 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.util.function.Supplier;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class BiztripHotelOpenSearchService {
 
     private static final String PATH = "/hotel/admin/opensearch/{id}";
 
-    @Qualifier("internalApiWebClient")
     private final WebClient webClient;
     private final BiztripAuthService authService;
     private final ObjectMapper mapper;
+
+    public BiztripHotelOpenSearchService(@Qualifier("internalApiWebClient") WebClient webClient,
+                                          BiztripAuthService authService,
+                                          ObjectMapper mapper) {
+        this.webClient = webClient;
+        this.authService = authService;
+        this.mapper = mapper;
+    }
 
     public HotelOpenSearchResponse getOpenSearch(CallerContext callerContext, String id) {
         String token = authService.getAccessToken(callerContext.companyId());

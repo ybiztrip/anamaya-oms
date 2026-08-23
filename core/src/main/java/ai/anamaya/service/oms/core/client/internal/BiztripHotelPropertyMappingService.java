@@ -1,15 +1,17 @@
-package ai.anamaya.service.oms.core.client.biztrip;
+package ai.anamaya.service.oms.core.client.internal;
 
+import ai.anamaya.service.oms.core.client.biztrip.BiztripAuthService;
+import ai.anamaya.service.oms.core.client.internal.dto.request.PropertyMappingRequest;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelPropertyMappingResponse;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelPropertyMappingUpdateResponse;
 import ai.anamaya.service.oms.core.context.CallerContext;
-import ai.anamaya.service.oms.core.dto.request.PropertyMappingRequest;
-import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingResponse;
-import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingUpdateResponse;
 import ai.anamaya.service.oms.core.exception.BiztripIntegrationException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,20 +25,30 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class BiztripHotelPropertyMappingService {
 
     private static final String PATH = "/hotel/admin/property-mapping/{id}";
 
-    private final WebClient biztripWebClient;
+    @Value("${external.internal-api.base-url}")
+    private String baseUrl;
+
+    private final WebClient webClient;
     private final BiztripAuthService authService;
     private final ObjectMapper mapper;
+
+    public BiztripHotelPropertyMappingService(@Qualifier("internalApiWebClient") WebClient webClient,
+                                               BiztripAuthService authService,
+                                               ObjectMapper mapper) {
+        this.webClient = webClient;
+        this.authService = authService;
+        this.mapper = mapper;
+    }
 
     public List<HotelPropertyMappingResponse> getPropertyMapping(CallerContext callerContext, String id) {
         String token = authService.getAccessToken(callerContext.companyId());
 
-        String rawResponse = call(() -> biztripWebClient.get()
+        String rawResponse = call(() -> webClient.get()
                 .uri(PATH, id)
                 .header(HttpHeaders.AUTHORIZATION, token)
                 .retrieve()
@@ -54,10 +66,11 @@ public class BiztripHotelPropertyMappingService {
         }
     }
 
-    public HotelPropertyMappingUpdateResponse updatePropertyMapping(CallerContext callerContext, String id, PropertyMappingRequest request) {
+    public HotelPropertyMappingUpdateResponse updatePropertyMapping(CallerContext callerContext, String id, List<PropertyMappingRequest> request) {
         String token = authService.getAccessToken(callerContext.companyId());
+        logCurl(id, token, request);
 
-        String rawResponse = call(() -> biztripWebClient.post()
+        String rawResponse = call(() -> webClient.post()
                 .uri(PATH, id)
                 .header(HttpHeaders.AUTHORIZATION, token)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -72,6 +85,21 @@ public class BiztripHotelPropertyMappingService {
         } catch (Exception e) {
             log.error("Failed to parse Biztrip hotel property-mapping response: {}", rawResponse, e);
             throw new BiztripIntegrationException(HttpStatus.BAD_GATEWAY, "Invalid response from Biztrip service");
+        }
+    }
+
+    private void logCurl(String id, String token, Object body) {
+        if (!log.isDebugEnabled()) {
+            return;
+        }
+        try {
+            String url = baseUrl + PATH.replace("{id}", id);
+            String json = mapper.writeValueAsString(body);
+            String maskedToken = token != null && token.length() > 10 ? token.substring(0, 10) + "...redacted" : token;
+            log.debug("updatePropertyMapping curl: curl -X POST '{}' -H 'Authorization: {}' -H 'Content-Type: application/json' -d '{}'",
+                    url, maskedToken, json);
+        } catch (Exception e) {
+            log.debug("Failed to build debug curl command", e);
         }
     }
 

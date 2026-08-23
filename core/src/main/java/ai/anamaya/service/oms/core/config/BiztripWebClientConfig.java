@@ -5,7 +5,6 @@ import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,7 +18,6 @@ public class BiztripWebClientConfig {
     @Value("${external.biztrip-api.base-url}")
     private String baseUrl;
 
-    @Primary
     @Bean("biztripWebClient")
     public WebClient biztripWebClient() {
         HttpClient httpClient = HttpClient.create()

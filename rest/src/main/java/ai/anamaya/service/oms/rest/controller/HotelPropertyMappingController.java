@@ -1,10 +1,10 @@
 package ai.anamaya.service.oms.rest.controller;
 
+import ai.anamaya.service.oms.core.client.internal.dto.request.PropertyMappingRequest;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelPropertyMappingResponse;
+import ai.anamaya.service.oms.core.client.internal.dto.response.HotelPropertyMappingUpdateResponse;
 import ai.anamaya.service.oms.core.context.UserCallerContext;
-import ai.anamaya.service.oms.core.dto.request.PropertyMappingRequest;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
-import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingResponse;
-import ai.anamaya.service.oms.core.dto.response.HotelPropertyMappingUpdateResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.HotelAdminService;
 import jakarta.validation.Valid;
@@ -34,7 +34,7 @@ public class HotelPropertyMappingController {
     @PostMapping("/{id}")
     public ApiResponse<HotelPropertyMappingUpdateResponse> updatePropertyMapping(
         @PathVariable String id,
-        @Valid @RequestBody PropertyMappingRequest request
+        @Valid @RequestBody List<PropertyMappingRequest> request
     ) {
         UserCallerContext callerContext = buildCallerContext();
         HotelPropertyMappingUpdateResponse response = hotelAdminService.updatePropertyMapping(callerContext, id, request);

@@ -1,4 +1,4 @@
-package ai.anamaya.service.oms.core.dto.response;
+package ai.anamaya.service.oms.core.client.internal.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

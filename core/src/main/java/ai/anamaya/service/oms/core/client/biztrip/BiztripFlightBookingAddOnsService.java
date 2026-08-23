@@ -7,8 +7,8 @@ import ai.anamaya.service.oms.core.dto.request.FlightAddOnsRequest;
 import ai.anamaya.service.oms.core.dto.response.FlightAddOnsResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.Duration;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class BiztripFlightBookingAddOnsService {
 
@@ -25,6 +24,14 @@ public class BiztripFlightBookingAddOnsService {
     private final BiztripAuthService authService;
     private final ObjectMapper mapper;
     private final BiztripFlightAddOnsResponseMapper responseMapper = new BiztripFlightAddOnsResponseMapper();
+
+    public BiztripFlightBookingAddOnsService(@Qualifier("biztripWebClient") WebClient webClient,
+                                              BiztripAuthService authService,
+                                              ObjectMapper mapper) {
+        this.webClient = webClient;
+        this.authService = authService;
+        this.mapper = mapper;
+    }
 
     public FlightAddOnsResponse getAddOns(CallerContext callerContext, FlightAddOnsRequest request) {
         try {

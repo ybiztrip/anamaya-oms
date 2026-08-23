@@ -2,8 +2,6 @@ package ai.anamaya.service.oms.core.client.biztrip;
 
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.FileFetchRequest;
-import ai.anamaya.service.oms.core.security.JwtUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
@@ -14,11 +12,16 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class BiztripFileFetchService {
 
     private final WebClient webClient;
     private final BiztripAuthService authService;
+
+    public BiztripFileFetchService(@Qualifier("biztripWebClient") WebClient webClient,
+                                    BiztripAuthService authService) {
+        this.webClient = webClient;
+        this.authService = authService;
+    }
 
     public byte[] fetch(CallerContext callerContext, FileFetchRequest request) {
         try {
