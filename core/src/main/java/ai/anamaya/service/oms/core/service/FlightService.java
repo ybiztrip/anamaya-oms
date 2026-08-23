@@ -92,13 +92,17 @@ public class FlightService {
         for (FlightCityMultipleAirportResponse c : getProvider(source).getCityMultipleAirports().getData()) {
             result.add(FlightAirportCityResponse.builder()
                     .airportCode(c.getCityCode())
-                    .name(c.getCity() + " - " + c.getCountry())
+                    .localAirportName(c.getCity() + " - " + c.getCountry())
+                    .localCityName(c.getCity())
+                    .countryName(c.getCountry())
                     .build());
         }
         for (FlightAirportResponse a : getCachedAirports(source)) {
             result.add(FlightAirportCityResponse.builder()
                     .airportCode(a.getAirportCode())
-                    .name(a.getInternationalAirportName() + " - (" + a.getCity() + " - " + a.getAirportCode() + ")")
+                    .localAirportName(a.getInternationalAirportName() + " - (" + a.getCity() + " - " + a.getAirportCode() + ")")
+                    .localCityName(a.getCity())
+                    .countryName(a.getCountryName())
                     .build());
         }
 
@@ -107,7 +111,7 @@ public class FlightService {
         }
         String q = search.toLowerCase();
         return ApiResponse.success(result.stream()
-                .filter(r -> contains(r.getAirportCode(), q) || contains(r.getName(), q))
+                .filter(r -> contains(r.getAirportCode(), q) || contains(r.getLocalAirportName(), q))
                 .toList());
     }
 

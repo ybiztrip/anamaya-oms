@@ -11,5 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FlightAirportCityResponse {
     private String airportCode;
-    private String name;
+    private String localAirportName;
+    private String localCityName;
+    private String countryName;
 }
