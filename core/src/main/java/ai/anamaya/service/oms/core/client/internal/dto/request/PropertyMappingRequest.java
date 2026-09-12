@@ -20,4 +20,6 @@ public class PropertyMappingRequest {
     private Long providerPropertyId;
 
     private String providerAliasName;
+
+    private String status;
 }
