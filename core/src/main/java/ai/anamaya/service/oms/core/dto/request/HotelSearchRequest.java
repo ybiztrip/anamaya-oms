@@ -28,4 +28,7 @@ public class HotelSearchRequest {
     @Size(min = 5, max = 5, message = "Stars must have exactly 5 elements (true/false for 1–5 stars)")
     @NotNull(message = "Stars cannot be null")
     private List<@NotNull Boolean> stars;
+
+    @Builder.Default
+    private Boolean isIncludeNoStar = false;
 }
