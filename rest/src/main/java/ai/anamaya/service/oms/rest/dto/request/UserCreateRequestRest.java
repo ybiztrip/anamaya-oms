@@ -38,6 +38,7 @@ public class UserCreateRequestRest {
     private String identityNo;
     private String passportNo;
     private Date passportExpiry;
+    private Date passportIssued;
     private Date dateOfBirth;
     private String nationalityCode;
     private Long travelPolicyId;

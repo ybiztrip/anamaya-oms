@@ -62,6 +62,9 @@ public class User extends BaseEntity {
     @Column(name = "passport_expiry")
     private Date passportExpiry;
 
+    @Column(name = "passport_issued")
+    private Date passportIssued;
+
     @Column(name = "date_of_birth")
     private Date dateOfBirth;
 

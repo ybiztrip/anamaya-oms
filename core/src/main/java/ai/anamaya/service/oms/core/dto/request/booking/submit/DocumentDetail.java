@@ -8,6 +8,7 @@ import lombok.Data;
 public class DocumentDetail {
     private String issuingCountry;
     private String documentNo;
+    private String issuedDate;
     private String expirationDate;
     private String documentType;
 }

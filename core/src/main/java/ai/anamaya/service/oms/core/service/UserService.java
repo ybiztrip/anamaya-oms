@@ -83,6 +83,7 @@ public class UserService {
             .phoneNo(request.getPhoneNo())
             .passportNo(request.getPassportNo())
             .passportExpiry(request.getPassportExpiry())
+            .passportIssued(request.getPassportIssued())
             .dateOfBirth(request.getDateOfBirth())
             .nationalityCode(request.getNationalityCode())
             .travelPolicyId(request.getTravelPolicyId())
@@ -133,6 +134,7 @@ public class UserService {
         user.setPhoneNo(request.getPhoneNo());
         user.setPassportNo(request.getPassportNo());
         user.setPassportExpiry(request.getPassportExpiry());
+        user.setPassportIssued(request.getPassportIssued());
         user.setDateOfBirth(request.getDateOfBirth());
         user.setNationalityCode(request.getNationalityCode());
         user.setTravelPolicyId(request.getTravelPolicyId());
@@ -249,6 +251,7 @@ public class UserService {
             .identityNo(user.getIdentityNo())
             .passportNo(user.getPassportNo())
             .passportExpiry(user.getPassportExpiry())
+            .passportIssued(user.getPassportIssued())
             .dateOfBirth(user.getDateOfBirth())
             .nationalityCode(user.getNationalityCode())
             .travelPolicyId(user.getTravelPolicyId())

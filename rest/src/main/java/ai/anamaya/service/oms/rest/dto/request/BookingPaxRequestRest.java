@@ -40,4 +40,5 @@ public class BookingPaxRequestRest {
     private String documentType;
     private String documentNo;
     private LocalDate expirationDate;
+    private LocalDate issuedDate;
 }

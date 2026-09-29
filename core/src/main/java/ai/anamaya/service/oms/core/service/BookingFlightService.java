@@ -480,6 +480,7 @@ public class BookingFlightService {
                 .documentDetail(new DocumentDetail(
                     pax.getIssuingCountry(),
                     pax.getDocumentNo(),
+                    pax.getIssuedDate() != null ? pax.getIssuedDate().toString() : null,
                     pax.getExpirationDate() != null ? pax.getExpirationDate().toString() : null,
                     pax.getDocumentType()
                 ))

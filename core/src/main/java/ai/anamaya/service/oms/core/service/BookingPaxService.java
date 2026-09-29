@@ -45,6 +45,7 @@ public class BookingPaxService {
                 .documentType(request.getDocumentType())
                 .documentNo(request.getDocumentNo())
                 .expirationDate(request.getExpirationDate())
+                .issuedDate(request.getIssuedDate())
                 .createdBy(userId)
                 .updatedBy(userId)
                 .build();

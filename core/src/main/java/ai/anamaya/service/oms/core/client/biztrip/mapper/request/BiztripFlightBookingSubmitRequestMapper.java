@@ -84,6 +84,7 @@ public class BiztripFlightBookingSubmitRequestMapper {
                     .documentNo(p.getDocumentDetail().getDocumentNo())
                     .documentType(p.getDocumentDetail().getDocumentType())
                     .issuingCountry(p.getDocumentDetail().getIssuingCountry())
+                    .issuanceDate(convertDateFormat(p.getDocumentDetail().getIssuedDate()))
                     .expirationDate(convertDateFormat(p.getDocumentDetail().getExpirationDate()))
                     .build()
             )

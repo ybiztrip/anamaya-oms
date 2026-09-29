@@ -80,4 +80,7 @@ public class BookingPax extends BaseEntity {
 
     @Column(name = "expiration_date")
     private LocalDate expirationDate;
+
+    @Column(name = "issued_date")
+    private LocalDate issuedDate;
 }

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class BiztripBookingDocumentDetail {
     private String issuingCountry;
     private String documentNo;
+    private String issuanceDate;
     private String expirationDate;
     private String documentType;
 }
