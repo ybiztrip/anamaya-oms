@@ -299,7 +299,7 @@ public class BookingController {
     @PostMapping("/{id}/flights")
     public ApiResponse<?> submitBookingFlights(
         @PathVariable Long id,
-        @RequestBody BookingFlightSubmitRequestRest requestRest) {
+        @Valid @RequestBody BookingFlightSubmitRequestRest requestRest) {
         Long companyId = jwtUtils.getCompanyIdFromToken();
         Long userId = jwtUtils.getUserIdFromToken();
         String userEmail = jwtUtils.getEmailFromToken();
