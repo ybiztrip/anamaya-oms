@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
@@ -177,7 +178,11 @@ public class BookingHotelService {
                     .bookingId(bookingId)
                     .bookingCode(bookingCode)
                     .status(BookingHotelStatus.APPROVED)
-                    .data("{}")
+                    .data(Map.of(
+                        "approvedBy", 0,
+                        "approvedByEmail", "SYSTEM",
+                        "approvedAt", LocalDateTime.now().toString()
+                    ))
                     .build()
             );
 

@@ -138,7 +138,11 @@ public class BookingApproveService {
                         .bookingId(bookingId)
                         .bookingCode(code)
                         .status(BookingFlightStatus.APPROVED)
-                        .data("{}")
+                        .data(Map.of(
+                            "approvedBy", userId,
+                            "approvedByEmail", userEmail,
+                            "approvedAt", now.toString()
+                        ))
                         .build()
                 ));
 
@@ -201,7 +205,11 @@ public class BookingApproveService {
                         .bookingId(bookingId)
                         .bookingCode(code)
                         .status(BookingHotelStatus.APPROVED)
-                        .data("{}")
+                        .data(Map.of(
+                            "approvedBy", userId,
+                            "approvedByEmail", userEmail,
+                            "approvedAt", now.toString()
+                        ))
                         .build()
                 ));
         }
