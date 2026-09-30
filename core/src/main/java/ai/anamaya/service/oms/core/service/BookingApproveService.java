@@ -30,7 +30,9 @@ public class BookingApproveService {
     private final BookingCommonService bookingCommonService;
     private final BookingRepository bookingRepository;
     private final BookingFlightRepository bookingFlightRepository;
+    private final BookingFlightHistoryRepository bookingFlightHistoryRepository;
     private final BookingHotelRepository bookingHotelRepository;
+    private final BookingHotelHistoryRepository bookingHotelHistoryRepository;
     private final BookingPubSubPublisher bookingPubSubPublisher;
     private final BookingHotelService bookingHotelService;
     private final BookingFlightService bookingFlightService;
@@ -128,6 +130,18 @@ public class BookingApproveService {
                 )
             );
 
+            bookingFlights.stream()
+                .map(BookingFlight::getBookingCode)
+                .distinct()
+                .forEach(code -> bookingFlightHistoryRepository.save(
+                    BookingFlightHistory.builder()
+                        .bookingId(bookingId)
+                        .bookingCode(code)
+                        .status(BookingFlightStatus.APPROVED)
+                        .data("{}")
+                        .build()
+                ));
+
         }
 
         if (request.getHotelIds() != null && !request.getHotelIds().isEmpty()) {
@@ -178,6 +192,18 @@ public class BookingApproveService {
                     request.getNotes()
                 )
             );
+
+            bookingHotels.stream()
+                .map(BookingHotel::getBookingCode)
+                .distinct()
+                .forEach(code -> bookingHotelHistoryRepository.save(
+                    BookingHotelHistory.builder()
+                        .bookingId(bookingId)
+                        .bookingCode(code)
+                        .status(BookingHotelStatus.APPROVED)
+                        .data("{}")
+                        .build()
+                ));
         }
 
         for (BookingStatusMessage message : bookingStatusMessages) {

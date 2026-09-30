@@ -171,6 +171,16 @@ public class BookingFlightService {
                     "Auto approve"
                 )
             );
+
+            bookingFlightHistoryRepository.save(
+                    BookingFlightHistory.builder()
+                            .bookingId(booking.getId())
+                            .bookingCode(bookingCode)
+                            .status(BookingFlightStatus.APPROVED)
+                            .data("{}")
+                            .build()
+            );
+
             bookingPubSubPublisher.publishBookingStatus(message);
         } else {
             bookingCommonService.sendNotificationToApprover(callerContext, booking.getId() ,bookingFlights, null);

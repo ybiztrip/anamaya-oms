@@ -19,6 +19,7 @@ import ai.anamaya.service.oms.core.enums.*;
 import ai.anamaya.service.oms.core.exception.AccessDeniedException;
 import ai.anamaya.service.oms.core.helper.json.JsonHelper;
 import ai.anamaya.service.oms.core.repository.BookingApprovalRepository;
+import ai.anamaya.service.oms.core.repository.BookingHotelHistoryRepository;
 import ai.anamaya.service.oms.core.repository.BookingHotelRepository;
 import ai.anamaya.service.oms.core.repository.BookingPaxRepository;
 import ai.anamaya.service.oms.core.repository.CompanyConfigRepository;
@@ -41,6 +42,7 @@ public class BookingHotelService {
 
     private final BookingApprovalRepository bookingApprovalRepository;
     private final BookingHotelRepository bookingHotelRepository;
+    private final BookingHotelHistoryRepository bookingHotelHistoryRepository;
     private final BookingPaxRepository bookingPaxRepository;
     private final CompanyConfigRepository companyConfigRepository;
     private final BookingService bookingService;
@@ -169,6 +171,16 @@ public class BookingHotelService {
                     "Auto approve"
                 )
             );
+
+            bookingHotelHistoryRepository.save(
+                BookingHotelHistory.builder()
+                    .bookingId(bookingId)
+                    .bookingCode(bookingCode)
+                    .status(BookingHotelStatus.APPROVED)
+                    .data("{}")
+                    .build()
+            );
+
             bookingPubSubPublisher.publishBookingStatus(message);
         } else {
             bookingCommonService.sendNotificationToApprover(callerContext, bookingId,null, List.of(newHotel));
