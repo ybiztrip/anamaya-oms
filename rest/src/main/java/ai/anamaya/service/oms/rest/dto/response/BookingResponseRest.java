@@ -1,5 +1,6 @@
 package ai.anamaya.service.oms.rest.dto.response;
 
+import ai.anamaya.service.oms.core.dto.response.BookingTrainResponse;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
@@ -41,4 +42,5 @@ public class BookingResponseRest {
     private List<BookingAttachmentResponseRest> attachments;
     private List<BookingFlightResponseRest> flights;
     private List<BookingHotelResponseRest> hotels;
+    private List<BookingTrainResponse> trains;
 }

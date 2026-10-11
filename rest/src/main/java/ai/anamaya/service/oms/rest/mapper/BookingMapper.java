@@ -34,6 +34,8 @@ public interface BookingMapper {
     BookingHotelRequest toCore(BookingHotelRequestRest rest);
     BookingHotelSubmitRequest toCoreSubmitHotel(BookingHotelSubmitRequestRest rest);
 
+    BookingTrainSubmitRequest toCoreSubmitTrain(BookingTrainSubmitRequestRest rest);
+
     BookingResponseRest toRest(BookingResponse core);
 
     BookingPaxResponseRest toRest(BookingPaxResponse core);

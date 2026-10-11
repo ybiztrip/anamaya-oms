@@ -53,9 +53,11 @@ public class BookingCommonService {
         }
 
         if (paymentMethod == BookingPaymentMethod.LIMIT) {
-            String code = bookingType == BookingType.FLIGHT
-                ? ManagementFeeService.CONFIG_FLIGHT
-                : ManagementFeeService.CONFIG_HOTEL;
+            String code = switch (bookingType) {
+                case FLIGHT -> ManagementFeeService.CONFIG_FLIGHT;
+                case TRAIN -> ManagementFeeService.CONFIG_TRAIN;
+                default -> ManagementFeeService.CONFIG_HOTEL;
+            };
             managementFeeService.validateConfig(callerContext.companyId(), code);
         }
 
@@ -171,6 +173,58 @@ public class BookingCommonService {
         }
     }
 
+    public void bookingDebitBalance(CallerContext callerContext, Booking booking, BookingTrain bookingTrain) {
+        List<CompanyBalanceDetail> balanceDetails = balanceService.getBalanceDetailByReferenceCode(BalanceSourceType.BOOKING, bookingTrain.getBookingCode());
+        if (balanceDetails != null && !balanceDetails.isEmpty()) {
+            return;
+        }
+
+        String approver = resolveApprover(bookingTrain.getApprovedByEmail());
+        balanceService.adjustBalance(
+            callerContext,
+            BalanceAdjustRequest.builder()
+                .companyId(booking.getCompanyId())
+                .code(BalanceCodeType.WALLET_TRAIN)
+                .sourceType(BalanceSourceType.BOOKING)
+                .bookingType(BookingType.TRAIN)
+                .type(BalanceTransactionType.DEBIT)
+                .amount(bookingTrain.getTotalAmount())
+                .referenceId(booking.getId())
+                .referenceCode(bookingTrain.getBookingCode())
+                .contactEmail(booking.getContactEmail())
+                .triggeredByEmail(approver)
+                .remarks("Buying train ticket approved by " + approver)
+                .build());
+    }
+
+    // Sets managementFeeAmount on bookingTrain; caller saves it
+    public void bookingDebitCredit(CallerContext callerContext, Booking booking, BookingTrain bookingTrain) {
+        List<CompanyCreditDetail> creditDetails = creditService.getBalanceDetailByReferenceCode(CreditSourceType.BOOKING, bookingTrain.getBookingCode());
+        if (creditDetails != null && !creditDetails.isEmpty()) {
+            return;
+        }
+
+        BigDecimal fee = managementFeeService.calculateTrainFee(booking.getCompanyId(), bookingTrain.getTotalAmount());
+        bookingTrain.setManagementFeeAmount(fee);
+
+        String approver = resolveApprover(bookingTrain.getApprovedByEmail());
+        creditService.adjustBalance(
+            callerContext,
+            CreditAdjustRequest.builder()
+                .companyId(booking.getCompanyId())
+                .code(CreditCodeType.CREDIT_TRAIN)
+                .sourceType(CreditSourceType.BOOKING)
+                .bookingType(BookingType.TRAIN)
+                .type(CreditTransactionType.DEBIT)
+                .amount(bookingTrain.getTotalAmount().add(fee))
+                .referenceId(booking.getId())
+                .referenceCode(bookingTrain.getBookingCode())
+                .contactEmail(booking.getContactEmail())
+                .triggeredByEmail(approver)
+                .remarks("Buying train ticket approved by " + approver)
+                .build());
+    }
+
     public void bookingRollbackBalance(
         CallerContext callerContext,
         Booking booking,
@@ -186,6 +240,10 @@ public class BookingCommonService {
             referenceCode = bookingHotel.getBookingCode();
         }
 
+        bookingRollbackBalance(callerContext, booking, referenceCode);
+    }
+
+    public void bookingRollbackBalance(CallerContext callerContext, Booking booking, String referenceCode) {
         List<CompanyBalanceDetail> originalDetails = balanceService.getBalanceDetailByReferenceCode(
             BalanceSourceType.BOOKING,
             referenceCode
@@ -350,6 +408,10 @@ public class BookingCommonService {
             referenceCode = bookingHotel.getBookingCode();
         }
 
+        bookingRollbackCredit(callerContext, booking, referenceCode);
+    }
+
+    public void bookingRollbackCredit(CallerContext callerContext, Booking booking, String referenceCode) {
         List<CompanyCreditDetail> originalDetails = creditService.getBalanceDetailByReferenceCode(
             CreditSourceType.BOOKING,
             referenceCode

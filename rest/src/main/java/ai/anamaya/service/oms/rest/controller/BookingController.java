@@ -4,6 +4,8 @@ import ai.anamaya.service.oms.core.context.UserCallerContext;
 import ai.anamaya.service.oms.core.dto.request.BookingFlightListFilter;
 import ai.anamaya.service.oms.core.dto.request.BookingHotelListFilter;
 import ai.anamaya.service.oms.core.dto.request.BookingListFilter;
+import ai.anamaya.service.oms.core.dto.request.BookingTrainSeatMapRequest;
+import ai.anamaya.service.oms.core.dto.request.BookingTrainSetSeatRequest;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.*;
@@ -38,6 +40,7 @@ public class BookingController {
     private final BookingFlightExportService bookingFlightExportService;
     private final BookingHotelService bookingHotelService;
     private final BookingHotelExportService bookingHotelExportService;
+    private final BookingTrainService bookingTrainService;
 
     private final BookingMapper mapper;
     private final JwtUtils jwtUtils;
@@ -416,6 +419,45 @@ public class BookingController {
         var resultCore = bookingHotelService.submitBookingHotel(userCallerContext, id, request);
 
         return ApiResponse.success(resultCore);
+    }
+
+    @PostMapping("/{id}/trains")
+    public ApiResponse<?> submitBookingTrain(
+        @PathVariable Long id,
+        @Valid @RequestBody BookingTrainSubmitRequestRest requestRest) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        var request = mapper.toCoreSubmitTrain(requestRest);
+        var resultCore = bookingTrainService.submitBookingTrain(userCallerContext, id, request);
+
+        return ApiResponse.success(resultCore);
+    }
+
+    @PostMapping("/{id}/trains/seat-map")
+    public ApiResponse<?> getTrainSeatMap(
+        @PathVariable Long id,
+        @Valid @RequestBody BookingTrainSeatMapRequest request) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        return ApiResponse.success(bookingTrainService.getSeatMap(userCallerContext, id, request));
+    }
+
+    @PostMapping("/{id}/trains/set-seat")
+    public ApiResponse<?> setTrainSeat(
+        @PathVariable Long id,
+        @Valid @RequestBody BookingTrainSetSeatRequest request) {
+        Long companyId = jwtUtils.getCompanyIdFromToken();
+        Long userId = jwtUtils.getUserIdFromToken();
+        String userEmail = jwtUtils.getEmailFromToken();
+        UserCallerContext userCallerContext = new UserCallerContext(companyId, userId, userEmail);
+
+        return ApiResponse.success(bookingTrainService.setSeat(userCallerContext, id, request));
     }
 
     @PreAuthorize("hasAnyRole('APPROVER')")

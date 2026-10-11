@@ -42,6 +42,7 @@ public class BookingService {
     private final BookingFlightHistoryRepository bookingFlightHistoryRepository;
     private final BookingHotelRepository bookingHotelRepository;
     private final BookingHotelHistoryRepository bookingHotelHistoryRepository;
+    private final BookingTrainRepository bookingTrainRepository;
     private final CompanyConfigRepository companyConfigRepository;
     private final JsonHelper jsonHelper;
     private final Map<String, FlightProvider> flightProviders;
@@ -447,7 +448,8 @@ public class BookingService {
                     .stream()
                     .map(this::toHotelResponse)
                     .toList()
-            );
+            )
+            .trains(toTrainResponses(booking.getId()));
         }
 
         if (needAttachment) {
@@ -504,6 +506,9 @@ public class BookingService {
                 .map(this::toHotelResponse)
                 .toList()
         );
+
+        // ponytail: one query per booking, list pages are small; batch like flights/hotels if it shows up in latency
+        builder.trains(toTrainResponses(booking.getId()));
 
         if (needAttachment) {
             builder.attachments(
@@ -607,6 +612,54 @@ public class BookingService {
             )
             .paxs(
                 bookingPaxRepository.findByBookingIdAndBookingCode(h.getBookingId(), h.getBookingCode())
+                    .stream()
+                    .map(this::toPaxResponse)
+                    .toList()
+            )
+            .build();
+    }
+
+    private List<BookingTrainResponse> toTrainResponses(Long bookingId) {
+        return bookingTrainRepository.findByBookingId(bookingId)
+            .stream()
+            .map(this::toTrainResponse)
+            .toList();
+    }
+
+    private BookingTrainResponse toTrainResponse(BookingTrain t) {
+        return BookingTrainResponse.builder()
+            .id(t.getId())
+            .companyId(t.getCompanyId())
+            .bookingId(t.getBookingId())
+            .bookingCode(t.getBookingCode())
+            .carrierNumber(t.getCarrierNumber())
+            .trainName(t.getTrainName())
+            .subClass(t.getSubClass())
+            .seatClass(t.getSeatClass())
+            .origin(t.getOrigin())
+            .destination(t.getDestination())
+            .departureDatetime(t.getDepartureDatetime())
+            .arrivalDatetime(t.getArrivalDatetime())
+            .totalAmount(t.getTotalAmount())
+            .managementFeeAmount(t.getManagementFeeAmount())
+            .paymentMethod(t.getPaymentMethod())
+            .otaReference(t.getOtaReference())
+            .timeLimit(t.getTimeLimit())
+            .seats(t.getSeats())
+            .status(t.getStatus())
+            .errorMessage(t.getErrorMessage())
+            .approvedByName(t.getApprovedByEmail())
+            .approvedAt(t.getApprovedAt())
+            .rejectedByName(t.getRejectedByEmail())
+            .rejectedAt(t.getRejectedAt())
+            .createdAt(t.getCreatedAt())
+            .metadata(
+                t.getMetadata() != null
+                    ? jsonHelper.toJsonNode(t.getMetadata())
+                    : jsonHelper.emptyObject()
+            )
+            .paxs(
+                bookingPaxRepository.findByBookingIdAndBookingCode(t.getBookingId(), t.getBookingCode())
                     .stream()
                     .map(this::toPaxResponse)
                     .toList()

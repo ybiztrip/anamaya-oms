@@ -54,7 +54,7 @@ public class BiztripTrainAvailabilityService {
                                     })
                     )
                     .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                    .timeout(Duration.ofSeconds(20))
+                    .timeout(Duration.ofSeconds(60))
                     .block();
 
             if (response == null || response.get("data") == null) {

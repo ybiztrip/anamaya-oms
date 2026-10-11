@@ -16,6 +16,7 @@ public class ManagementFeeService {
 
     public static final String CONFIG_FLIGHT = "CREDIT_FLIGHT";
     public static final String CONFIG_HOTEL = "CREDIT_HOTEL";
+    public static final String CONFIG_TRAIN = "CREDIT_TRAIN";
 
     private static final BigDecimal HUNDRED = new BigDecimal("100");
 
@@ -33,6 +34,13 @@ public class ManagementFeeService {
             throw new IllegalArgumentException("Hotel partner_nett_amount must not be null");
         }
         return calculate(companyId, CONFIG_HOTEL, partnerNettAmount);
+    }
+
+    public BigDecimal calculateTrainFee(Long companyId, BigDecimal totalAmount) {
+        if (totalAmount == null) {
+            throw new IllegalArgumentException("Train total_amount must not be null");
+        }
+        return calculate(companyId, CONFIG_TRAIN, totalAmount);
     }
 
     public void validateConfig(Long companyId, String code) {

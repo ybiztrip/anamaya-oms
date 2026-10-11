@@ -39,4 +39,5 @@ public class BookingResponse {
     private List<BookingAttachmentResponse> attachments;
     private List<BookingFlightResponse> flights;
     private List<BookingHotelResponse> hotels;
+    private List<BookingTrainResponse> trains;
 }

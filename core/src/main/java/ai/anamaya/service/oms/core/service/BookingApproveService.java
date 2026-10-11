@@ -36,6 +36,9 @@ public class BookingApproveService {
     private final BookingPubSubPublisher bookingPubSubPublisher;
     private final BookingHotelService bookingHotelService;
     private final BookingFlightService bookingFlightService;
+    private final BookingTrainRepository bookingTrainRepository;
+    private final BookingTrainHistoryRepository bookingTrainHistoryRepository;
+    private final BookingTrainService bookingTrainService;
 
 
     private final Map<String, FlightProvider> flightProviders;
@@ -214,6 +217,74 @@ public class BookingApproveService {
                 ));
         }
 
+        if (request.getTrainIds() != null && !request.getTrainIds().isEmpty()) {
+            List<BookingTrain> bookingTrains = bookingTrainRepository.findByBookingIdAndIdIn(bookingId, request.getTrainIds());
+            List<Long> notValidTrains = bookingTrains.stream()
+                .filter(t -> t.getStatus() != BookingTrainStatus.BOOKED)
+                .map(BookingTrain::getId)
+                .toList();
+
+            if (!notValidTrains.isEmpty()) {
+                throw new IllegalStateException("Some booking trains are not valid to APPROVED: " + notValidTrains);
+            }
+
+            List<Long> expiredTrains = bookingTrains.stream()
+                .filter(BookingTrainService::isPastTimeLimit)
+                .map(BookingTrain::getId)
+                .toList();
+
+            if (!expiredTrains.isEmpty()) {
+                throw new IllegalStateException("Train booking time limit has passed: " + expiredTrains);
+            }
+
+            bookingTrains.forEach(t -> {
+                t.setStatus(BookingTrainStatus.APPROVED);
+                t.setApprovedBy(userId);
+                t.setApprovedByEmail(userEmail);
+                t.setApprovedAt(now);
+                t.setUpdatedBy(userId);
+            });
+            bookingTrainRepository.saveAll(bookingTrains);
+
+            bookingStatusMessages.addAll(
+                bookingTrains.stream()
+                    .map(t -> BookingStatusMessage.builder()
+                        .companyId(booking.getCompanyId())
+                        .bookingType(BookingType.TRAIN)
+                        .bookingId(t.getBookingId())
+                        .bookingCode(t.getBookingCode())
+                        .status(BookingStatus.APPROVED)
+                        .build()
+                    )
+                    .toList()
+            );
+
+            bookingApprovalRepository.saveAll(
+                bookingCommonService.buildApprovals(
+                    bookingId,
+                    BookingType.TRAIN,
+                    bookingTrains.stream().map(BookingTrain::getId).toList(),
+                    ApprovalAction.APPROVED,
+                    userId,
+                    userEmail,
+                    request.getNotes()
+                )
+            );
+
+            bookingTrains.forEach(t -> bookingTrainHistoryRepository.save(
+                BookingTrainHistory.builder()
+                    .bookingId(bookingId)
+                    .bookingCode(t.getBookingCode())
+                    .status(BookingTrainStatus.APPROVED)
+                    .data(Map.of(
+                        "approvedBy", userId,
+                        "approvedByEmail", userEmail,
+                        "approvedAt", now.toString()
+                    ))
+                    .build()
+            ));
+        }
+
         for (BookingStatusMessage message : bookingStatusMessages) {
             bookingPubSubPublisher.publishBookingStatus(message);
         }
@@ -235,6 +306,9 @@ public class BookingApproveService {
             }
             case HOTEL -> {
                 bookingHotelService.approveProcessBooking(callerContext, booking, request);
+            }
+            case TRAIN -> {
+                bookingTrainService.approveProcessBooking(callerContext, booking, request);
             }
         }
     }
@@ -337,6 +411,48 @@ public class BookingApproveService {
                     bookingId,
                     BookingType.HOTEL,
                     bookingHotels.stream().map(BookingHotel::getId).toList(),
+                    ApprovalAction.REJECTED,
+                    userId,
+                    userEmail,
+                    request.getNotes()
+                )
+            );
+        }
+
+        if (request.getTrainIds() != null && !request.getTrainIds().isEmpty()) {
+            List<BookingTrain> bookingTrains = bookingTrainRepository.findByBookingIdAndIdIn(bookingId, request.getTrainIds());
+            Set<BookingTrainStatus> allowedStatuses = EnumSet.of(BookingTrainStatus.RESERVED, BookingTrainStatus.BOOKED);
+
+            List<Long> invalidTrainIds = bookingTrains.stream()
+                .filter(t -> !allowedStatuses.contains(t.getStatus()))
+                .map(BookingTrain::getId)
+                .toList();
+
+            if (!invalidTrainIds.isEmpty()) {
+                throw new IllegalStateException(
+                    String.format(
+                        "Cannot reject booking trains. Invalid status found for train IDs: %s. Allowed statuses: %s",
+                        invalidTrainIds,
+                        allowedStatuses
+                    )
+                );
+            }
+
+            // ponytail: no cancel call to Biztrip, the unpaid reservation lapses at its timeLimit
+            bookingTrains.forEach(t -> {
+                t.setStatus(BookingTrainStatus.REJECTED);
+                t.setRejectedBy(userId);
+                t.setRejectedByEmail(userEmail);
+                t.setRejectedAt(now);
+                t.setUpdatedBy(userId);
+            });
+            bookingTrainRepository.saveAll(bookingTrains);
+
+            bookingApprovalRepository.saveAll(
+                bookingCommonService.buildApprovals(
+                    bookingId,
+                    BookingType.TRAIN,
+                    bookingTrains.stream().map(BookingTrain::getId).toList(),
                     ApprovalAction.REJECTED,
                     userId,
                     userEmail,
