@@ -446,6 +446,12 @@ public class RefundService {
         return page.map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
+    public Page<RefundResponse> getAdminList(RefundFilter filter, Pageable pageable) {
+        Page<Refund> page = refundRepository.findAll(RefundSpecification.filter(filter), pageable);
+        return page.map(this::toResponse);
+    }
+
     private Refund findRefundByBooking(BookingType type, String bookingCode, String otaReference) {
         Long refundId;
         if (type == BookingType.FLIGHT) {
