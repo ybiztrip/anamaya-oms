@@ -4,6 +4,7 @@ import ai.anamaya.service.oms.core.context.UserCallerContext;
 import ai.anamaya.service.oms.core.dto.request.RefundFilter;
 import ai.anamaya.service.oms.core.dto.response.ApiResponse;
 import ai.anamaya.service.oms.core.dto.response.RefundResponse;
+import ai.anamaya.service.oms.core.dto.response.RefundSummaryResponse;
 import ai.anamaya.service.oms.core.security.JwtUtils;
 import ai.anamaya.service.oms.core.service.RefundService;
 import ai.anamaya.service.oms.rest.dto.request.RefundAdminCreateRequestRest;
@@ -71,5 +72,11 @@ public class RefundAdminController {
             result.getSize(),
             result.getNumber()
         );
+    }
+
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    @GetMapping("/summary")
+    public ApiResponse<RefundSummaryResponse> summary(@ModelAttribute RefundFilter filter) {
+        return ApiResponse.success(refundService.getAdminSummary(filter));
     }
 }

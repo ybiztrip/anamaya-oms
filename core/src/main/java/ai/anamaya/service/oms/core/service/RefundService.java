@@ -10,6 +10,7 @@ import ai.anamaya.service.oms.core.dto.request.RefundFilter;
 import ai.anamaya.service.oms.core.dto.request.RefundPaidRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundProviderRequest;
 import ai.anamaya.service.oms.core.dto.response.RefundResponse;
+import ai.anamaya.service.oms.core.dto.response.RefundSummaryResponse;
 import ai.anamaya.service.oms.core.entity.Booking;
 import ai.anamaya.service.oms.core.entity.BookingFlight;
 import ai.anamaya.service.oms.core.entity.BookingHotel;
@@ -53,6 +54,9 @@ public class RefundService {
     private final CreditService creditService;
     private final java.util.Map<String, FlightProvider> flightProviders;
     private final java.util.Map<String, HotelProvider> hotelProviders;
+
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
 
     private FlightProvider getFlightProvider(String source) {
         String key = (source != null ? source.toLowerCase() : "biztrip") + "FlightProvider";
@@ -450,6 +454,38 @@ public class RefundService {
     public Page<RefundResponse> getAdminList(RefundFilter filter, Pageable pageable) {
         Page<Refund> page = refundRepository.findAll(RefundSpecification.filter(filter), pageable);
         return page.map(this::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public RefundSummaryResponse getAdminSummary(RefundFilter filter) {
+        jakarta.persistence.criteria.CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        jakarta.persistence.criteria.CriteriaQuery<jakarta.persistence.Tuple> cq = cb.createTupleQuery();
+        jakarta.persistence.criteria.Root<Refund> root = cq.from(Refund.class);
+        jakarta.persistence.criteria.Path<RefundStatus> statusPath = root.get("status");
+
+        // reuse the list filter, but aggregate (GROUP BY) in the DB instead of loading rows
+        jakarta.persistence.criteria.Predicate predicate =
+            RefundSpecification.filter(filter).toPredicate(root, cq, cb);
+        cq.multiselect(statusPath, cb.count(root));
+        if (predicate != null) {
+            cq.where(predicate);
+        }
+        cq.groupBy(statusPath);
+
+        java.util.Map<RefundStatus, Long> status = new java.util.EnumMap<>(RefundStatus.class);
+        for (RefundStatus s : RefundStatus.values()) {
+            status.put(s, 0L);
+        }
+        long total = 0;
+        for (jakarta.persistence.Tuple t : entityManager.createQuery(cq).getResultList()) {
+            long count = t.get(1, Long.class);
+            status.put(t.get(0, RefundStatus.class), count);
+            total += count;
+        }
+        return RefundSummaryResponse.builder()
+            .total(total)
+            .status(status)
+            .build();
     }
 
     private Refund findRefundByBooking(BookingType type, String bookingCode, String otaReference) {
