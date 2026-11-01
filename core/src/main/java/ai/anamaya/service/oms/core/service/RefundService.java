@@ -3,6 +3,7 @@ package ai.anamaya.service.oms.core.service;
 import ai.anamaya.service.oms.core.context.CallerContext;
 import ai.anamaya.service.oms.core.dto.request.BalanceAdjustRequest;
 import ai.anamaya.service.oms.core.dto.request.CreditAdjustRequest;
+import ai.anamaya.service.oms.core.dto.request.RefundAdminCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundCancelRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundFilter;
@@ -213,6 +214,132 @@ public class RefundService {
         }
 
         return toResponse(refund);
+    }
+
+    @Transactional
+    public RefundResponse createAdminRefund(CallerContext callerContext, RefundAdminCreateRequest request) {
+        Long userId = callerContext.userId();
+
+        if (request.getBookingType() == null) {
+            throw new IllegalArgumentException("bookingType is required");
+        }
+        if (request.getBookingCode() == null || request.getBookingCode().isBlank()) {
+            throw new IllegalArgumentException("bookingCode is required");
+        }
+        if (request.getRefundType() == null) {
+            throw new IllegalArgumentException("refundType is required");
+        }
+        if (request.getRequestedAmount() == null
+            || request.getRequestedAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("requestedAmount must be greater than zero");
+        }
+
+        boolean requestCancel = Boolean.TRUE.equals(request.getIsRequestCancel());
+
+        String bookingCode = request.getBookingCode();
+        Long companyId;
+        Long bookingId;
+        String otaReference;
+        String clientSource;
+
+        if (request.getBookingType() == BookingType.FLIGHT) {
+            BookingFlight flight = bookingFlightRepository
+                .findByBookingCodeOrderByIdAsc(bookingCode)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Booking flight not found"));
+
+            if (flight.getRefundId() != null) {
+                throw new IllegalArgumentException("Booking already has a refund");
+            }
+            if (flight.getInvoiceId() != null) {
+                throw new IllegalArgumentException("Cannot refund an invoiced booking");
+            }
+            if (flight.getStatus() != BookingFlightStatus.ISSUED) {
+                throw new IllegalArgumentException("Only ISSUED booking can be refunded");
+            }
+
+            companyId = flight.getCompanyId();
+            bookingId = flight.getId();
+            otaReference = resolveOtaReference(request.getOtaReference(), flight.getOtaReference());
+            clientSource = flight.getClientSource();
+        } else {
+            BookingHotel hotel = bookingHotelRepository
+                .findByBookingCode(bookingCode)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Booking hotel not found"));
+
+            if (hotel.getRefundId() != null) {
+                throw new IllegalArgumentException("Booking already has a refund");
+            }
+            if (hotel.getInvoiceId() != null) {
+                throw new IllegalArgumentException("Cannot refund an invoiced booking");
+            }
+            if (hotel.getStatus() != BookingHotelStatus.ISSUED) {
+                throw new IllegalArgumentException("Only ISSUED booking can be refunded");
+            }
+
+            companyId = hotel.getCompanyId();
+            bookingId = hotel.getId();
+            otaReference = resolveOtaReference(request.getOtaReference(), hotel.getOtaReference());
+            clientSource = hotel.getClientSource();
+        }
+
+        if (requestCancel && (otaReference == null || otaReference.isBlank())) {
+            throw new IllegalArgumentException(
+                "Booking has no provider reference; cannot submit cancellation to provider");
+        }
+
+        if (refundRepository.existsByCompanyIdAndBookingCodeAndStatusNot(
+            companyId, bookingCode, RefundStatus.CANCELLED)) {
+            throw new IllegalArgumentException("Booking already has an active refund");
+        }
+
+        String prefix = request.getBookingType() == BookingType.FLIGHT ? "RFDF-" : "RFDH-";
+        Refund refund = Refund.builder()
+            .companyId(companyId)
+            .bookingType(request.getBookingType())
+            .bookingCode(bookingCode)
+            .otaReference(otaReference)
+            .paymentMethod(request.getRefundType())
+            .requestedAmount(request.getRequestedAmount())
+            .currency("IDR")
+            .status(RefundStatus.CREATED)
+            .remarks(request.getRemarks())
+            .code(prefix + Instant.now().toEpochMilli())
+            .createdBy(userId)
+            .updatedBy(userId)
+            .build();
+        refundRepository.save(refund);
+
+        int linked = request.getBookingType() == BookingType.FLIGHT
+            ? bookingFlightRepository.linkRefund(bookingId, companyId, refund.getId(), userId)
+            : bookingHotelRepository.linkRefund(bookingId, companyId, refund.getId(), userId);
+
+        if (linked != 1) {
+            throw new IllegalArgumentException("Booking already linked to another refund");
+        }
+
+        if (requestCancel) {
+            RefundProviderRequest providerRequest = RefundProviderRequest.builder()
+                .partnerBookingId(bookingCode)
+                .bookingId(otaReference)
+                .cancellationReason(request.getRemarks())
+                .build();
+
+            if (request.getBookingType() == BookingType.FLIGHT) {
+                getFlightProvider(clientSource).submitRefund(callerContext, providerRequest);
+            } else {
+                getHotelProvider(clientSource).submitCancellation(callerContext, providerRequest);
+            }
+        }
+
+        return toResponse(refund);
+    }
+
+    private String resolveOtaReference(String requested, String bookingReference) {
+        return (requested != null && !requested.isBlank()) ? requested : bookingReference;
     }
 
     @Transactional

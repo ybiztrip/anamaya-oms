@@ -1,9 +1,11 @@
 package ai.anamaya.service.oms.rest.mapper;
 
+import ai.anamaya.service.oms.core.dto.request.RefundAdminCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundCancelRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundCreateRequest;
 import ai.anamaya.service.oms.core.dto.request.RefundPaidRequest;
 import ai.anamaya.service.oms.core.dto.response.RefundResponse;
+import ai.anamaya.service.oms.rest.dto.request.RefundAdminCreateRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.RefundCancelRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.RefundCreateRequestRest;
 import ai.anamaya.service.oms.rest.dto.request.RefundPaidRequestRest;
@@ -14,6 +16,8 @@ import org.mapstruct.Mapper;
 public interface RefundMapper {
 
     RefundCreateRequest toCore(RefundCreateRequestRest rest);
+
+    RefundAdminCreateRequest toCore(RefundAdminCreateRequestRest rest);
 
     RefundPaidRequest toCore(RefundPaidRequestRest rest);
 
